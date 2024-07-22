@@ -1,3 +1,5 @@
+import { CarDirection } from './CarEnum';
+
 export namespace CarEncode {
 
 
@@ -12,8 +14,19 @@ export namespace CarEncode {
     if (speed_x < 0) speed_x += 255
     if (speed_y < 0) speed_y += 255
     return BaseEncode('10',
-      numberToHex(speed_x , 2) +
-      numberToHex(speed_y , 2)
+      numberToHex(speed_x, 2) +
+      numberToHex(speed_y, 2)
+    );
+  }
+
+  /**
+   *
+   * @param d
+   * @returns
+   */
+  export function ButCarEncode(d: CarDirection): string {
+    return BaseEncode('15',
+      numberToHex(d, 2)
     );
   }
 
@@ -51,7 +64,11 @@ export namespace CarEncode {
     return hex.toUpperCase(); // 如果需要小写，去掉.toUpperCase()
   }
 
-
+  /**
+   * 数据校验运算
+   * @param data
+   * @returns
+   */
   function getCheckChecksum(data: string) {
     console.log("getCheckChecksum", data)
     // 初始化校验和变量
@@ -78,3 +95,4 @@ export namespace CarEncode {
     return number;
   }
 }
+
