@@ -18,12 +18,30 @@ export namespace ScreenUtils {
   }
 
   /**
-   * 设置导航栏，状态栏不可见
+   * 设置导航栏，状态栏不可见，在api9以后不能使用
    */
-  export async function setSystemBar(ctx: common.BaseContext) {
+  export async function setSystemBarEnable_api9(ctx: common.BaseContext) {
     let windowClass = await window.getLastWindow(this.context)
     await windowClass.setWindowSystemBarEnable([])
   }
+
+
+  /**
+   * 设置导航栏，状态栏不可见，在api9以后不能使用
+   */
+  export async function setSystemBarEnable_api10(windowStage: window.WindowStage) {
+    let windowClass: window.Window = windowStage.getMainWindowSync(); // 获取应用主窗口
+    // 1. 设置窗口全屏
+    let isLayoutFullScreen = true;
+    windowClass.setWindowLayoutFullScreen(isLayoutFullScreen)
+      .then(() => {
+        console.info('Succeeded in setting the window layout to full-screen mode.');
+      })// .catch((err: BusinessError) => {
+      .catch((err) => {
+        console.error('Failed to set the window layout to full-screen mode. Cause:' + JSON.stringify(err));
+      });
+  }
+
 
   /**
    * 将应用设置为横屏
