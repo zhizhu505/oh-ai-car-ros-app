@@ -76,8 +76,6 @@ struct CarRockerComponents {
       }
       // 重绘界面
       this.drawUtils.myOnReadyEvent();
-      // 发送编码字符
-      this.sendEncode();
     } else if (event.type === TouchType.Move) {
       // - 手指触摸途中
       // 更新手指位置
@@ -90,19 +88,27 @@ struct CarRockerComponents {
     } else if (event.type === TouchType.Down) {
       // - 如果出发触摸事件时响应相应的点击事件
     }
+
+
+    // 发送编码字符
+    this.sendEncode();
+
   }
 
   private sendEncode() {
-    let l = this.drawUtils.FingerRadius;
-    let r = this.drawUtils.width - this.drawUtils.FingerRadius;
-    let lr = r - l; // 左右总长
 
-    let sendx = 0;
-
-    sendx = this.drawUtils.tiltX;
+    let w = this.drawUtils.width;
 
 
-    let sendy = this.drawUtils.tiltY;
+    // x [0,w]->[-100,100]
+    // 将 [0,w] 的 x 映射到 [-100,100]
+    let xmap = (x: number, w: number, l: number, r: number) => {
+      return x / (w - 0) * (r - l) + l
+    }
+
+    let sendx = xmap(this.drawUtils.tiltX, this.drawUtils.width, -100, 100);
+    let sendy = xmap(this.drawUtils.tiltY, this.drawUtils.height, -100, 100);
+    sendy *= -1;
     carApi.send(CarEncode.CtrlCarEncode(sendx, sendy));
   }
 }

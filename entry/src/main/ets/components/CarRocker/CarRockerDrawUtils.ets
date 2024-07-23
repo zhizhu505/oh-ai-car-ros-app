@@ -1,5 +1,7 @@
+import { MyUtils } from '../../utils/MyUtils';
+
 var TAG = 'CarRockerDrawUtils';
-var isDebug = true;
+var isDebug = MyUtils.isDebug;
 
 
 class CarRockerDrawUtils {
@@ -84,11 +86,11 @@ class CarRockerDrawUtils {
 
   public get tiltX(): number {
     // 如果左侧越界，那么返回边界
-    if (this._tiltX < this.FingerRadius)
-      return this.FingerRadius
+    if (this._tiltX < 0)
+      return 0
     // 如果右侧越界，那么返回边界
-    if (this._tiltX > this.width - this.FingerRadius)
-      return this.width - this.FingerRadius
+    if (this._tiltX > this.width )
+      return this.width
     // 正常返回
     return this._tiltX
   }
@@ -96,11 +98,11 @@ class CarRockerDrawUtils {
   public get tiltY(): number {
 
     // 如果左侧越界，那么返回边界
-    if (this._tiltY < this.FingerRadius)
-      return this.FingerRadius
+    if (this._tiltY < 0)
+      return 0;
     // 如果右侧越界，那么返回边界
-    if (this._tiltY > this.height - this.FingerRadius)
-      return this.height - this.FingerRadius
+    if (this._tiltY > this.height)
+      return this.height;
     // 正常返回
     return this._tiltY
   }
