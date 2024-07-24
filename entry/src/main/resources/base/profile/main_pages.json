@@ -2,6 +2,7 @@
   "src": [
     "pages/Index",
     "pages/MecanumWheel",
-    "pages/RemoteControl"
+    "pages/RemoteControl",
+    "pages/NetworkSettings"
   ]
 }

@@ -20,7 +20,7 @@ export default class EntryAbility extends UIAbility {
     // Main window is created, set main page for this ability
     hilog.info(0x0000, 'testTag', '%{public}s', 'Ability onWindowStageCreate');
 
-    windowStage.loadContent('pages/Index', (err) => {
+    windowStage.loadContent('pages/NetworkSettings', (err) => {
       if (err.code) {
         hilog.error(0x0000, 'testTag', 'Failed to load the content. Cause: %{public}s', JSON.stringify(err) ?? '');
         return;
@@ -35,21 +35,10 @@ export default class EntryAbility extends UIAbility {
     // 设置标题栏不可见
     ScreenUtils.setSystemBarEnable_api9(this.context)
     ScreenUtils.setSystemBarEnable_api10(windowStage)
-    this.initNetConfig();
 
   }
 
-  private initNetConfig() {
-    let address = "192.168.1.11";
-    // TCP IP、端口定义
-    TCPClientManager.getInstance().initNetAddress({
-      address: address,
-      port: 6000
-    });
-    // 创建TCP连接
-    TCPClientManager.getInstance().connect();
-    TCPClientSendUtils.getInstance().init();
-  }
+
 
   onWindowStageDestroy(): void {
     // Main window is destroyed, release UI related resources

@@ -55,16 +55,22 @@ export class TCPClientManager {
     if (netAddress.port) this.options.address.port = netAddress.port;
   }
 
-  /**初始化连接（可以在需要时调用，或者放在构造方法中）*/
+  /**
+   * 初始化连接（可以在需要时调用，或者放在构造方法中）
+   * @returns 是否连接成功
+   */
   public async connect() {
 
     // 异步函数，用来获取当前连接状态
-    if (await this.isConnect() === false) {
+    let isConnect = await this.isConnect()
 
-      this.socket = socket.constructTCPSocketInstance();
-      this.socket.connect(this.options).then(() => {
-        this.showInfo(`连接成功`)
-      })
+    // 如果当前是连接成功的，那么先断开连接
+    if (isConnect == true) this.socket.close()
+
+    this.socket = socket.constructTCPSocketInstance();
+    try {
+      await this.socket.connect(this.options)
+      this.showInfo(`连接成功`)
       // 信号接收
       this.socket.on("message", (value: SocketInfo) => {
 
@@ -89,7 +95,12 @@ export class TCPClientManager {
 
 
       })
+      return true;
+    } catch {
+      return false;
     }
+
+
   }
 
   /**
