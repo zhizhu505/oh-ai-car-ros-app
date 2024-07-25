@@ -5,6 +5,7 @@ import { TCPClientManager } from '../tcp/TCPClientManager'
 import { TCPClientSendUtils } from '../tcp/TCPClientSendUtils'
 import promptAction from '@ohos.promptAction'
 import router from '@ohos.router'
+import { PreferencesUtils } from '../utils/PreferencesUtils'
 
 @Entry
 @Component
@@ -66,6 +67,13 @@ struct LoginComponent {
   connectfailRun = () => {
   }
 
+  /**
+   * 数据初始化
+   */
+  aboutToAppear(): void {
+    this.readNetConfig();
+  }
+
   build() {
     Column() {
       // IP配置
@@ -87,7 +95,7 @@ struct LoginComponent {
           .textAlign(TextAlign.End)
           .fontSize(this.FontSize)
         TextInput({ text: this.port })
-          .onChange((v) => this.video = v)
+          .onChange((v) => this.port = v)
           .layoutWeight(1)
       }
       .width('100%')
@@ -107,11 +115,18 @@ struct LoginComponent {
 
       Button("连接").onClick(() => {
         this.initNetConfig()
+        // 保存网络配置
+        this.saveNetConfig()
       })
     }
   }
 
+  /**
+   * 连接网络
+   */
   private async initNetConfig() {
+
+    //
     let address = this.ip;
     // TCP IP、端口定义
     TCPClientManager.getInstance().initNetAddress({
@@ -133,6 +148,24 @@ struct LoginComponent {
       // 触发连接失败回调
       this.connectfailRun();
     }
+  }
+
+  /**
+   * 从本地首选项读取偏好设置
+   */
+  private readNetConfig() {
+    PreferencesUtils.getInstance().netUtils.getIP().then((v: string) => this.ip = v)
+    PreferencesUtils.getInstance().netUtils.getTcpPort().then((v: string) => this.port = v)
+    PreferencesUtils.getInstance().netUtils.getVideoPort().then((v: string) => this.video = v)
+  }
+
+  /**
+   * 保存网络配置
+   */
+  private async saveNetConfig() {
+    PreferencesUtils.getInstance().netUtils.setIp(this.ip)
+    PreferencesUtils.getInstance().netUtils.setTcpPort(this.port)
+    PreferencesUtils.getInstance().netUtils.setVideoPort(this.video)
   }
 }
 

@@ -6,10 +6,15 @@ import window from '@ohos.window';
 import { ScreenUtils } from "../utils/ScreenUtils"
 import { TCPClientManager } from '../tcp/TCPClientManager';
 import { TCPClientSendUtils } from '../tcp/TCPClientSendUtils';
+import { PreferencesUtils } from '../utils/PreferencesUtils';
 
 export default class EntryAbility extends UIAbility {
   onCreate(want: Want, launchParam: AbilityConstant.LaunchParam): void {
     hilog.info(0x0000, 'testTag', '%{public}s', 'Ability onCreate');
+
+    // 初始化首选项单例
+    PreferencesUtils.getInstance().init(this.context)
+
   }
 
   onDestroy(): void {
@@ -28,16 +33,15 @@ export default class EntryAbility extends UIAbility {
       hilog.info(0x0000, 'testTag', 'Succeeded in loading the content.');
     });
 
-    // 设置应用为竖屏
+    // 设置应用为横屏
     ScreenUtils.setLandscape(this.context)
     // 设置屏幕常量
     ScreenUtils.keepScreenOn(this.context, true)
     // 设置标题栏不可见
-    ScreenUtils.setSystemBarEnable_api9(this.context)
-    ScreenUtils.setSystemBarEnable_api10(windowStage)
+    // ScreenUtils.setSystemBarEnable_api9(this.context)
+    // ScreenUtils.setSystemBarEnable_api10(windowStage)
 
   }
-
 
 
   onWindowStageDestroy(): void {
