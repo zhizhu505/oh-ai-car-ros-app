@@ -9,6 +9,22 @@ export namespace CarEncode {
 
 
   /**
+   * 开始循迹
+   * @returns
+   */
+  export function TrackingOpenEncode(): string {
+    return BaseEncode('63');
+  }
+
+  /**
+   * 关闭循迹
+   * @returns
+   */
+  export function TrackingCloseEncode(): string {
+    return BaseEncode('64');
+  }
+
+  /**
    * 拍摄图片
    * @returns
    */

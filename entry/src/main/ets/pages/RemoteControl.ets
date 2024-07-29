@@ -2,6 +2,7 @@
  * 遥控界面
  */
 import { carApi } from '../CarUtill/CarApi';
+import { CarEncode } from '../CarUtill/CarEncode';
 import { CarDirection } from '../CarUtill/CarEnum';
 import { CarBtnComponents } from '../components/CarBtnComponents';
 import { CarRockerComponents } from '../components/CarRockerComponents';
@@ -76,6 +77,17 @@ struct RemoteControl {
       Column() {
         // 视频播放组件
         VideoComponents()
+        Row() {
+          Checkbox() {
+            Text("自动循迹")
+          }.onChange((value: boolean) => {
+            if (value) {
+              carApi.send(CarEncode.TrackingOpenEncode());
+            } else {
+              carApi.send(CarEncode.TrackingCloseEncode());
+            }
+          })
+        }
       }
       .width(0)
       .height('100%')
