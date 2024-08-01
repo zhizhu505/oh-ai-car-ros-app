@@ -90,6 +90,8 @@ struct MecanumWheel {
               this.sendSpeed();
             })
             .fontSize($r('app.float.float_1'))
+            .backgroundColor($r('app.color.button_background'))
+
           Button('全部归零')
             .onClick(() => {
               this.L1Value = 0
@@ -100,6 +102,7 @@ struct MecanumWheel {
               this.sendSpeed();
             })
             .fontSize($r('app.float.float_1'))
+            .backgroundColor($r('app.color.button_background'))
         }
         .height(0)
         .width('100%')
@@ -122,6 +125,8 @@ struct MecanumWheel {
       top: '30vp',
       bottom: '30vp'
     })
+    .backgroundColor($r('app.color.window_background'))
+
   }
 
   /**边框样式*/
@@ -130,7 +135,7 @@ struct MecanumWheel {
     .border({
       radius: '10vp',
       color: Color.Gray,
-      width: '1vp'
+      width: '0vp'
     })
   }
 
@@ -153,7 +158,7 @@ struct SliderComponent {
   @Link value: number;
 
   build() {
-    Column() {
+    Row() {
       // 左前轮
       Slider({
         value: this.value,
@@ -161,9 +166,10 @@ struct SliderComponent {
         max: 100,
         style: SliderStyle.InSet
       })
-        .blockColor('#191970')
-        .trackColor('#ADD8E6')
-        .selectedColor('#4169E1')// .showTips(true)
+        .blockColor($r('app.color.track_select_background'))
+          .trackColor($r('app.color.track_background'))
+          .selectedColor($r("app.color.slider_selected"))
+          // .showTips(true)
         .onChange((value: number, mode: SliderChangeMode) => {
           this.value = value
           console.info('value:' + value + 'mode:' + mode.toString())
@@ -171,6 +177,9 @@ struct SliderComponent {
       Text(
         `${this.value.toFixed(0)}`
       )
+        .width('30vp')
+        .textAlign(TextAlign.Center)
+        .fontColor($r('app.color.text'))
         .fontSize($r('app.float.float_1'))
 
 
