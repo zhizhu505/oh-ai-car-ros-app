@@ -3,6 +3,22 @@
     {
       "name": "start_window_background",
       "value": "#FFFFFF"
+    },
+    {
+      "name": "window_background",
+      "value": "#6E7184"
+    },
+    {
+      "name": "button_background",
+      "value": "#889"
+    },
+    {
+      "name": "button_select_background",
+      "value": "#D9D9D9"
+    },
+    {
+      "name": "edit_text_background",
+      "value": "#D9D9DD"
     }
   ]
 }
