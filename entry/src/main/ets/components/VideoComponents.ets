@@ -1,6 +1,7 @@
 import web_webview from '@ohos.web.webview'
 import { carApi } from '../CarUtill/CarApi';
 import { CarEncode } from '../CarUtill/CarEncode';
+import { ButtonShadow } from '../styles/styles';
 
 let TAG = "VideoComponents"
 
@@ -40,16 +41,20 @@ export struct VideoComponents {
       .height('200vp')
 
       Row() {
-        if (this.isRecording==false) {
+        if (this.isRecording == false) {
           // 如果不在录像，那么允许拍摄
           Button("拍摄")
+            .backgroundColor($r('app.color.button_background'))
+            .shadow(ButtonShadow)
             .onClick(() => {
               carApi.send(CarEncode.TakePhotosEncode());
             })
         }
 
 
-        Button(this.isRecording==false ? "录制" : "结束")
+        Button(this.isRecording == false ? "录制" : "结束")
+          .backgroundColor($r('app.color.button_background'))
+          .shadow(ButtonShadow)
           .onClick(() => {
             if (this.isRecording == true) {
               // 如果正在录制那么暂停视频
@@ -98,7 +103,7 @@ struct RedRound {
         iterations: -1, // 设置-1表示动画无限循环
       })
       .border({
-        radius:"5vp"
+        radius: "5vp"
       })
       .visibility(this.isShow ? Visibility.Visible : Visibility.None)
   }
