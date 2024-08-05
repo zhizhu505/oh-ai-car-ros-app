@@ -33,7 +33,7 @@ struct NetworkSettings {
               router.pushUrl({ url: "pages/Index" })
             },
             connectfailRun: () => {
-              // 如果在调试状态，连接失败也打开主页
+              // @todo 如果在调试状态，连接失败也打开主页
               if (MyUtils.isDebug)
                 router.pushUrl({ url: "pages/Index" })
             }
