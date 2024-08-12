@@ -1,3 +1,3 @@
 export namespace MyUtils {
-  export let isDebug = true;
+  export let isDebug = false;
 }
