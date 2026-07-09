@@ -1,25 +1,13 @@
 {
   "app": {
-    "signingConfigs": [
-      {
-        "name": "default",
-        "material": {
-          "certpath": "C:\\Users\\17151\\.ohos\\config\\openharmony\\auto_ohos_default_api9hello_com.hoperun.cmartcar.cer",
-          "storePassword": "0000001B1B2B6AC1B97066FF94989F72B4651C4A17EA55C57A0CFF9BEE4712638CB4DA6BD5E1944125F7EA",
-          "keyAlias": "debugKey",
-          "keyPassword": "0000001B15B72082CDB9A26E208011B2A4BF7373B8B98ACFFAE1A741DC4196B2A2B2023823DB6CD391D021",
-          "profile": "C:\\Users\\17151\\.ohos\\config\\openharmony\\auto_ohos_default_api9hello_com.hoperun.cmartcar.p7b",
-          "signAlg": "SHA256withECDSA",
-          "storeFile": "C:\\Users\\17151\\.ohos\\config\\openharmony\\auto_ohos_default_api9hello_com.hoperun.cmartcar.p12"
-        }
-      }
-    ],
-    "compileSdkVersion": 9,
-    "compatibleSdkVersion": 9,
+    "signingConfigs": [],
     "products": [
       {
         "name": "default",
-        "signingConfig": "default",
+        "compileSdkVersion": "6.0.1(21)",
+        "compatibleSdkVersion": "6.0.1(21)",
+        "targetSdkVersion": "6.0.1(21)",
+        "runtimeOS": "HarmonyOS"
       }
     ]
   },

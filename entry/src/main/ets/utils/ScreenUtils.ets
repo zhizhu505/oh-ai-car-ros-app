@@ -1,5 +1,6 @@
 import window from '@ohos.window'
 import common from '@ohos.app.ability.common'
+import { BusinessError } from '@ohos.base'
 
 export namespace ScreenUtils {
 
@@ -7,7 +8,7 @@ export namespace ScreenUtils {
    * 保持屏幕常量
    * @param status
    */
-  export async function keepScreenOn(ctx: common.BaseContext, status: boolean) {
+  export async function keepScreenOn(ctx: common.BaseContext, status: boolean): Promise<void> {
     // let context = getContext(this) as common.BaseContext
     let windowClass = await window.getLastWindow(ctx) //获取窗口实例
     let isScreenOn = await windowClass.getWindowProperties().isKeepScreenOn //查看屏幕常亮状态
@@ -20,8 +21,8 @@ export namespace ScreenUtils {
   /**
    * 设置导航栏，状态栏不可见，在api9以后不能使用
    */
-  export async function setSystemBarEnable_api9(ctx: common.BaseContext) {
-    let windowClass = await window.getLastWindow(this.context)
+  export async function setSystemBarEnable_api9(ctx: common.BaseContext): Promise<void> {
+    let windowClass = await window.getLastWindow(ctx)
     await windowClass.setWindowSystemBarEnable([])
   }
 
@@ -29,15 +30,15 @@ export namespace ScreenUtils {
   /**
    * 设置导航栏，状态栏不可见，在api9以后不能使用
    */
-  export async function setSystemBarEnable_api10(windowStage: window.WindowStage) {
+  export async function setSystemBarEnable_api10(windowStage: window.WindowStage): Promise<void> {
     let windowClass: window.Window = windowStage.getMainWindowSync(); // 获取应用主窗口
     // 1. 设置窗口全屏
     let isLayoutFullScreen = true;
     windowClass.setWindowLayoutFullScreen(isLayoutFullScreen)
-      .then(() => {
+      .then((): void => {
         console.info('Succeeded in setting the window layout to full-screen mode.');
       })// .catch((err: BusinessError) => {
-      .catch((err) => {
+      .catch((err: BusinessError): void => {
         console.error('Failed to set the window layout to full-screen mode. Cause:' + JSON.stringify(err));
       });
   }
@@ -46,13 +47,13 @@ export namespace ScreenUtils {
   /**
    * 将应用设置为横屏
    */
-  export function setLandscape(ctx: common.BaseContext) {
+  export function setLandscape(ctx: common.BaseContext): void {
     //将应用设置为横屏
     let promise = window.getLastWindow(ctx);
-    promise.then((data) => {
+    promise.then((data: window.Window): void => {
       //切换成横屏
       let orientation = window.Orientation.LANDSCAPE;
-      data.setPreferredOrientation(orientation, (err) => {
+      data.setPreferredOrientation(orientation, (err: BusinessError): void => {
       });
     })
   }

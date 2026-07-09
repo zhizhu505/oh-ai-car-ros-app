@@ -9,6 +9,7 @@ import { PreferencesUtils } from '../utils/PreferencesUtils'
 import { VideoComponents } from '../components/VideoComponents'
 import { ButtonShadow } from '../styles/styles'
 import { MyUtils } from '../utils/MyUtils'
+import preferences from '@ohos.data.preferences'
 
 
 @Entry
@@ -16,7 +17,7 @@ import { MyUtils } from '../utils/MyUtils'
 struct NetworkSettings {
   // @State message: string = 'Hello World';
 
-  build() {
+  build(): void {
     Column() {
       // 标题
       Stack() {
@@ -28,11 +29,11 @@ struct NetworkSettings {
       Row() {
         Column() {
           LoginComponent({
-            connectSuccessRun: () => {
+            connectSuccessRun: (): void => {
               // 如果连接成功 打开主页
               router.pushUrl({ url: "pages/Index" })
             },
-            connectfailRun: () => {
+            connectfailRun: (): void => {
               // @todo 如果在调试状态，连接失败也打开主页
               if (MyUtils.isDebug)
                 router.pushUrl({ url: "pages/Index" })
@@ -66,12 +67,12 @@ struct LoginComponent {
   /**
    * 连接成功运行
    */
-  connectSuccessRun = () => {
+  connectSuccessRun: () => void = (): void => {
   }
   /**
    * 连接失败运行
    */
-  connectfailRun = () => {
+  connectfailRun: () => void = (): void => {
   }
 
   /**
@@ -81,7 +82,7 @@ struct LoginComponent {
     this.readNetConfig();
   }
 
-  build() {
+  build(): void {
     Column() {
       // IP配置
       Row() {
@@ -94,7 +95,9 @@ struct LoginComponent {
         Blank().width(this.BlankWidth)
 
         TextInput({ text: this.ip })
-          .onChange((v) => this.ip = v)
+          .onChange((v: string): void => {
+            this.ip = v
+          })
           .layoutWeight(1)
           .backgroundColor($r('app.color.edit_text_background'))
       }.width('100%')
@@ -111,7 +114,9 @@ struct LoginComponent {
         Blank().width(this.BlankWidth)
 
         TextInput({ text: this.tcpPort })
-          .onChange((v) => this.tcpPort = v)
+          .onChange((v: string): void => {
+            this.tcpPort = v
+          })
           .layoutWeight(1)
           .backgroundColor($r('app.color.edit_text_background'))
       }
@@ -129,13 +134,15 @@ struct LoginComponent {
         Blank().width(this.BlankWidth)
 
         TextInput({ text: this.videoPort })
-          .onChange((v) => this.videoPort = v)
+          .onChange((v: string): void => {
+            this.videoPort = v
+          })
           .layoutWeight(1)
           .backgroundColor($r('app.color.edit_text_background'))
       }.width('100%')
       .LoginComponentLineStyle()
 
-      Button("连接").onClick(() => {
+      Button("连接").onClick((): void => {
 
         // 保存网络配置
         this.saveNetConfig()
@@ -156,7 +163,7 @@ struct LoginComponent {
   /**
    * 连接网络
    */
-  private async initTcpConfig() {
+  private async initTcpConfig(): Promise<void> {
 
     //
     let address = this.ip;
@@ -185,19 +192,27 @@ struct LoginComponent {
   /**
    * 从本地首选项读取偏好设置
    */
-  private readNetConfig() {
-    PreferencesUtils.getInstance().netUtils.getIP().then((v: string) => this.ip = v)
-    PreferencesUtils.getInstance().netUtils.getTcpPort().then((v: string) => this.tcpPort = v)
-    PreferencesUtils.getInstance().netUtils.getVideoPort().then((v: string) => this.videoPort = v)
+  private readNetConfig(): void {
+    let netUtils = PreferencesUtils.getInstance().netUtils
+    if (!netUtils) {
+      return
+    }
+    netUtils.getIP().then((v: preferences.ValueType): string => this.ip = String(v))
+    netUtils.getTcpPort().then((v: preferences.ValueType): string => this.tcpPort = String(v))
+    netUtils.getVideoPort().then((v: preferences.ValueType): string => this.videoPort = String(v))
   }
 
   /**
    * 保存网络配置
    */
-  private async saveNetConfig() {
-    PreferencesUtils.getInstance().netUtils.setIp(this.ip)
-    PreferencesUtils.getInstance().netUtils.setTcpPort(this.tcpPort)
-    PreferencesUtils.getInstance().netUtils.setVideoPort(this.videoPort)
+  private async saveNetConfig(): Promise<void> {
+    let netUtils = PreferencesUtils.getInstance().netUtils
+    if (!netUtils) {
+      return
+    }
+    netUtils.setIp(this.ip)
+    netUtils.setTcpPort(this.tcpPort)
+    netUtils.setVideoPort(this.videoPort)
   }
 }
 
@@ -205,6 +220,6 @@ struct LoginComponent {
  * 行样式
  */
 @Styles
-function LoginComponentLineStyle() {
+function LoginComponentLineStyle(): void {
   .margin('5vp')
 }

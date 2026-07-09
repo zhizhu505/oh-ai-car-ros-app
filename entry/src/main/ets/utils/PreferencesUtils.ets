@@ -3,7 +3,7 @@ import preferences from '@ohos.data.preferences';
 /**首选项对象*/
 export class PreferencesUtils {
   /**私有静态实例，懒汉式单例*/
-  private static instance: PreferencesUtils = undefined;
+  private static instance: PreferencesUtils | undefined = undefined;
 
   /**私有构造方法，防止外部直接实例化*/
   private constructor() {
@@ -18,13 +18,13 @@ export class PreferencesUtils {
   }
 
   /**网络工具对象*/
-  netUtils: NetInfoPreferencesUtils
+  netUtils: NetInfoPreferencesUtils | undefined = undefined
 
   /*
     * 初始化preferences实例
     * @context  应用上下文
    */
-  async init(context: Context) {
+  async init(context: Context): Promise<void> {
     this.netUtils = new NetInfoPreferencesUtils(context)
   }
 }
@@ -42,7 +42,7 @@ export class NetInfoPreferencesUtils {
   /**KEY IP*/
   public static readonly KEY_VIDEO_PORT = "KEY_TCP_VIDEO";
   /**首选项实例*/
-  private pref: preferences.Preferences
+  private pref: preferences.Preferences | undefined = undefined
 
   /**构造函数*/
   constructor(context: Context) {
@@ -50,7 +50,7 @@ export class NetInfoPreferencesUtils {
   }
 
   /**初始化首首选项实例*/
-  private async init(context: Context) {
+  private async init(context: Context): Promise<void> {
     let name = NetInfoPreferencesUtils.NAME;
     try {
       this.pref = await preferences.getPreferences(context, name)
@@ -63,31 +63,49 @@ export class NetInfoPreferencesUtils {
 
   // ------------------------------对外接口------------------------------
 
-  getIP() {
+  getIP(): Promise<preferences.ValueType> {
+    if (!this.pref) {
+      return Promise.resolve('192.168.1.11')
+    }
     return this.pref.get(NetInfoPreferencesUtils.KEY_IP, '192.168.1.11')
   }
 
-  setIp(v: string) {
+  setIp(v: string): void {
+    if (!this.pref) {
+      return
+    }
     this.pref.put(NetInfoPreferencesUtils.KEY_IP, v);
     this.pref.flush()
   }
 
 
-  getTcpPort() {
+  getTcpPort(): Promise<preferences.ValueType> {
+    if (!this.pref) {
+      return Promise.resolve('6000')
+    }
     return this.pref.get(NetInfoPreferencesUtils.KEY_TCP_PORT, '6000')
   }
 
-  setTcpPort(v: string) {
+  setTcpPort(v: string): void {
+    if (!this.pref) {
+      return
+    }
     this.pref.put(NetInfoPreferencesUtils.KEY_TCP_PORT, v);
     this.pref.flush()
   }
 
-  setVideoPort(v: string) {
+  setVideoPort(v: string): void {
+    if (!this.pref) {
+      return
+    }
     this.pref.put(NetInfoPreferencesUtils.KEY_VIDEO_PORT, v);
     this.pref.flush()
   }
 
-  getVideoPort() {
+  getVideoPort(): Promise<preferences.ValueType> {
+    if (!this.pref) {
+      return Promise.resolve('6500')
+    }
     return this.pref.get(NetInfoPreferencesUtils.KEY_VIDEO_PORT, '6500')
   }
 }

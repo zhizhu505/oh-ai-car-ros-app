@@ -1,5 +1,5 @@
 import { RockerDrawUtils } from './RockerUtils/RockerDrawUtils';
-import { GetImageBitmap, iRockerOptions, RockerOptions } from './RockerUtils/RockerOptions';
+import { RockerOptions } from './RockerUtils/RockerOptions';
 
 let TAG = 'anran0';
 
@@ -14,7 +14,7 @@ struct RockerComponent {
 
   // @Prop public getBackgroundStyle?: GetImageBitmap
   /**摇杆绘制选项*/
-  rockerOptions: iRockerOptions
+  rockerOptions: RockerOptions = new RockerOptions()
   // 内部接口
 
   // 用来配置CanvasRenderingContext2D对象的参数，包括是否开启抗锯齿，true表明开启抗锯齿。
@@ -33,17 +33,17 @@ struct RockerComponent {
     this.drawUtils.init(this.rockerOptions)
   }
 
-  build() {
+  build(): void {
     Canvas(this.ctx)
-      .onReady(() => {
+      .onReady((): void => {
         //可以在这里绘制内容。
         this.drawUtils.myOnReadyEvent()
       })
-      .onTouch((event) => {
+      .onTouch((event: TouchEvent): void => {
         //在这里触发手指移动响应
         this.myOnTouchEvent(event)
       })
-      .onAreaChange((oldValue: Area, newValue: Area) => {
+      .onAreaChange((oldValue: Area, newValue: Area): void => {
 
         // 显示区域变化监听
 
@@ -67,7 +67,7 @@ struct RockerComponent {
   }
 
   /** 触摸事件*/
-  private myOnTouchEvent(event?: TouchEvent) {
+  private myOnTouchEvent(event?: TouchEvent): void {
 
     if (!event) {
       return;
@@ -102,7 +102,7 @@ struct RockerComponent {
 
     // x [0,w]->[-100,100]
     // 将 [0,w] 的 x 映射到 [-100,100]
-    let xmap = (x: number, w: number, l: number, r: number) => {
+    let xmap = (x: number, w: number, l: number, r: number): number => {
       return x / (w - 0) * (r - l) + l
     }
 
