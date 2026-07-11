@@ -20,82 +20,79 @@ struct NetworkSettings {
   }
 
   build(): void {
-    Column({ space: '0vp' }) {
-      Column({ space: '16vp' }) {
-        Row() {
-          Column({ space: '6vp' }) {
+    Stack() {
+      Row({ space: '0vp' }) {
+        Column({ space: '28vp' }) {
+          Column({ space: '8vp' }) {
             Text('智慧仓储巡检系统')
-              .fontSize('32fp')
+              .fontSize('40fp')
               .fontColor($r('app.color.text'))
               .fontWeight(FontWeight.Bold)
             Text('Warehouse Intelligent Patrol System')
-              .fontSize('14fp')
+              .fontSize('16fp')
               .fontColor($r('app.color.text_secondary'))
           }
           .alignItems(HorizontalAlign.Start)
-          Blank()
-          if (this.online) {
-            Row({ space: '6vp' }) {
-              Column()
-                .width('8vp')
-                .height('8vp')
-                .backgroundColor($r('app.color.status_success'))
-                .borderRadius('4vp')
-                .animation({
-                  duration: 1000,
-                  iterations: -1,
-                  curve: Curve.EaseInOut
-                })
-              Text('已连接')
-                .fontSize('13fp')
-                .fontColor($r('app.color.status_success'))
-            }
-            .alignItems(VerticalAlign.Center)
+
+          Column({ space: '16vp' }) {
+            FlowStep({ step: '01', text: '环境感知 · 温湿度/烟雾监测', icon: '🌡️' })
+            FlowStep({ step: '02', text: 'SLAM导航 · 多点自动巡检', icon: '🗺️' })
+            FlowStep({ step: '03', text: '激光雷达 · 通道占用检测', icon: '📡' })
+            FlowStep({ step: '04', text: '视觉识别 · 人员/货物异常', icon: '👁️' })
+            FlowStep({ step: '05', text: 'APP监控 · 告警与远程控制', icon: '🎮' })
           }
-        }
-        .width('100%')
-        .padding({ left: '32vp', right: '32vp', top: '32vp' })
+          .width('100%')
+          .padding('28vp')
+          .backgroundColor($r('app.color.card_background'))
+          .borderRadius('24vp')
+          .border({ width: '1vp', color: $r('app.color.divider') })
+          .shadow(CardShadow)
 
-        Column({ space: '12vp' }) {
-          FlowStep({ step: '01', text: '环境感知 · 温湿度/烟雾监测', icon: '🌡️' })
-          FlowStep({ step: '02', text: 'SLAM导航 · 多点自动巡检', icon: '🗺️' })
-          FlowStep({ step: '03', text: '激光雷达 · 通道占用检测', icon: '📡' })
-          FlowStep({ step: '04', text: '视觉识别 · 人员/货物异常', icon: '👁️' })
-          FlowStep({ step: '05', text: 'APP监控 · 告警与远程控制', icon: '🎮' })
-        }
-        .width('100%')
-        .padding('20vp')
-        .margin({ left: '32vp', right: '32vp' })
-        .backgroundColor($r('app.color.card_background'))
-        .borderRadius('16vp')
-        .shadow(CardShadow)
-
-        Blank()
-
-        Column({ space: '16vp' }) {
-          Text('功能特性')
-            .fontSize('18fp')
-            .fontColor($r('app.color.text'))
-            .fontWeight(FontWeight.Medium)
-            .width('100%')
-            .padding({ left: '32vp' })
-
-          Row({ space: '12vp' }) {
+          Row({ space: '20vp' }) {
             FeatureCard({ title: '实时监控', desc: '数据实时同步', icon: '⚡' })
             FeatureCard({ title: '智能告警', desc: '多级异常预警', icon: '🔔' })
             FeatureCard({ title: '远程控制', desc: '遥控与自动模式', icon: '🔧' })
           }
-          .padding({ left: '32vp', right: '32vp' })
         }
+        .layoutWeight(1)
+        .padding({ left: '60vp', top: '60vp', bottom: '60vp' })
+
+        Column({ space: '0vp' }) {
+          if (this.online) {
+            Row({ space: '10vp' }) {
+              Stack() {
+                Column()
+                  .width('12vp')
+                  .height('12vp')
+                  .backgroundColor($r('app.color.status_success'))
+                  .borderRadius('6vp')
+              }
+              .shadow({
+                radius: 12,
+                offsetX: 0,
+                offsetY: 0,
+                color: '#22C55E60'
+              })
+              Text('已连接')
+                .fontSize('15fp')
+                .fontColor($r('app.color.status_success'))
+            }
+            .alignItems(VerticalAlign.Center)
+            .padding({ right: '60vp', top: '60vp' })
+            .justifyContent(FlexAlign.End)
+          }
+          Blank()
+        }
+        .layoutWeight(1)
       }
-      .layoutWeight(1)
       .width('100%')
-      .backgroundColor($r('app.color.window_background'))
+      .height('100%')
+
+      this.LoginOverlay()
     }
     .width('100%')
     .height('100%')
     .backgroundColor($r('app.color.window_background'))
-    .overlay(this.LoginOverlay(), { align: Alignment.Center })
   }
 
   @Builder
@@ -199,15 +196,17 @@ struct LoginComponent {
   }
 
   build(): void {
-    Column({ space: '20vp' }) {
+    Column({ space: '14vp' }) {
       Column({ space: '6vp' }) {
         Text('连接小车')
-          .fontSize('26fp')
+          .fontSize('22fp')
           .fontColor($r('app.color.text'))
           .fontWeight(FontWeight.Bold)
+          .maxLines(1)
         Text('配置网络参数后连接，或跳过直接进入预览')
-          .fontSize('14fp')
+          .fontSize('13fp')
           .fontColor($r('app.color.text_secondary'))
+          .maxLines(1)
       }
       .width('100%')
       .alignItems(HorizontalAlign.Center)
@@ -216,42 +215,44 @@ struct LoginComponent {
       this.InputRow('TCP端口', this.tcpPort, (v: string): void => { this.tcpPort = v; })
       this.InputRow('视频端口', this.videoPort, (v: string): void => { this.videoPort = v; })
 
-      Button(this.connecting ? '连接中...' : '连接小车')
-        .width('100%')
-        .height('48vp')
-        .fontSize('16fp')
-        .fontColor($r('app.color.text_on_accent'))
-        .backgroundColor($r('app.color.button_primary'))
-        .borderRadius(ButtonRadius)
-        .shadow(ButtonShadow)
-        .enabled(!this.connecting)
-        .onClick((): void => {
-          this.connectCar();
-        })
+      Row({ space: '10vp' }) {
+        Button(this.connecting ? '连接中...' : '连接小车')
+          .layoutWeight(1)
+          .height('40vp')
+          .fontSize('14fp')
+          .fontColor($r('app.color.text_on_accent'))
+          .backgroundColor($r('app.color.button_primary'))
+          .borderRadius(ButtonRadius)
+          .shadow(ButtonShadow)
+          .enabled(!this.connecting)
+          .onClick((): void => {
+            this.connectCar();
+          })
 
-      Button('跳过连接，直接进入')
-        .width('100%')
-        .height('48vp')
-        .fontSize('15fp')
-        .fontColor($r('app.color.text'))
-        .backgroundColor($r('app.color.card_elevated'))
-        .border({ width: '1vp', color: $r('app.color.divider') })
-        .borderRadius(ButtonRadius)
-        .onClick((): void => {
-          this.enterWithoutConnect();
-        })
+        Button('跳过')
+          .layoutWeight(1)
+          .height('40vp')
+          .fontSize('14fp')
+          .fontColor($r('app.color.text'))
+          .backgroundColor($r('app.color.card_elevated'))
+          .border({ width: '1vp', color: $r('app.color.divider') })
+          .borderRadius(ButtonRadius)
+          .onClick((): void => {
+            this.enterWithoutConnect();
+          })
+      }
 
-      Text('离线模式下可浏览全部页面，连接小车后数据将实时更新')
+      Text('离线模式下可浏览全部页面')
         .fontSize('12fp')
         .fontColor($r('app.color.text_secondary'))
         .width('100%')
         .textAlign(TextAlign.Center)
-        .lineHeight('18fp')
+        .maxLines(1)
     }
-    .width('340vp')
-    .padding('28vp')
+    .width('min(85%, 360vp)')
+    .padding('20vp')
     .backgroundColor($r('app.color.card_background'))
-    .borderRadius('24vp')
+    .borderRadius('20vp')
     .shadow(ElevatedShadow)
   }
 

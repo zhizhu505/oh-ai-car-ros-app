@@ -26,53 +26,50 @@ struct Index {
 
   build() {
     Column({ space: '0vp' }) {
-      Column({ space: '8vp' }) {
-        Row() {
-          Column({ space: '4vp' }) {
-            Text('智慧仓储巡检')
-              .fontSize('28fp')
-              .fontColor($r('app.color.text'))
-              .fontWeight(FontWeight.Bold)
-            Text('Warehouse Intelligent Patrol')
-              .fontSize('13fp')
-              .fontColor($r('app.color.text_secondary'))
-          }
-          .alignItems(HorizontalAlign.Start)
-          Blank()
-          Row({ space: '8vp' }) {
-            Column()
-              .width('10vp')
-              .height('10vp')
-              .backgroundColor(onlineColor(this.online))
-              .borderRadius('5vp')
-              .animation({
-                duration: 1000,
-                iterations: -1,
-                curve: Curve.EaseInOut
-              })
-            Text(this.online ? '已连接' : '离线预览')
-              .fontSize('14fp')
-              .fontColor($r('app.color.text_secondary'))
-          }
-          .alignItems(VerticalAlign.Center)
+      Row({ space: '8vp' }) {
+        Column({ space: '4vp' }) {
+          Text('智慧仓储巡检')
+            .fontSize('28fp')
+            .fontColor($r('app.color.text'))
+            .fontWeight(FontWeight.Bold)
+            .maxLines(1)
+          Text('Warehouse Intelligent Patrol System')
+            .fontSize('12fp')
+            .fontColor($r('app.color.text_secondary'))
+            .maxLines(1)
         }
-        .width('100%')
-
-        Text('建图 → 巡检 → 环境采集 → 雷达避障 → 视觉识别 → 告警 → 返回')
-          .fontSize('13fp')
-          .fontColor($r('app.color.text_secondary'))
-          .width('100%')
-          .opacity(0.8)
+        .alignItems(HorizontalAlign.Start)
+        Blank()
+        Row({ space: '10vp' }) {
+          Stack() {
+            Column()
+              .width('12vp')
+              .height('12vp')
+              .backgroundColor(onlineColor(this.online))
+              .borderRadius('6vp')
+          }
+          .shadow({
+            radius: 12,
+            offsetX: 0,
+            offsetY: 0,
+            color: onlineColor(this.online) + '60'
+          })
+          Text(this.online ? '已连接' : '离线预览')
+            .fontSize('13fp')
+            .fontColor($r('app.color.text_secondary'))
+        }
+        .alignItems(VerticalAlign.Center)
       }
       .width('100%')
       .padding({ left: '24vp', right: '24vp', top: '20vp', bottom: '16vp' })
       .backgroundColor($r('app.color.header_background'))
+      .shadow(CardShadow)
 
       Scroll() {
-        Column({ space: '24vp' }) {
+        Column({ space: '20vp' }) {
           SectionTitle({ title: '五大功能模块' })
 
-          Row({ space: '16vp' }) {
+          Row({ space: '12vp' }) {
             ModuleEntry({
               moduleNo: '01', title: '环境感知', desc: '温湿度/烟雾/气体',
               accent: $r('app.color.module1_accent'), icon: $r('app.media.tire'),
@@ -88,9 +85,6 @@ struct Index {
               accent: $r('app.color.module3_accent'), icon: $r('app.media.tire'),
               url: 'pages/Module3Lidar', index: 2
             })
-          }
-
-          Row({ space: '16vp' }) {
             ModuleEntry({
               moduleNo: '04', title: '视觉识别', desc: '人员/货物异常',
               accent: $r('app.color.module4_accent'), icon: $r('app.media.vector'),
@@ -101,44 +95,47 @@ struct Index {
               accent: $r('app.color.module5_accent'), icon: $r('app.media.tire'),
               url: 'pages/Module5AppMonitor', index: 4
             })
-            Blank().layoutWeight(1)
           }
 
-          SectionTitle({ title: '手动控制' })
+          Row({ space: '12vp' }) {
+            Column({ space: '12vp' }) {
+              SectionTitle({ title: '手动控制' })
 
-          Column({ space: '12vp' }) {
-            QuickEntry({
-              title: '麦科朗姆轮', icon: $r('app.media.tire'),
-              url: 'pages/MecanumWheel'
-            })
-            QuickEntry({
-              title: '单独遥控', icon: $r('app.media.vector'),
-              url: 'pages/RemoteControl'
-            })
-          }
+              QuickEntry({
+                title: '麦科朗姆轮', icon: $r('app.media.tire'),
+                url: 'pages/MecanumWheel'
+              })
+              QuickEntry({
+                title: '单独遥控', icon: $r('app.media.vector'),
+                url: 'pages/RemoteControl'
+              })
+            }
+            .layoutWeight(1)
 
-          SectionTitle({ title: '系统设置' })
+            Column({ space: '12vp' }) {
+              SectionTitle({ title: '系统设置' })
 
-          Column({ space: '12vp' }) {
-            QuickEntry({
-              title: '网络设置', icon: $r('app.media.vector'),
-              url: 'pages/NetworkSettings'
-            })
-            QuickEntry({
-              title: '环境监测', icon: $r('app.media.tire'),
-              url: 'pages/EnvironmentMonitor'
-            })
-            QuickEntry({
-              title: '巡检控制', icon: $r('app.media.vector'),
-              url: 'pages/PatrolControl'
-            })
-            QuickEntry({
-              title: '告警记录', icon: $r('app.media.tire'),
-              url: 'pages/AlertRecords'
-            })
+              QuickEntry({
+                title: '网络设置', icon: $r('app.media.vector'),
+                url: 'pages/NetworkSettings'
+              })
+              QuickEntry({
+                title: '环境监测', icon: $r('app.media.tire'),
+                url: 'pages/EnvironmentMonitor'
+              })
+              QuickEntry({
+                title: '巡检控制', icon: $r('app.media.vector'),
+                url: 'pages/PatrolControl'
+              })
+              QuickEntry({
+                title: '告警记录', icon: $r('app.media.tire'),
+                url: 'pages/AlertRecords'
+              })
+            }
+            .layoutWeight(1)
           }
         }
-        .padding({ left: '24vp', right: '24vp', top: '20vp', bottom: '32vp' })
+        .padding({ left: '24vp', right: '24vp', top: '20vp', bottom: '24vp' })
       }
       .layoutWeight(1)
     }
@@ -153,19 +150,27 @@ struct SectionTitle {
   @Prop title: string = '';
 
   build() {
-    Row({ space: '10vp' }) {
-      Column()
-        .width('4vp')
-        .height('20vp')
-        .backgroundColor($r('app.color.button_primary'))
-        .borderRadius('2vp')
+    Row({ space: '12vp' }) {
+      Stack() {
+        Column()
+          .width('5vp')
+          .height('24vp')
+          .backgroundColor($r('app.color.button_primary'))
+          .borderRadius('3vp')
+      }
+      .shadow({
+        radius: 8,
+        offsetX: 0,
+        offsetY: 0,
+        color: '#6366F140'
+      })
       Text(this.title)
-        .fontSize('18fp')
+        .fontSize('20fp')
         .fontColor($r('app.color.text'))
         .fontWeight(FontWeight.Bold)
     }
     .width('100%')
-    .margin({ bottom: '8vp' })
+    .margin({ bottom: '12vp' })
   }
 }
 
@@ -183,19 +188,27 @@ struct ModuleEntry {
   build() {
     Column({ space: '10vp' }) {
       Row() {
-        Text(`M${this.moduleNo}`)
-          .fontSize('11fp')
-          .fontColor($r('app.color.text_on_accent'))
-          .backgroundColor(this.accent)
-          .padding({ left: '10vp', right: '10vp', top: '4vp', bottom: '4vp' })
-          .borderRadius('12vp')
+        Stack() {
+          Text(`M${this.moduleNo}`)
+            .fontSize('11fp')
+            .fontColor($r('app.color.text_on_accent'))
+            .backgroundColor(this.accent)
+            .padding({ left: '10vp', right: '10vp', top: '4vp', bottom: '4vp' })
+            .borderRadius('12vp')
+        }
+        .shadow({
+          radius: 6,
+          offsetX: 0,
+          offsetY: 2,
+          color: this.accent + '30'
+        })
         Blank()
       }
       .width('100%')
 
       Image(this.icon)
-        .width('52vp')
-        .height('52vp')
+        .width('48vp')
+        .height('48vp')
         .opacity(this.isHover ? 1 : 0.9)
         .animation({
           duration: 200,
@@ -203,23 +216,24 @@ struct ModuleEntry {
         })
 
       Text(this.title)
-        .fontSize('18fp')
+        .fontSize('16fp')
         .fontColor($r('app.color.text'))
         .fontWeight(FontWeight.Bold)
+        .maxLines(1)
 
       Text(this.desc)
-        .fontSize('13fp')
+        .fontSize('12fp')
         .fontColor($r('app.color.text_secondary'))
         .maxLines(2)
         .textAlign(TextAlign.Center)
+        .width('100%')
     }
     .layoutWeight(1)
-    .height('160vp')
     .justifyContent(FlexAlign.Center)
-    .padding('16vp')
+    .padding('14vp')
     .backgroundColor($r('app.color.card_background'))
-    .borderRadius('18vp')
-    .border({ width: '1vp', color: $r('app.color.divider') })
+    .borderRadius('16vp')
+    .border({ width: '1vp', color: this.isHover ? this.accent + '50' : $r('app.color.divider') })
     .shadow(this.isHover ? CardShadowHover : CardShadow)
     .scale({ x: this.isHover ? 1.02 : 1, y: this.isHover ? 1.02 : 1 })
     .animation({
@@ -243,35 +257,56 @@ struct QuickEntry {
   @State isHover: boolean = false;
 
   build() {
-    Row({ space: '14vp' }) {
-      Image(this.icon)
-        .width('40vp')
-        .height('40vp')
-        .opacity(this.isHover ? 1 : 0.8)
+    Row({ space: '12vp' }) {
+      Stack() {
+        Column()
+          .width('40vp')
+          .height('40vp')
+          .backgroundColor($r('app.color.button_primary') + '15')
+          .borderRadius('12vp')
+        Image(this.icon)
+          .width('20vp')
+          .height('20vp')
+          .opacity(this.isHover ? 1 : 0.8)
+      }
+      .alignContent(Alignment.Center)
+
       Column({ space: '2vp' }) {
         Text(this.title)
-          .fontSize('16fp')
+          .fontSize('15fp')
           .fontColor($r('app.color.text'))
           .fontWeight(FontWeight.Medium)
+          .maxLines(1)
       }
       .alignItems(HorizontalAlign.Start)
+      .layoutWeight(1)
       Blank()
       Row({ space: '4vp' }) {
         Text('查看')
-          .fontSize('13fp')
+          .fontSize('12fp')
           .fontColor($r('app.color.text_secondary'))
         Text('→')
-          .fontSize('16fp')
+          .fontSize('14fp')
           .fontColor($r('app.color.button_primary'))
+          .scale({ x: this.isHover ? 1.1 : 1, y: this.isHover ? 1.1 : 1 })
+          .animation({
+            duration: 200,
+            curve: Curve.EaseOut
+          })
       }
     }
     .layoutWeight(1)
-    .height('72vp')
-    .padding({ left: '18vp', right: '18vp' })
+    .height('68vp')
+    .padding({ left: '16vp', right: '16vp' })
     .backgroundColor($r('app.color.card_background'))
-    .borderRadius('16vp')
-    .border({ width: '1vp', color: $r('app.color.divider') })
+    .borderRadius('14vp')
+    .border({ width: '1vp', color: this.isHover ? '#6366F150' : $r('app.color.divider') })
     .shadow(this.isHover ? CardShadowHover : CardShadow)
+    .scale({ x: this.isHover ? 1.01 : 1, y: this.isHover ? 1.01 : 1 })
+    .animation({
+      duration: 200,
+      curve: Curve.EaseOut
+    })
     .onClick((): void => {
       router.pushUrl({ url: this.url });
     })

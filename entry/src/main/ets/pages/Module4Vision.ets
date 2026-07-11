@@ -46,19 +46,25 @@ struct Module4Vision {
     Column({ space: '0vp' }) {
       PageHeader({
         title: '模块4：视觉目标识别',
-        subtitle: '人员闯入 / 货物占道 / 货箱异常检测',
+        subtitle: '人员闯入 / 货物占道 / 货箱异常',
         accentColor: $r('app.color.module4_accent')
       })
 
       ModuleTabBar({ currentIndex: $currentTabIndex, tabs: this.tabs, accentColor: $r('app.color.module4_accent') })
 
-      if (this.currentTabIndex === 0) {
-        this.DetectView()
-      } else if (this.currentTabIndex === 1) {
-        this.RuleView()
-      } else {
-        this.AlertView()
+      Scroll() {
+        Column() {
+          if (this.currentTabIndex === 0) {
+            this.DetectView()
+          } else if (this.currentTabIndex === 1) {
+            this.RuleView()
+          } else {
+            this.AlertView()
+          }
+        }
+        .width('100%')
       }
+      .layoutWeight(1)
     }
     .width('100%')
     .height('100%')
@@ -67,108 +73,111 @@ struct Module4Vision {
 
   @Builder
   DetectView() {
-    Row({ space: '16vp' }) {
-      Column({ space: '14vp' }) {
-        InfoCard({ title: '检测状态' }) {
-          Column({ space: '8vp' }) {
-            Row({ space: '12vp' }) {
-              Column({ space: '2vp' }) {
-                Text('检测点位')
-                  .fontSize('13fp')
-                  .fontColor($r('app.color.text_secondary'))
-                Text(this.point)
-                  .fontSize('16fp')
-                  .fontColor($r('app.color.text'))
-                  .fontWeight(FontWeight.Medium)
+    Column({ space: '12vp' }) {
+      Row({ space: '12vp' }) {
+        Column({ space: '10vp' }) {
+          InfoCard({ title: '检测状态' }) {
+            Column({ space: '6vp' }) {
+              Row({ space: '10vp' }) {
+                Column({ space: '2vp' }) {
+                  Text('检测点位')
+                    .fontSize('12fp')
+                    .fontColor($r('app.color.text_secondary'))
+                  Text(this.point)
+                    .fontSize('14fp')
+                    .fontColor($r('app.color.text'))
+                    .fontWeight(FontWeight.Medium)
+                    .maxLines(1)
+                }
+                .alignItems(HorizontalAlign.Start)
               }
-              .alignItems(HorizontalAlign.Start)
+              DetectStatusCard({
+                title: '人员闯入',
+                detected: this.personDetected,
+                normalText: '未检测到人员',
+                alertText: '检测到人员闯入！'
+              })
+              DetectStatusCard({
+                title: '通道占道',
+                detected: this.boxInChannel,
+                normalText: '通道畅通',
+                alertText: '检测到箱子占道！'
+              })
             }
-            DetectStatusCard({
-              title: '人员闯入',
-              detected: this.personDetected,
-              normalText: '未检测到人员',
-              alertText: '检测到人员闯入！'
-            })
-            DetectStatusCard({
-              title: '通道占道',
-              detected: this.boxInChannel,
-              normalText: '通道畅通',
-              alertText: '检测到箱子占道！'
-            })
           }
-        }
 
-        InfoCard({ title: '状态信息' }) {
-          Column({ space: '6vp' }) {
-            Text(this.message)
-              .fontSize('14fp')
-              .fontColor($r('app.color.text'))
-            Text(`更新时间：${this.updateTime}`)
-              .fontSize('13fp')
-              .fontColor($r('app.color.text_secondary'))
-            if (this.imageUrl.length > 0) {
-              Text(`异常截图已保存`)
+          InfoCard({ title: '状态信息' }) {
+            Column({ space: '4vp' }) {
+              Text(this.message)
+                .fontSize('13fp')
+                .fontColor($r('app.color.text'))
+                .maxLines(2)
+              Text(`更新时间：${this.updateTime}`)
                 .fontSize('12fp')
-                .fontColor($r('app.color.status_active'))
+                .fontColor($r('app.color.text_secondary'))
                 .maxLines(1)
-                .textOverflow({ overflow: TextOverflow.Ellipsis })
+              if (this.imageUrl.length > 0) {
+                Text(`异常截图已保存`)
+                  .fontSize('12fp')
+                  .fontColor($r('app.color.status_active'))
+                  .maxLines(1)
+                  .textOverflow({ overflow: TextOverflow.Ellipsis })
+              }
             }
           }
         }
-      }
-      .layoutWeight(1)
-      .padding({ left: '20vp' })
+        .layoutWeight(1)
+        .padding({ left: '20vp' })
 
-      Column({ space: '12vp' }) {
-        InfoCard({ title: '视频预览' }) {
-          VideoComponents()
+        Column({ space: '10vp' }) {
+          InfoCard({ title: '视频预览' }) {
+            VideoComponents()
+          }
         }
+        .layoutWeight(1)
+        .padding({ right: '20vp' })
       }
-      .layoutWeight(1)
-      .padding({ right: '20vp' })
     }
-    .layoutWeight(1)
+    .width('100%')
   }
 
   @Builder
   RuleView() {
-    Scroll() {
-      Column({ space: '12vp' }) {
-        VisionRuleCard({
-          title: '人员闯入检测',
-          rule: 'YOLOv5 检测 person 类，出现在禁入区或货架通道内即报警',
-          icon: '👤'
-        })
-        VisionRuleCard({
-          title: '货物占道检测',
-          rule: '检测框进入通道区域判定为货物越界',
-          icon: '📦'
-        })
-        VisionRuleCard({
-          title: '货物摆放异常',
-          rule: '货箱偏移、倒下、越界到通道、货架空位',
-          icon: '📥'
-        })
-        VisionRuleCard({
-          title: '目标货物识别',
-          rule: '识别指定标签、颜色、二维码、货箱类型',
-          icon: '🏷️'
-        })
-        VisionRuleCard({
-          title: '深度相机辅助',
-          rule: '结合深度判断目标距离，确认是否阻挡通道',
-          icon: '📐'
-        })
-        InfoCard({ title: '最小落地版本' }) {
-          Text('人员闯入 + 箱子占道检测')
-            .fontSize('14fp')
-            .fontColor($r('app.color.alert_warning'))
-            .width('100%')
-        }
+    Column({ space: '12vp' }) {
+      VisionRuleCard({
+        title: '人员闯入检测',
+        rule: 'YOLOv5 检测 person 类，出现在禁入区或货架通道内即报警',
+        icon: '👤'
+      })
+      VisionRuleCard({
+        title: '货物占道检测',
+        rule: '检测框进入通道区域判定为货物越界',
+        icon: '📦'
+      })
+      VisionRuleCard({
+        title: '货物摆放异常',
+        rule: '货箱偏移、倒下、越界到通道、货架空位',
+        icon: '📥'
+      })
+      VisionRuleCard({
+        title: '目标货物识别',
+        rule: '识别指定标签、颜色、二维码、货箱类型',
+        icon: '🏷️'
+      })
+      VisionRuleCard({
+        title: '深度相机辅助',
+        rule: '结合深度判断目标距离，确认是否阻挡通道',
+        icon: '📐'
+      })
+      InfoCard({ title: '最小落地版本' }) {
+        Text('人员闯入 + 箱子占道检测')
+          .fontSize('13fp')
+          .fontColor($r('app.color.alert_warning'))
+          .width('100%')
       }
-      .padding({ left: '20vp', right: '20vp', bottom: '16vp' })
     }
-    .layoutWeight(1)
+    .padding({ left: '20vp', right: '20vp', bottom: '16vp' })
+    .width('100%')
   }
 
   @Builder
@@ -179,8 +188,8 @@ struct Module4Vision {
         emptyHint: '暂无视觉异常记录'
       })
     }
-    .layoutWeight(1)
     .padding({ left: '20vp', right: '20vp' })
+    .width('100%')
   }
 }
 

@@ -1,5 +1,5 @@
 import router from '@ohos.router';
-import { CardShadow } from '../styles/styles';
+import { CardShadow, GlowShadow } from '../styles/styles';
 
 @Component
 export struct PageHeader {
@@ -11,23 +11,31 @@ export struct PageHeader {
   };
 
   build() {
-    Column({ space: '8vp' }) {
-      Row({ space: '12vp' }) {
-        Row({ space: '12vp' }) {
-          Column()
-            .width('4vp')
-            .height('36vp')
-            .backgroundColor(this.accentColor)
-            .borderRadius('2vp')
+    Column({ space: '12vp' }) {
+      Row({ space: '16vp' }) {
+        Row({ space: '14vp' }) {
+          Stack() {
+            Column()
+              .width('6vp')
+              .height('40vp')
+              .backgroundColor(this.accentColor)
+              .borderRadius('3vp')
+          }
+          .shadow({
+            radius: 10,
+            offsetX: 0,
+            offsetY: 0,
+            color: this.accentColor + '40'
+          })
 
-          Column({ space: '4vp' }) {
+          Column({ space: '6vp' }) {
             Text(this.title)
-              .fontSize('22fp')
+              .fontSize('26fp')
               .fontColor($r('app.color.text'))
               .fontWeight(FontWeight.Bold)
             if (this.subtitle.length > 0) {
               Text(this.subtitle)
-                .fontSize('13fp')
+                .fontSize('14fp')
                 .fontColor($r('app.color.text_secondary'))
                 .opacity(0.8)
             }
@@ -37,12 +45,12 @@ export struct PageHeader {
         .layoutWeight(1)
 
         Button('返回')
-          .width('72vp')
-          .height('36vp')
-          .fontSize('14fp')
+          .width('80vp')
+          .height('40vp')
+          .fontSize('15fp')
           .fontColor($r('app.color.text'))
           .backgroundColor($r('app.color.button_secondary'))
-          .borderRadius('18vp')
+          .borderRadius('20vp')
           .onClick((): void => {
             this.backEvent();
           })
@@ -52,10 +60,12 @@ export struct PageHeader {
       Divider()
         .color($r('app.color.divider'))
         .strokeWidth('1vp')
+        .opacity(0.5)
     }
     .width('100%')
-    .padding({ left: '20vp', right: '20vp', top: '16vp', bottom: '8vp' })
+    .padding({ left: '24vp', right: '24vp', top: '20vp', bottom: '12vp' })
     .backgroundColor($r('app.color.header_background'))
+    .shadow(CardShadow)
   }
 }
 

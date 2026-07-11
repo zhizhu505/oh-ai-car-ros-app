@@ -50,19 +50,25 @@ struct Module3Lidar {
     Column({ space: '0vp' }) {
       PageHeader({
         title: '模块3：激光雷达避障',
-        subtitle: '通道占用检测 / 货架距离保持 / 动态避障',
+        subtitle: '通道占用检测 / 货架距离保持',
         accentColor: $r('app.color.module3_accent')
       })
 
       ModuleTabBar({ currentIndex: $currentTabIndex, tabs: this.tabs, accentColor: $r('app.color.module3_accent') })
 
-      if (this.currentTabIndex === 0) {
-        this.DetectView()
-      } else if (this.currentTabIndex === 1) {
-        this.RuleView()
-      } else {
-        this.AlertView()
+      Scroll() {
+        Column() {
+          if (this.currentTabIndex === 0) {
+            this.DetectView()
+          } else if (this.currentTabIndex === 1) {
+            this.RuleView()
+          } else {
+            this.AlertView()
+          }
+        }
+        .width('100%')
       }
+      .layoutWeight(1)
     }
     .width('100%')
     .height('100%')
@@ -71,100 +77,101 @@ struct Module3Lidar {
 
   @Builder
   DetectView() {
-    Column({ space: '16vp' }) {
-      Row({ space: '16vp' }) {
-        Column({ space: '8vp' }) {
-          Row({ space: '12vp' }) {
+    Column({ space: '12vp' }) {
+      Row({ space: '12vp' }) {
+        Column({ space: '6vp' }) {
+          Row({ space: '10vp' }) {
             Column({ space: '2vp' }) {
               Text('检测点位')
-                .fontSize('13fp')
+                .fontSize('12fp')
                 .fontColor($r('app.color.text_secondary'))
               Text(this.point)
-                .fontSize('16fp')
+                .fontSize('14fp')
                 .fontColor($r('app.color.text'))
                 .fontWeight(FontWeight.Medium)
+                .maxLines(1)
             }
             .alignItems(HorizontalAlign.Start)
             Blank()
             Text(channelStatusText(this.channelStatus))
-              .fontSize('14fp')
+              .fontSize('12fp')
               .fontColor(Color.White)
               .backgroundColor(channelStatusColor(this.channelStatus))
-              .padding({ left: '12vp', right: '12vp', top: '8vp', bottom: '8vp' })
-              .borderRadius('12vp')
+              .padding({ left: '10vp', right: '10vp', top: '6vp', bottom: '6vp' })
+              .borderRadius('10vp')
           }
           .width('100%')
-          Row({ space: '12vp' }) {
+          Row({ space: '10vp' }) {
             Column({ space: '2vp' }) {
               Text('状态信息')
-                .fontSize('13fp')
+                .fontSize('12fp')
                 .fontColor($r('app.color.text_secondary'))
               Text(this.message)
-                .fontSize('14fp')
+                .fontSize('13fp')
                 .fontColor($r('app.color.text'))
+                .maxLines(1)
             }
             .alignItems(HorizontalAlign.Start)
           }
           .width('100%')
-          Row({ space: '12vp' }) {
+          Row({ space: '10vp' }) {
             Column({ space: '2vp' }) {
               Text('更新时间')
-                .fontSize('13fp')
+                .fontSize('12fp')
                 .fontColor($r('app.color.text_secondary'))
               Text(this.updateTime)
-                .fontSize('13fp')
+                .fontSize('12fp')
                 .fontColor($r('app.color.text'))
+                .maxLines(1)
             }
             .alignItems(HorizontalAlign.Start)
           }
           .width('100%')
         }
         .layoutWeight(1)
-        .padding('16vp')
+        .padding('14vp')
         .backgroundColor($r('app.color.card_background'))
-        .borderRadius('16vp')
+        .borderRadius('14vp')
         .border({ width: '1vp', color: $r('app.color.divider') })
         .shadow(CardShadow)
       }
+      .padding({ left: '20vp', right: '20vp' })
 
-      Row({ space: '12vp' }) {
+      Row({ space: '10vp' }) {
         DistanceCard({ title: '前方扇区', distance: this.frontDistance, threshold: 0.8, icon: '⬆️' })
         DistanceCard({ title: '左侧货架', distance: this.leftDistance, threshold: 0.5, icon: '⬅️' })
         DistanceCard({ title: '右侧货架', distance: this.rightDistance, threshold: 0.5, icon: '➡️' })
       }
+      .padding({ left: '20vp', right: '20vp' })
 
       InfoCard({ title: '占用状态分类' }) {
-        Column({ space: '8vp' }) {
+        Column({ space: '6vp' }) {
           StatusItem({ label: '短时障碍', desc: '人员经过，减速观察', icon: '👤' })
           StatusItem({ label: '长时障碍', desc: '货物堆放异常，触发告警', icon: '📦' })
           StatusItem({ label: '通道堵塞', desc: '无法通行，停车等待', icon: '🚧' })
         }
       }
-
-      Blank()
     }
-    .layoutWeight(1)
+    .width('100%')
   }
 
   @Builder
   RuleView() {
-    Scroll() {
-      Column({ space: '12vp' }) {
-        RuleCard({ title: '前方 0.8m 内有障碍', action: '减速通行', level: 'warning' })
-        RuleCard({ title: '前方 0.4m 内有障碍', action: '立即停车', level: 'critical' })
-        RuleCard({ title: '持续 5 秒有障碍', action: '通道占用告警', level: 'critical' })
-        RuleCard({ title: '左右货架距离偏差', action: '调整居中行驶', level: 'normal' })
-        RuleCard({ title: '危险品区域移动目标', action: '警戒区域报警', level: 'critical' })
-        InfoCard({ title: '检测区域' }) {
-          Text('前方扇区 + 左侧货架距离 + 右侧货架距离')
-            .fontSize('14fp')
-            .fontColor($r('app.color.text'))
-            .width('100%')
-        }
+    Column({ space: '12vp' }) {
+      RuleCard({ title: '前方 0.8m 内有障碍', action: '减速通行', level: 'warning' })
+      RuleCard({ title: '前方 0.4m 内有障碍', action: '立即停车', level: 'critical' })
+      RuleCard({ title: '持续 5 秒有障碍', action: '通道占用告警', level: 'critical' })
+      RuleCard({ title: '左右货架距离偏差', action: '调整居中行驶', level: 'normal' })
+      RuleCard({ title: '危险品区域移动目标', action: '警戒区域报警', level: 'critical' })
+      InfoCard({ title: '检测区域' }) {
+        Text('前方扇区 + 左侧货架距离 + 右侧货架距离')
+          .fontSize('13fp')
+          .fontColor($r('app.color.text'))
+          .width('100%')
       }
-      .padding({ left: '20vp', right: '20vp', bottom: '16vp' })
     }
-    .layoutWeight(1)
+    .padding({ left: '20vp', right: '20vp', bottom: '16vp' })
+    .width('100%')
   }
 
   @Builder
@@ -175,8 +182,8 @@ struct Module3Lidar {
         emptyHint: '暂无通道占用告警'
       })
     }
-    .layoutWeight(1)
     .padding({ left: '20vp', right: '20vp' })
+    .width('100%')
   }
 }
 

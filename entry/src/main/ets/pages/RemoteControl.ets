@@ -1,5 +1,6 @@
 import { carApi } from '../CarUtill/CarApi';
 import { CarEncode } from '../CarUtill/CarEncode';
+import { CarDirection } from '../CarUtill/CarEnum';
 import { CarBtnComponents } from '../components/CarBtnComponents';
 import { CarRockerComponents } from '../components/CarRockerComponents';
 import { VideoComponents } from '../components/VideoComponents';
@@ -59,31 +60,30 @@ struct RemoteControl {
 
               InfoCard({ title: '自动循迹' }) {
                 Row({ space: '12vp' }) {
-                  Toggle({ type: ToggleType.Switch, isOn: this.autoTracking }) {
-                    Text('启用自动循迹')
-                      .fontSize('14fp')
-                      .fontColor($r('app.color.text'))
-                  }
-                  .selectedColor($r('app.color.button_primary'))
-                  .switchPointColor(Color.White)
-                  .onChange((value: boolean): void => {
-                    this.autoTracking = value;
-                    if (value) {
-                      carApi.send(CarEncode.TrackingOpenEncode());
-                    } else {
-                      carApi.send(CarEncode.TrackingCloseEncode());
-                    }
-                  })
+                  Text('启用自动循迹')
+                    .fontSize('14fp')
+                    .fontColor($r('app.color.text'))
+                  Toggle({ type: ToggleType.Switch, isOn: this.autoTracking })
+                    .selectedColor($r('app.color.button_primary'))
+                    .switchPointColor(Color.White)
+                    .onChange((value: boolean): void => {
+                      this.autoTracking = value;
+                      if (value) {
+                        carApi.send(CarEncode.TrackingOpenEncode());
+                      } else {
+                        carApi.send(CarEncode.TrackingCloseEncode());
+                      }
+                    })
                 }
                 .justifyContent(FlexAlign.Center)
               }
 
               InfoCard({ title: '快捷指令' }) {
                 Row({ space: '10vp' }) {
-                  QuickBtn({ title: '前进', action: () => { carApi.send(CarEncode.ForwardCarEncode()); } })
-                  QuickBtn({ title: '后退', action: () => { carApi.send(CarEncode.BackCarEncode()); } })
-                  QuickBtn({ title: '左转', action: () => { carApi.send(CarEncode.LeftCarEncode()); } })
-                  QuickBtn({ title: '右转', action: () => { carApi.send(CarEncode.RightCarEncode()); } })
+                  QuickBtn({ title: '前进', action: () => { carApi.send(CarEncode.ButtonCarEncode(CarDirection.Front)); } })
+                  QuickBtn({ title: '后退', action: () => { carApi.send(CarEncode.ButtonCarEncode(CarDirection.After)); } })
+                  QuickBtn({ title: '左转', action: () => { carApi.send(CarEncode.ButtonCarEncode(CarDirection.Left)); } })
+                  QuickBtn({ title: '右转', action: () => { carApi.send(CarEncode.ButtonCarEncode(CarDirection.Right)); } })
                 }
               }
             }

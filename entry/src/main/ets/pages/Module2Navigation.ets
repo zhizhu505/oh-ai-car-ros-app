@@ -55,19 +55,25 @@ struct Module2Navigation {
     Column({ space: '0vp' }) {
       PageHeader({
         title: '模块2：SLAM 建图与导航',
-        subtitle: '仓库地图 / 固定巡检点 / 多点自动导航',
+        subtitle: '仓库地图 / 固定巡检点 / 多点导航',
         accentColor: $r('app.color.module2_accent')
       })
 
       ModuleTabBar({ currentIndex: $currentTabIndex, tabs: this.tabs, accentColor: $r('app.color.module2_accent') })
 
-      if (this.currentTabIndex === 0) {
-        this.RouteView()
-      } else if (this.currentTabIndex === 1) {
-        this.ControlView()
-      } else {
-        this.AbnormalView()
+      Scroll() {
+        Column() {
+          if (this.currentTabIndex === 0) {
+            this.RouteView()
+          } else if (this.currentTabIndex === 1) {
+            this.ControlView()
+          } else {
+            this.AbnormalView()
+          }
+        }
+        .width('100%')
       }
+      .layoutWeight(1)
     }
     .width('100%')
     .height('100%')
@@ -76,139 +82,138 @@ struct Module2Navigation {
 
   @Builder
   RouteView() {
-    Column({ space: '16vp' }) {
-      Row({ space: '16vp' }) {
-        Column({ space: '8vp' }) {
-          Row({ space: '12vp' }) {
+    Column({ space: '12vp' }) {
+      Row({ space: '12vp' }) {
+        Column({ space: '6vp' }) {
+          Row({ space: '10vp' }) {
             Text(this.patrolStatusTextValue)
-              .fontSize('18fp')
+              .fontSize('15fp')
               .fontColor(Color.White)
               .backgroundColor(patrolStatusColor(PatrolStore.getInstance().vehicle.patrolStatus))
-              .padding({ left: '14vp', right: '14vp', top: '10vp', bottom: '10vp' })
-              .borderRadius('12vp')
+              .padding({ left: '12vp', right: '12vp', top: '8vp', bottom: '8vp' })
+              .borderRadius('10vp')
           }
           .width('100%')
-          Row({ space: '20vp' }) {
+          Row({ space: '16vp' }) {
             Column({ space: '2vp' }) {
               Text('当前点位')
-                .fontSize('13fp')
+                .fontSize('12fp')
                 .fontColor($r('app.color.text_secondary'))
               Text(this.currentPoint)
-                .fontSize('16fp')
+                .fontSize('14fp')
                 .fontColor($r('app.color.text'))
                 .fontWeight(FontWeight.Medium)
+                .maxLines(1)
             }
             .alignItems(HorizontalAlign.Start)
             Column({ space: '2vp' }) {
               Text('下一点位')
-                .fontSize('13fp')
+                .fontSize('12fp')
                 .fontColor($r('app.color.text_secondary'))
               Text(this.nextPoint)
-                .fontSize('16fp')
+                .fontSize('14fp')
                 .fontColor($r('app.color.text'))
                 .fontWeight(FontWeight.Medium)
+                .maxLines(1)
             }
             .alignItems(HorizontalAlign.Start)
           }
           .width('100%')
           Column({ space: '4vp' }) {
-            Row({ space: '12vp' }) {
+            Row({ space: '10vp' }) {
               Text('巡检进度')
-                .fontSize('13fp')
+                .fontSize('12fp')
                 .fontColor($r('app.color.text_secondary'))
               Text(`${this.progress}%`)
-                .fontSize('14fp')
+                .fontSize('13fp')
                 .fontColor($r('app.color.text'))
                 .fontWeight(FontWeight.Medium)
             }
             Progress({ value: this.progress, total: 100, type: ProgressType.Linear })
               .width('100%')
-              .height('6vp')
+              .height('5vp')
               .color($r('app.color.button_primary'))
               .backgroundColor($r('app.color.divider'))
               .borderRadius('3vp')
           }
         }
         .layoutWeight(1)
-        .padding('16vp')
+        .padding('14vp')
         .backgroundColor($r('app.color.card_background'))
-        .borderRadius('16vp')
+        .borderRadius('14vp')
         .border({ width: '1vp', color: $r('app.color.divider') })
         .shadow(CardShadow)
       }
       .padding({ left: '20vp', right: '20vp' })
 
-      Column({ space: '8vp' }) {
-        Text('仓库巡检点列表')
-          .fontSize('17fp')
-          .fontColor($r('app.color.text'))
-          .fontWeight(FontWeight.Bold)
-          .width('100%')
-          .padding({ left: '20vp' })
+      Row({ space: '12vp' }) {
+        Column({ space: '8vp' }) {
+          ForEach(this.patrolPoints.slice(0, Math.ceil(this.patrolPoints.length / 2)), (point: PatrolPoint) => {
+            PatrolPointCard({ point: point })
+          }, (point: PatrolPoint) => point.id)
+        }
+        .layoutWeight(1)
 
-        Scroll() {
-          Column({ space: '10vp' }) {
-            ForEach(this.patrolPoints, (point: PatrolPoint) => {
-              PatrolPointCard({ point: point })
-            }, (point: PatrolPoint) => point.id)
-          }
-          .width('100%')
-          .padding({ left: '20vp', right: '20vp' })
+        Column({ space: '8vp' }) {
+          ForEach(this.patrolPoints.slice(Math.ceil(this.patrolPoints.length / 2)), (point: PatrolPoint) => {
+            PatrolPointCard({ point: point })
+          }, (point: PatrolPoint) => point.id)
         }
         .layoutWeight(1)
       }
+      .padding({ left: '20vp', right: '20vp' })
     }
-    .layoutWeight(1)
+    .width('100%')
   }
 
   @Builder
   ControlView() {
-    Column({ space: '16vp' }) {
+    Column({ space: '12vp' }) {
       InfoCard({ title: '当前状态' }) {
-        Column({ space: '8vp' }) {
+        Column({ space: '6vp' }) {
           Text(this.message)
-            .fontSize('15fp')
-            .fontColor($r('app.color.text'))
-          Text(`当前路线：${this.route}`)
             .fontSize('14fp')
+            .fontColor($r('app.color.text'))
+            .maxLines(2)
+          Text(`当前路线：${this.route}`)
+            .fontSize('13fp')
             .fontColor($r('app.color.text_secondary'))
+            .maxLines(1)
         }
       }
 
       InfoCard({ title: '导航策略' }) {
-        Column({ space: '8vp' }) {
+        Column({ space: '6vp' }) {
           StrategyItem({ icon: '📏', text: '窄通道自动降速' })
           StrategyItem({ icon: '🛡️', text: '靠近货架保持安全距离' })
-          StrategyItem({ icon: '🔄', text: '导航失败重新规划或跳过当前点' })
+          StrategyItem({ icon: '🔄', text: '导航失败重新规划或跳过' })
           StrategyItem({ icon: '📸', text: '到点停留采集环境/视觉数据' })
         }
       }
 
-      Column({ space: '12vp' }) {
+      Column({ space: '10vp' }) {
         Text('控制指令')
-          .fontSize('17fp')
+          .fontSize('15fp')
           .fontColor($r('app.color.text'))
           .fontWeight(FontWeight.Bold)
           .width('100%')
           .padding({ left: '20vp' })
 
-        Row({ space: '10vp' }) {
-          ActionButton({ title: '开始巡检', bgColor: $r('app.color.alert_normal'), action: 'start', sendCommand: this.sendCommand })
-          ActionButton({ title: '暂停', bgColor: $r('app.color.alert_warning'), action: 'pause', sendCommand: this.sendCommand })
-          ActionButton({ title: '继续', bgColor: $r('app.color.button_primary'), action: 'resume', sendCommand: this.sendCommand })
+        Row({ space: '8vp' }) {
+          ActionButton({ title: '开始巡检', bgColor: $r('app.color.alert_normal'), action: 'start', onAction: this.sendCommand })
+          ActionButton({ title: '暂停', bgColor: $r('app.color.alert_warning'), action: 'pause', onAction: this.sendCommand })
+          ActionButton({ title: '继续', bgColor: $r('app.color.button_primary'), action: 'resume', onAction: this.sendCommand })
         }
         .padding({ left: '20vp', right: '20vp' })
 
-        Row({ space: '10vp' }) {
-          ActionButton({ title: '返回起点', bgColor: $r('app.color.button_primary'), action: 'return', sendCommand: this.sendCommand })
-          ActionButton({ title: '停止巡检', bgColor: $r('app.color.alert_critical'), action: 'stop', sendCommand: this.sendCommand })
+        Row({ space: '8vp' }) {
+          ActionButton({ title: '返回起点', bgColor: $r('app.color.button_primary'), action: 'return', onAction: this.sendCommand })
+          ActionButton({ title: '停止巡检', bgColor: $r('app.color.alert_critical'), action: 'stop', onAction: this.sendCommand })
         }
         .padding({ left: '20vp', right: '20vp' })
       }
-
-      Blank()
     }
-    .layoutWeight(1)
+    .width('100%')
   }
 
   @Builder
@@ -219,8 +224,8 @@ struct Module2Navigation {
         emptyHint: '暂无巡检异常点位记录'
       })
     }
-    .layoutWeight(1)
     .padding({ left: '20vp', right: '20vp' })
+    .width('100%')
   }
 
   private async sendCommand(action: string): Promise<void> {
@@ -317,16 +322,12 @@ struct StrategyItem {
   }
 }
 
-interface CommandHandler {
-  sendCommand: (action: string) => void;
-}
-
 @Component
 struct ActionButton {
   @Prop title: string = '';
   @Prop bgColor: ResourceColor = $r('app.color.button_primary');
   @Prop action: string = '';
-  @Link sendCommand: (action: string) => void;
+  onAction: (action: string) => void = () => { };
 
   build() {
     Button(this.title)
@@ -338,7 +339,7 @@ struct ActionButton {
       .borderRadius('22vp')
       .shadow(ButtonShadow)
       .onClick((): void => {
-        this.sendCommand(this.action);
+        this.onAction(this.action);
       })
   }
 }

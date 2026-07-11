@@ -38,28 +38,29 @@ struct AlertRecords {
   }
 
   build() {
-    Column({ space: '16vp' }) {
-      Row({ space: '12vp' }) {
+    Column({ space: '12vp' }) {
+      Stack() {
         PageHeader({
           title: '异常告警记录',
           subtitle: `共 ${this.alerts.length} 条记录`,
           accentColor: $r('app.color.alert_warning')
         })
         Button('清空')
-          .width('72vp')
-          .height('36vp')
-          .fontSize('14fp')
+          .width('68vp')
+          .height('34vp')
+          .fontSize('13fp')
           .fontColor($r('app.color.text'))
           .backgroundColor($r('app.color.button_secondary'))
-          .borderRadius('18vp')
+          .borderRadius('17vp')
           .shadow(ButtonShadow)
           .onClick((): void => {
             PatrolStore.getInstance().clearAlerts();
             promptAction.showToast({ message: '告警记录已清空' });
           })
+          .alignSelf(ItemAlign.End)
+          .margin({ right: '32vp', top: '22vp' })
       }
       .width('100%')
-      .padding({ right: '20vp' })
 
       if (this.alerts.length === 0) {
         InfoCard({ title: '' }) {
