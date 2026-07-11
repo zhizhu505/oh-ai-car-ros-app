@@ -2,11 +2,19 @@
   "color": [
     {
       "name": "button_text",
-      "value": "#E3E3E7"
+      "value": "#F8FAFC"
     },
     {
       "name": "text",
-      "value": "#E3E3E7"
+      "value": "#F8FAFC"
+    },
+    {
+      "name": "text_secondary",
+      "value": "#94A3B8"
+    },
+    {
+      "name": "text_on_accent",
+      "value": "#FFFFFF"
     }
   ]
 }

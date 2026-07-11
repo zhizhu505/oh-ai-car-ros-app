@@ -1,188 +1,199 @@
-/**
- * 麦克纳姆轮单独控制界面
- */
 import { carApi } from '../CarUtill/CarApi';
 import { CarEncode } from '../CarUtill/CarEncode';
 import { CarRockerComponents } from '../components/CarRockerComponents';
+import { PageHeader, InfoCard } from '../components/PageHeader';
+import { CardShadow, ButtonShadow } from '../styles/styles';
+import promptAction from '@ohos.promptAction';
 
 const TAG = 'SmartCarMecanumWheel'
 
 @Entry
 @Component
 struct MecanumWheel {
-  @State message: string = 'Hello World';
-  /**左前轮*/
+  @State message: string = '麦克纳姆轮控制';
   @State L1Value: number = 0;
-  /**左后轮*/
   @State L2Value: number = 0;
-  /**前后轮*/
   @State R1Value: number = 0;
-  /**右后轮*/
   @State R2Value: number = 0;
 
   build() {
+    Column({ space: '0vp' }) {
+      PageHeader({
+        title: '麦克纳姆轮控制',
+        subtitle: '四轮独立速度调节 · 全向移动',
+        accentColor: $r('app.color.module5_accent')
+      })
 
-    Row() {
-      // 左侧一条
-      Column() {
-        // 前后轮单独控制
-        Column() {
-          // 左前轮
-          SliderComponent({
-            value: $L1Value
-          })
-          // 左后轮
-          SliderComponent({
-            value: $L2Value
-          })
+      Scroll() {
+        Column({ space: '16vp' }) {
+          Row({ space: '16vp' }) {
+            Column({ space: '12vp' }) {
+              InfoCard({ title: '左前轮 (L1)' }) {
+                SliderComponent({ value: $L1Value, label: 'L1' })
+              }
+              InfoCard({ title: '左后轮 (L2)' }) {
+                SliderComponent({ value: $L2Value, label: 'L2' })
+              }
+            }
+            .layoutWeight(1)
 
+            Column({ space: '12vp' }) {
+              InfoCard({ title: '右前轮 (R1)' }) {
+                SliderComponent({ value: $R1Value, label: 'R1' })
+              }
+              InfoCard({ title: '右后轮 (R2)' }) {
+                SliderComponent({ value: $R2Value, label: 'R2' })
+              }
+            }
+            .layoutWeight(1)
+          }
 
+          InfoCard({ title: '遥杆控制' }) {
+            Column({ space: '8vp' }) {
+              Row() {
+                CarRockerComponents()
+                  .width('160vp')
+                  .height('160vp')
+              }
+              .justifyContent(FlexAlign.Center)
+              Text('使用遥杆控制方向，上面滑块调节独立速度')
+                .fontSize('13fp')
+                .fontColor($r('app.color.text_secondary'))
+                .textAlign(TextAlign.Center)
+            }
+          }
+
+          InfoCard({ title: '快捷操作' }) {
+            Row({ space: '12vp' }) {
+              ActionButton({ title: '更新速度', icon: '➡️', action: () => { this.sendSpeed(); } })
+              ActionButton({ title: '全部归零', icon: '🔄', action: () => { this.resetAll(); } })
+              ActionButton({ title: '前进', icon: '⬆️', action: () => { this.setSpeed(50, 50, 50, 50); } })
+              ActionButton({ title: '后退', icon: '⬇️', action: () => { this.setSpeed(-50, -50, -50, -50); } })
+            }
+          }
+
+          InfoCard({ title: '速度状态' }) {
+            Row({ space: '16vp' }) {
+              SpeedDisplay({ label: 'L1', value: this.L1Value })
+              SpeedDisplay({ label: 'L2', value: this.L2Value })
+              SpeedDisplay({ label: 'R1', value: this.R1Value })
+              SpeedDisplay({ label: 'R2', value: this.R2Value })
+            }
+          }
         }
-        .width('100%')
-        .height(0)
-        .padding({ left: '30vp', right: '30vp' })
-        .justifyContent(FlexAlign.Center)
-        .layoutWeight(1)
-        .myBroderStyles()
-
-        // 遥杆
-        Column() {
-          CarRockerComponents()
-            .width('150vp')
-            .height('150vp')
-        }
-        .width('100%')
-        .height(0)
-        .layoutWeight(1)
-        .myBroderStyles()
+        .padding({ top: '16vp', bottom: '32vp' })
       }
-      .height('100%')
-      .width(0)
       .layoutWeight(1)
-      .justifyContent(FlexAlign.Center)
-      .myBroderStyles()
-
-      // 右侧一条
-      Column() {
-        // 前后轮单独控制
-        Column() {
-          // 右前轮
-          SliderComponent({
-            value: $R1Value
-          })
-          // 右后轮
-          SliderComponent({
-            value: $R2Value
-          })
-        }
-        .height(0)
-        .width('100%')
-        .padding({ left: '30vp', right: '30vp' })
-        .layoutWeight(1)
-        .justifyContent(FlexAlign.Center)
-        .myBroderStyles()
-
-        Row() {
-
-          Button('更新速度')
-            .onClick(() => {
-              // 发送车辆速度
-              this.sendSpeed();
-            })
-            .fontSize($r('app.float.float_1'))
-            .backgroundColor($r('app.color.button_background'))
-
-          Button('全部归零')
-            .onClick(() => {
-              this.L1Value = 0
-              this.L2Value = 0
-              this.R1Value = 0
-              this.R2Value = 0
-              // 发送车辆速度
-              this.sendSpeed();
-            })
-            .fontSize($r('app.float.float_1'))
-            .backgroundColor($r('app.color.button_background'))
-        }
-        .height(0)
-        .width('100%')
-        .layoutWeight(1)
-        .justifyContent(FlexAlign.Center)
-        .myBroderStyles()
-      }
-      .height('100%')
-      .width(0)
-      .layoutWeight(1)
-      .justifyContent(FlexAlign.Center)
-      .myBroderStyles()
-
     }
     .width('100%')
     .height('100%')
-    .padding({
-      left: '10vp',
-      right: '10vp',
-      top: '30vp',
-      bottom: '30vp'
-    })
     .backgroundColor($r('app.color.window_background'))
-
   }
 
-  /**边框样式*/
-  @Styles
-  myBroderStyles() {
-    .border({
-      radius: '10vp',
-      color: Color.Gray,
-      width: '0vp'
-    })
-  }
-
-  /**
-   * 发送数据到真实的车辆
-   */
   sendSpeed() {
     console.log(TAG, 'speed', `l1`, this.L1Value, 'l2', this.L2Value)
-    console.log(TAG, 'speed', `l1`, this.L1Value, 'l2', this.L2Value)
-    //发送速度数据
     carApi.send(CarEncode.UpSpeedCarEncode(this.L1Value, this.L2Value, this.R1Value, this.R2Value));
+    promptAction.showToast({ message: '速度已更新' });
+  }
+
+  resetAll() {
+    this.L1Value = 0
+    this.L2Value = 0
+    this.R1Value = 0
+    this.R2Value = 0
+    this.sendSpeed();
+  }
+
+  setSpeed(l1: number, l2: number, r1: number, r2: number) {
+    this.L1Value = l1;
+    this.L2Value = l2;
+    this.R1Value = r1;
+    this.R2Value = r2;
+    this.sendSpeed();
   }
 }
 
-/**
- * 拖动状态条组件
- */
 @Component
 struct SliderComponent {
   @Link value: number;
+  @Prop label: string = '';
 
   build() {
-    Row() {
-      // 左前轮
-      Slider({
-        value: this.value,
-        min: -100,
-        max: 100,
-        style: SliderStyle.InSet
-      })
-        .blockColor($r('app.color.track_select_background'))
-          .trackColor($r('app.color.track_background'))
-          .selectedColor($r("app.color.slider_selected"))
-          // .showTips(true)
-        .onChange((value: number, mode: SliderChangeMode) => {
-          this.value = value
-          console.info('value:' + value + 'mode:' + mode.toString())
+    Column({ space: '8vp' }) {
+      Row({ space: '12vp' }) {
+        Text(this.label)
+          .fontSize('14fp')
+          .fontColor($r('app.color.text'))
+          .fontWeight(FontWeight.Medium)
+          .width('32vp')
+        Slider({
+          value: this.value,
+          min: -100,
+          max: 100,
+          style: SliderStyle.InSet
         })
-      Text(
-        `${this.value.toFixed(0)}`
-      )
-        .width('30vp')
-        .textAlign(TextAlign.Center)
-        .fontColor($r('app.color.text'))
-        .fontSize($r('app.float.float_1'))
-
-
+          .blockColor($r('app.color.button_primary'))
+          .trackColor($r('app.color.track_background'))
+          .selectedColor($r('app.color.slider_selected'))
+          .onChange((val: number, mode: SliderChangeMode) => {
+            this.value = val;
+          })
+          .layoutWeight(1)
+        Text(`${this.value.toFixed(0)}`)
+          .width('40vp')
+          .textAlign(TextAlign.Center)
+          .fontColor($r('app.color.text'))
+          .fontSize('14fp')
+          .fontWeight(FontWeight.Medium)
+      }
     }
+  }
+}
+
+@Component
+struct ActionButton {
+  @Prop title: string = '';
+  @Prop icon: string = '';
+  action: () => void = () => { };
+
+  build() {
+    Button() {
+      Column({ space: '4vp' }) {
+        Text(this.icon)
+          .fontSize('18fp')
+        Text(this.title)
+          .fontSize('13fp')
+          .fontColor(Color.White)
+      }
+    }
+    .width('100%')
+    .height('64vp')
+    .backgroundColor($r('app.color.button_primary'))
+    .borderRadius('14vp')
+    .shadow(ButtonShadow)
+    .onClick(this.action)
+  }
+}
+
+@Component
+struct SpeedDisplay {
+  @Prop label: string = '';
+  @Prop value: number = 0;
+
+  build() {
+    Column({ space: '4vp' }) {
+      Text(this.label)
+        .fontSize('12fp')
+        .fontColor($r('app.color.text_secondary'))
+      Text(`${this.value}`)
+        .fontSize('20fp')
+        .fontColor(this.value > 0 ? $r('app.color.alert_normal') : (this.value < 0 ? $r('app.color.alert_critical') : $r('app.color.text')))
+        .fontWeight(FontWeight.Bold)
+    }
+    .layoutWeight(1)
+    .padding('8vp')
+    .backgroundColor($r('app.color.card_elevated'))
+    .borderRadius('10vp')
+    .alignItems(HorizontalAlign.Center)
   }
 }

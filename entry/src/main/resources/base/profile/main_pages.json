@@ -1,6 +1,15 @@
 {
   "src": [
     "pages/Index",
+    "pages/Module1Environment",
+    "pages/Module2Navigation",
+    "pages/Module3Lidar",
+    "pages/Module4Vision",
+    "pages/Module5AppMonitor",
+    "pages/PatrolDashboard",
+    "pages/EnvironmentMonitor",
+    "pages/AlertRecords",
+    "pages/PatrolControl",
     "pages/MecanumWheel",
     "pages/RemoteControl",
     "pages/NetworkSettings"
