@@ -66,9 +66,9 @@ struct Index {
           ControlCard()
             .layoutWeight(1)
           AlertPreviewCard()
-            .layoutWeight(1)
+            .layoutWeight(1.5)
         }
-        .height('98vp')
+        .height('120vp')
 
         PatrolSummary()
           .height('56vp')
@@ -428,82 +428,48 @@ struct AlertPreviewCard {
 
   @Builder
   AlertContent(alert: AlertRecord) {
-    Column({ space: '10vp' }) {
-      Row({ space: '10vp' }) {
-        Text(alert.level === AlertLevel.Critical ? '严重异常' : alert.level === AlertLevel.Warning ? '预警' : '提示')
-          .fontSize('12fp')
+    Column({ space: '6vp' }) {
+      Row({ space: '8vp' }) {
+        Text(alert.level === AlertLevel.Critical ? '严重' : alert.level === AlertLevel.Warning ? '预警' : '提示')
+          .fontSize('11fp')
           .fontColor($r('app.color.text_on_accent'))
           .backgroundColor(alert.level === AlertLevel.Critical ? $r('app.color.alert_critical') : alert.level === AlertLevel.Warning ? $r('app.color.alert_warning') : $r('app.color.status_success'))
-          .padding({ left: '10vp', right: '10vp', top: '4vp', bottom: '4vp' })
-          .borderRadius('12vp')
-        Text(`${alert.point}：${alert.message}`)
-          .fontSize('16fp')
+          .padding({ left: '8vp', right: '8vp', top: '3vp', bottom: '3vp' })
+          .borderRadius('10vp')
+        Text(alert.message)
+          .fontSize('13fp')
           .fontColor($r('app.color.text'))
           .fontWeight(FontWeight.Bold)
           .layoutWeight(1)
           .maxLines(1)
         if (alert.aiAnalyzing) {
           Text('AI分析中...')
-            .fontSize('11fp')
+            .fontSize('10fp')
             .fontColor($r('app.color.button_primary'))
         }
       }
-      Text(`[${alert.time}] ${alert.point}`)
-        .fontSize('12fp')
-        .fontColor($r('app.color.text_secondary'))
-        .maxLines(1)
+      Row({ space: '6vp' }) {
+        Text(`[${alert.time}]`)
+          .fontSize('10fp')
+          .fontColor($r('app.color.text_secondary'))
+        Text(alert.point)
+          .fontSize('10fp')
+          .fontColor($r('app.color.text_secondary'))
+          .layoutWeight(1)
+          .maxLines(1)
+      }
+      .width('100%')
       if (alert.aiAnalysis) {
-        Column({ space: '8vp' }) {
-          Row({ space: '6vp' }) {
-            Text('AI分析')
-              .fontSize('11fp')
-              .fontColor($r('app.color.button_primary'))
-              .fontWeight(FontWeight.Bold)
-            Text(alert.aiAnalysis.summary)
-              .fontSize('13fp')
-              .fontColor($r('app.color.text'))
-              .layoutWeight(1)
-              .maxLines(1)
-          }
-          .width('100%')
-          Column({ space: '4vp' }) {
-            Row({ space: '6vp' }) {
-              Text('风险')
-                .fontSize('11fp')
-                .fontColor($r('app.color.alert_critical'))
-              Text(alert.aiAnalysis.risk)
-                .fontSize('12fp')
-                .fontColor($r('app.color.text_secondary'))
-                .layoutWeight(1)
-                .maxLines(1)
-            }
-            .width('100%')
-            if (alert.aiAnalysis.solve && alert.aiAnalysis.solve.length > 0) {
-              Column({ space: '3vp' }) {
-                Text('处置建议')
-                  .fontSize('11fp')
-                  .fontColor($r('app.color.button_primary'))
-                ForEach(alert.aiAnalysis.solve.slice(0, 2), (step: string, index: number) => {
-                  Row({ space: '6vp' }) {
-                    Text(`${index + 1}.`)
-                      .fontSize('12fp')
-                      .fontColor($r('app.color.text_secondary'))
-                    Text(step)
-                      .fontSize('12fp')
-                      .fontColor($r('app.color.text_secondary'))
-                      .layoutWeight(1)
-                      .maxLines(1)
-                  }
-                  .width('100%')
-                })
-              }
-              .width('100%')
-            }
-          }
-          .width('100%')
-          .padding('8vp')
-          .backgroundColor($r('app.color.card_elevated'))
-          .borderRadius('10vp')
+        Row({ space: '6vp' }) {
+          Text('AI:')
+            .fontSize('10fp')
+            .fontColor($r('app.color.button_primary'))
+            .fontWeight(FontWeight.Bold)
+          Text(alert.aiAnalysis.summary)
+            .fontSize('11fp')
+            .fontColor($r('app.color.text'))
+            .layoutWeight(1)
+            .maxLines(1)
         }
         .width('100%')
       }
