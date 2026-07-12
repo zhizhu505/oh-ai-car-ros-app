@@ -25,56 +25,61 @@ struct Index {
     Column({ space: '0vp' }) {
       this.Header()
 
-      Column({ space: '8vp' }) {
-        Row({ space: '10vp' }) {
-          ModuleEntry({
-            title: '环境感知',
-            desc: '温湿度 / 烟雾 / 光照',
-            metric: '异常阈值',
-            accent: $r('app.color.module1_accent'),
-            url: 'pages/Module1Environment'
-          })
-            .layoutWeight(1)
-          ModuleEntry({
-            title: 'SLAM导航',
-            desc: '建图 / 路线 / 返回',
-            metric: '巡检路线',
-            accent: $r('app.color.module2_accent'),
-            url: 'pages/Module2Navigation'
-          })
-            .layoutWeight(1)
-          ModuleEntry({
-            title: '激光雷达',
-            desc: '避障 / 占用 / 停车',
-            metric: '通道占用',
-            accent: $r('app.color.module3_accent'),
-            url: 'pages/Module3Lidar'
-          })
-            .layoutWeight(1)
-          ModuleEntry({
-            title: '视觉识别',
-            desc: '人员 / 货物 / 截图',
-            metric: '视觉告警',
-            accent: $r('app.color.module4_accent'),
-            url: 'pages/Module4Vision'
-          })
-            .layoutWeight(1)
-        }
-        .height('96vp')
+      Scroll() {
+        Column({ space: '10vp' }) {
+          Row({ space: '10vp' }) {
+            ModuleEntry({
+              title: '环境感知',
+              desc: '温湿度 / 烟雾 / 光照',
+              metric: '异常阈值',
+              accent: $r('app.color.module1_accent'),
+              url: 'pages/Module1Environment'
+            })
+              .layoutWeight(1)
+            ModuleEntry({
+              title: 'SLAM导航',
+              desc: '建图 / 路线 / 返回',
+              metric: '巡检路线',
+              accent: $r('app.color.module2_accent'),
+              url: 'pages/Module2Navigation'
+            })
+              .layoutWeight(1)
+          }
+          .height('100vp')
 
-        Row({ space: '12vp' }) {
+          Row({ space: '10vp' }) {
+            ModuleEntry({
+              title: '激光雷达',
+              desc: '避障 / 占用 / 停车',
+              metric: '通道占用',
+              accent: $r('app.color.module3_accent'),
+              url: 'pages/Module3Lidar'
+            })
+              .layoutWeight(1)
+            ModuleEntry({
+              title: '视觉识别',
+              desc: '人员 / 货物 / 截图',
+              metric: '视觉告警',
+              accent: $r('app.color.module4_accent'),
+              url: 'pages/Module4Vision'
+            })
+              .layoutWeight(1)
+          }
+          .height('100vp')
+
           ControlCard()
-            .layoutWeight(1)
-          AlertPreviewCard()
-            .layoutWeight(1.5)
-        }
-        .height('120vp')
+            .width('100%')
 
-        PatrolSummary()
-          .height('56vp')
+          AlertPreviewCard()
+            .width('100%')
+
+          PatrolSummary()
+            .width('100%')
+        }
+        .padding({ left: '16vp', right: '16vp', top: '10vp', bottom: '10vp' })
       }
       .layoutWeight(1)
-      .padding({ left: '22vp', right: '22vp', top: '8vp', bottom: '8vp' })
+      .scrollBar(BarState.Off)
     }
     .width('100%')
     .height('100%')
@@ -83,86 +88,61 @@ struct Index {
 
   @Builder
   Header() {
-    Row({ space: '16vp' }) {
-      Column({ space: '4vp' }) {
-        Row({ space: '10vp' }) {
-          Text('狭域巡航')
-            .fontSize('26fp')
-            .fontColor($r('app.color.text'))
-            .fontWeight(FontWeight.Bold)
-            .maxLines(1)
-
-          Text('AI PATROL')
-            .fontSize('10fp')
-            .fontColor($r('app.color.module1_accent'))
-            .fontWeight(FontWeight.Bold)
-            .letterSpacing(0)
-            .padding({ left: '10vp', right: '10vp', top: '4vp', bottom: '4vp' })
-            .backgroundColor($r('app.color.module1_accent') + '18')
-            .borderRadius('10vp')
-        }
-        .alignItems(VerticalAlign.Center)
-
-        Row({ space: '12vp' }) {
-          Text('Narrow-Space Intelligent Patrol System')
-            .fontSize('10fp')
-            .fontColor($r('app.color.text_secondary'))
-            .fontWeight(FontWeight.Medium)
-            .maxLines(1)
-
-          Column()
-            .width('1vp')
-            .height('12vp')
-            .backgroundColor($r('app.color.divider'))
-            .opacity(0.8)
-
-          Text('智能巡检 · 环境感知 · 自主导航')
-            .fontSize('10fp')
-            .fontColor($r('app.color.text_secondary'))
-            .opacity(0.85)
-            .maxLines(1)
-        }
-        .alignItems(VerticalAlign.Center)
+    Row({ space: '12vp' }) {
+      Row({ space: '8vp' }) {
+        Text('狭域巡航')
+          .fontSize('22fp')
+          .fontColor($r('app.color.text'))
+          .fontWeight(FontWeight.Bold)
+          .maxLines(1)
+        Text('AI PATROL')
+          .fontSize('9fp')
+          .fontColor($r('app.color.module1_accent'))
+          .fontWeight(FontWeight.Bold)
+          .padding({ left: '8vp', right: '8vp', top: '3vp', bottom: '3vp' })
+          .backgroundColor($r('app.color.module1_accent') + '18')
+          .borderRadius('8vp')
       }
-      .alignItems(HorizontalAlign.Start)
+      .alignItems(VerticalAlign.Center)
       .layoutWeight(1)
 
-      NetworkButton()
-
-      Row({ space: '10vp' }) {
+      Row({ space: '8vp' }) {
         Stack() {
           Column()
-            .width('10vp')
-            .height('10vp')
+            .width('8vp')
+            .height('8vp')
             .backgroundColor(onlineColor(this.online))
-            .borderRadius('5vp')
+            .borderRadius('4vp')
         }
         .shadow({
-          radius: 12,
+          radius: 10,
           offsetX: 0,
           offsetY: 0,
           color: onlineColor(this.online) + '60'
         })
-        Text(this.online ? '已连接' : '离线预览')
-          .fontSize('13fp')
+        Text(this.online ? '已连接' : '离线')
+          .fontSize('12fp')
           .fontColor($r('app.color.text_secondary'))
           .fontWeight(FontWeight.Medium)
       }
       .alignItems(VerticalAlign.Center)
-      .padding({ left: '12vp', right: '14vp', top: '8vp', bottom: '8vp' })
+      .padding({ left: '10vp', right: '12vp', top: '6vp', bottom: '6vp' })
       .backgroundColor($r('app.color.card_elevated'))
-      .borderRadius('18vp')
+      .borderRadius('16vp')
       .border({ width: '1vp', color: $r('app.color.divider') })
+
+      NetworkButton()
     }
     .width('100%')
-    .height('72vp')
-    .padding({ left: '28vp', right: '28vp', top: '8vp', bottom: '8vp' })
+    .height('56vp')
+    .padding({ left: '16vp', right: '16vp', top: '6vp', bottom: '6vp' })
+    .alignItems(VerticalAlign.Center)
     .backgroundColor($r('app.color.header_background'))
     .shadow({
-      radius: 10,
+      radius: 8,
       offsetX: 0,
-      offsetY: 4,
-      color: '#00000035'
+      offsetY: 3,
+      color: '#00000030'
     })
   }
 }
@@ -302,7 +282,7 @@ struct ModuleEntry {
 @Component
 struct ControlCard {
   build() {
-    Column({ space: '7vp' }) {
+    Column({ space: '8vp' }) {
       Row() {
         SectionTitle({ title: '手动接管' })
           .layoutWeight(1)
@@ -312,40 +292,41 @@ struct ControlCard {
       Row({ space: '12vp' }) {
         Stack() {
           Column()
-            .width('34vp')
-            .height('34vp')
+            .width('36vp')
+            .height('36vp')
             .backgroundColor($r('app.color.module5_accent') + '18')
             .borderRadius('14vp')
           Image($r('app.media.vector'))
-            .width('20vp')
-            .height('20vp')
+            .width('22vp')
+            .height('22vp')
         }
         .alignContent(Alignment.Center)
         Column({ space: '4vp' }) {
           Text('摇杆遥控')
-            .fontSize('14fp')
+            .fontSize('15fp')
             .fontColor($r('app.color.text'))
             .fontWeight(FontWeight.Bold)
           Text('视频预览 / 轮速调节 / 实时接管')
-            .fontSize('10fp')
+            .fontSize('11fp')
             .fontColor($r('app.color.text_secondary'))
         }
         .alignItems(HorizontalAlign.Start)
         .layoutWeight(1)
-        Text('进入')
+        Button('进入')
+          .height('32vp')
           .fontSize('13fp')
-          .fontColor($r('app.color.button_primary'))
-          .fontWeight(FontWeight.Bold)
+          .fontColor($r('app.color.text_on_accent'))
+          .backgroundColor($r('app.color.button_primary'))
+          .borderRadius('16vp')
+          .onClick((): void => {
+            router.pushUrl({ url: 'pages/RemoteControl' });
+          })
       }
-      .layoutWeight(1)
       .width('100%')
-      .onClick((): void => {
-        router.pushUrl({ url: 'pages/RemoteControl' });
-      })
+      .alignItems(VerticalAlign.Center)
     }
     .width('100%')
-    .height('100%')
-    .padding({ left: '16vp', right: '16vp', top: '10vp', bottom: '10vp' })
+    .padding({ left: '14vp', right: '14vp', top: '12vp', bottom: '12vp' })
     .backgroundColor($r('app.color.card_background'))
     .borderRadius('16vp')
     .border({ width: '1vp', color: $r('app.color.divider') })
@@ -418,8 +399,7 @@ struct AlertPreviewCard {
       }
     }
     .width('100%')
-    .height('100%')
-    .padding({ left: '16vp', right: '16vp', top: '10vp', bottom: '10vp' })
+    .padding({ left: '14vp', right: '14vp', top: '10vp', bottom: '10vp' })
     .backgroundColor($r('app.color.card_background'))
     .borderRadius('16vp')
     .border({ width: '1vp', color: this.isHover ? $r('app.color.alert_warning') : $r('app.color.divider') })
@@ -492,11 +472,21 @@ struct AlertPreviewCard {
 @Component
 struct PatrolSummary {
   build() {
-    Row({ space: '10vp' }) {
-      SummaryItem({ label: '当前点位', value: 'P2 A区货架' })
-      SummaryItem({ label: '下一点位', value: 'P3 窄通道' })
-      SummaryItem({ label: '巡检状态', value: '待启动' })
-      SummaryItem({ label: '闭环流程', value: '采集 → 识别 → 告警' })
+    Column({ space: '8vp' }) {
+      Row({ space: '10vp' }) {
+        SummaryItem({ label: '当前点位', value: 'P2 A区货架' })
+          .layoutWeight(1)
+        SummaryItem({ label: '下一点位', value: 'P3 窄通道' })
+          .layoutWeight(1)
+      }
+      .width('100%')
+      Row({ space: '10vp' }) {
+        SummaryItem({ label: '巡检状态', value: '待启动' })
+          .layoutWeight(1)
+        SummaryItem({ label: '闭环流程', value: '采集 → 识别 → 告警' })
+          .layoutWeight(1)
+      }
+      .width('100%')
     }
     .width('100%')
   }

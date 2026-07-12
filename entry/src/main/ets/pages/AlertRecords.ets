@@ -245,69 +245,58 @@ struct AlertRecords {
   }
 
   build() {
-    Column({ space: '16vp' }) {
-      Row({ space: '16vp' }) {
-        Column({ space: '8vp' }) {
+    Column({ space: '0vp' }) {
+      Row({ space: '12vp' }) {
+        Column({ space: '4vp' }) {
           Text('异常告警记录')
-            .fontSize('28fp')
+            .fontSize('20fp')
             .fontColor($r('app.color.text'))
             .fontWeight(FontWeight.Bold)
           Text(`共 ${this.alerts.length} 条记录`)
-            .fontSize('14fp')
+            .fontSize('12fp')
             .fontColor($r('app.color.text_secondary'))
-            .opacity(0.85)
         }
         .layoutWeight(1)
         .alignItems(HorizontalAlign.Start)
 
-        Row({ space: '12vp' }) {
-          Button('清空')
-            .width('76vp')
-            .height('38vp')
-            .fontSize('14fp')
-            .fontColor($r('app.color.text'))
-            .backgroundColor($r('app.color.card_elevated'))
-            .borderRadius('19vp')
-            .border({ width: '1vp', color: $r('app.color.divider') })
-            .shadow(ButtonShadow)
-            .onClick((): void => {
-              PatrolStore.getInstance().clearAlerts();
-              promptAction.showToast({ message: '告警记录已清空' });
-            })
+        Button('清空')
+          .height('32vp')
+          .fontSize('13fp')
+          .fontColor($r('app.color.text'))
+          .backgroundColor($r('app.color.card_elevated'))
+          .borderRadius('16vp')
+          .border({ width: '1vp', color: $r('app.color.divider') })
+          .onClick((): void => {
+            PatrolStore.getInstance().clearAlerts();
+            promptAction.showToast({ message: '告警记录已清空' });
+          })
 
-          Button('返回')
-            .width('82vp')
-            .height('38vp')
-            .fontSize('14fp')
-            .fontColor($r('app.color.text'))
-            .backgroundColor($r('app.color.button_secondary'))
-            .borderRadius('19vp')
-            .shadow(ButtonShadow)
-            .onClick((): void => {
-              router.back();
-            })
-        }
-        .alignItems(VerticalAlign.Center)
+        Button('返回')
+          .height('32vp')
+          .fontSize('13fp')
+          .fontColor($r('app.color.text'))
+          .backgroundColor($r('app.color.button_secondary'))
+          .borderRadius('16vp')
+          .onClick((): void => {
+            router.back();
+          })
       }
       .width('100%')
       .alignItems(VerticalAlign.Center)
-      .padding({ left: '28vp', right: '28vp', top: '22vp', bottom: '18vp' })
+      .padding({ left: '16vp', right: '16vp', top: '12vp', bottom: '10vp' })
       .backgroundColor($r('app.color.header_background'))
-      .borderRadius('18vp')
-      .border({ width: '1vp', color: $r('app.color.divider') })
-      .shadow(CardShadow)
 
       if (this.alerts.length === 0) {
         Column() {
-          Column({ space: '14vp' }) {
+          Column({ space: '12vp' }) {
             Text('📋')
-              .fontSize('54fp')
+              .fontSize('48fp')
             Text('暂无异常记录')
-              .fontSize('18fp')
+              .fontSize('16fp')
               .fontColor($r('app.color.text'))
               .fontWeight(FontWeight.Bold)
             Text('小车巡检过程中检测到的环境、雷达、视觉异常会显示在这里')
-              .fontSize('14fp')
+              .fontSize('13fp')
               .fontColor($r('app.color.text_secondary'))
               .textAlign(TextAlign.Center)
               .maxLines(2)
@@ -316,52 +305,49 @@ struct AlertRecords {
           .height('100%')
           .justifyContent(FlexAlign.Center)
           .alignItems(HorizontalAlign.Center)
-          .padding({ left: '24vp', right: '24vp' })
+          .padding({ left: '20vp', right: '20vp' })
         }
         .width('100%')
         .layoutWeight(1)
         .backgroundColor($r('app.color.card_background'))
-        .borderRadius('18vp')
-        .border({ width: '1vp', color: $r('app.color.divider') })
-        .shadow(CardShadow)
+        .borderRadius('16vp')
       } else {
-        List({ space: '12vp' }) {
+        List({ space: '10vp' }) {
           ForEach(this.alerts, (item: AlertRecord) => {
             ListItem() {
-              Column({ space: '10vp' }) {
-                Row({ space: '12vp' }) {
+              Column({ space: '8vp' }) {
+                Row({ space: '8vp' }) {
                   Text(item.time)
-                    .fontSize('13fp')
+                    .fontSize('12fp')
                     .fontColor($r('app.color.text_secondary'))
                   Text(categoryLabel(item.category))
-                    .fontSize('12fp')
+                    .fontSize('11fp')
                     .fontColor($r('app.color.text_on_accent'))
                     .backgroundColor($r('app.color.status_active'))
-                    .padding({ left: '10vp', right: '10vp', top: '4vp', bottom: '4vp' })
-                    .borderRadius('10vp')
+                    .padding({ left: '8vp', right: '8vp', top: '3vp', bottom: '3vp' })
+                    .borderRadius('8vp')
                   Blank()
                   Text(alertLevelText(item.level))
-                    .fontSize('12fp')
+                    .fontSize('11fp')
                     .fontColor($r('app.color.text_on_accent'))
                     .backgroundColor(levelColor(item.level))
-                    .padding({ left: '12vp', right: '12vp', top: '4vp', bottom: '4vp' })
-                    .borderRadius('12vp')
+                    .padding({ left: '10vp', right: '10vp', top: '3vp', bottom: '3vp' })
+                    .borderRadius('10vp')
                 }
                 .width('100%')
                 Text(`${item.point}：${item.message}`)
-                  .fontSize('16fp')
+                  .fontSize('14fp')
                   .fontColor($r('app.color.text'))
                   .width('100%')
                   .fontWeight(FontWeight.Medium)
                 if (item.imageUrl.length > 0) {
                   Text(`截图已保存`)
-                    .fontSize('12fp')
+                    .fontSize('11fp')
                     .fontColor($r('app.color.status_active'))
                     .maxLines(1)
-                    .textOverflow({ overflow: TextOverflow.Ellipsis })
                 }
                 if (item.aiAnalyzing || item.aiAnalysis) {
-                  Row({ space: '8vp' }) {
+                  Row({ space: '6vp' }) {
                     Text(item.aiAnalyzing ? 'AI分析中...' : 'AI分析')
                       .fontSize('12fp')
                       .fontColor($r('app.color.button_primary'))
@@ -375,27 +361,27 @@ struct AlertRecords {
                     this.toggleAnalysis(item.id);
                   })
                   if (this.analysisExpandedId === item.id && item.aiAnalysis) {
-                    Column({ space: '8vp' }) {
-                      Text('异常摘要：' + item.aiAnalysis.summary)
-                        .fontSize('14fp')
+                    Column({ space: '6vp' }) {
+                      Text('摘要：' + item.aiAnalysis.summary)
+                        .fontSize('13fp')
                         .fontColor($r('app.color.text'))
                         .width('100%')
-                      Text('风险评估：' + item.aiAnalysis.risk)
-                        .fontSize('13fp')
+                      Text('风险：' + item.aiAnalysis.risk)
+                        .fontSize('12fp')
                         .fontColor($r('app.color.alert_critical'))
                         .width('100%')
                       Column({ space: '4vp' }) {
                         Text('处置建议')
-                          .fontSize('12fp')
+                          .fontSize('11fp')
                           .fontColor($r('app.color.button_primary'))
                           .fontWeight(FontWeight.Bold)
                         ForEach(item.aiAnalysis.solve, (step: string, index: number) => {
-                          Row({ space: '6vp' }) {
+                          Row({ space: '4vp' }) {
                             Text(`${index + 1}.`)
-                              .fontSize('13fp')
+                              .fontSize('12fp')
                               .fontColor($r('app.color.text_secondary'))
                             Text(step)
-                              .fontSize('13fp')
+                              .fontSize('12fp')
                               .fontColor($r('app.color.text_secondary'))
                               .layoutWeight(1)
                           }
@@ -405,19 +391,18 @@ struct AlertRecords {
                       .width('100%')
                     }
                     .width('100%')
-                    .padding('12vp')
+                    .padding('10vp')
                     .backgroundColor($r('app.color.card_elevated'))
-                    .borderRadius('12vp')
+                    .borderRadius('10vp')
                   }
                 }
                 Button('AI咨询')
                   .width('100%')
-                  .height('40vp')
-                  .fontSize('14fp')
+                  .height('36vp')
+                  .fontSize('13fp')
                   .fontColor($r('app.color.text_on_accent'))
                   .backgroundColor($r('app.color.button_primary'))
-                  .borderRadius('12vp')
-                  .shadow(ButtonShadow)
+                  .borderRadius('10vp')
                   .onClick((): void => {
                     this.toggleChat(item.id);
                   })
@@ -426,20 +411,19 @@ struct AlertRecords {
                 }
               }
               .width('100%')
-              .padding('16vp')
+              .padding('12vp')
               .backgroundColor($r('app.color.card_background'))
-              .borderRadius('16vp')
+              .borderRadius('14vp')
               .border({ width: '1vp', color: $r('app.color.divider') })
-              .shadow(CardShadow)
             }
           }, (item: AlertRecord) => item.id)
         }
         .layoutWeight(1)
+        .padding({ left: '12vp', right: '12vp', top: '8vp', bottom: '8vp' })
       }
     }
     .width('100%')
     .height('100%')
     .backgroundColor($r('app.color.window_background'))
-    .padding({ left: '24vp', right: '24vp', top: '18vp', bottom: '24vp' })
   }
 }
