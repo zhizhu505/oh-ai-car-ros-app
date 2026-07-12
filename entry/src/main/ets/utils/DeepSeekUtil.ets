@@ -25,7 +25,7 @@ export interface ChatResponse {
   choices: ChatMessage[];
 }
 
-const API_KEY = "sk-f34e6cdc48f4462fb6f1165b08a0096f";
+const API_KEY = "sk-a587882215c044768b4cdb400778ed2b";
 const URL = "https://api.deepseek.com/v1/chat/completions";
 let lastRequestTime: number = 0;
 const requestThrottleMs: number = 1000;
@@ -74,8 +74,8 @@ export async function chat(sysPrompt: string, userInput: string): Promise<string
         "Content-Type": "application/json"
       },
       extraData: bodyStr,
-      connectTimeout: 5000,
-      readTimeout: 15000
+      connectTimeout: 10000,
+      readTimeout: 10000
     });
     let resultStr = res.result.toString();
     let resObj: ChatResponse = JSON.parse(resultStr);
@@ -84,11 +84,12 @@ export async function chat(sysPrompt: string, userInput: string): Promise<string
     }
     throw new Error("API返回格式错误");
   } catch (err) {
-    console.error(`DeepSeek调用失败: ${err}`);
+    const errMsg = typeof err === 'object' ? JSON.stringify(err) : String(err);
+    console.error(`DeepSeek调用失败详情: ${errMsg}`);
     return JSON.stringify({
       "summary": "AI分析失败",
-      "risk": "网络异常，无法调用大模型",
-      "solve": ["检查手机网络、确认可访问外网"]
+      "risk": `请求异常: ${errMsg}`,
+      "solve": ["切换手机流量、检查密钥、延长请求超时时间"]
     });
   } finally {
     httpClient.destroy();
