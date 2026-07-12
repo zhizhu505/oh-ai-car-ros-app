@@ -8,6 +8,6 @@
   "version": "1.0.0",
   "dynamicDependencies": {},
   "dependencies": {
-    "rocker": "file:../Rocker"
+    "Rocker": "file:../Rocker"
   }
 }

@@ -182,7 +182,7 @@ struct LoginComponent {
   TextWidth: Length = '72vp';
   FontSize: Length = '15fp';
   BlankWidth: Length = '10vp';
-  @State ip: string = '192.168.1.11';
+  @State ip: string = '172.20.10.2';
   @State tcpPort: string = '6000';
   @State videoPort: string = '6500';
   @State connecting: boolean = false;

@@ -40,7 +40,7 @@ export class TCPClientManager {
       // family?: number,
       port: 12345
     },
-    timeout: 100
+    timeout: 3000
   }
 
   /**
@@ -70,7 +70,7 @@ export class TCPClientManager {
       // this.socket = undefined;
     }
 
-    // this.socket = socket.constructTCPSocketInstance();
+    this.socket = socket.constructTCPSocketInstance();
     try {
       // 绑定本机IP地址（在3.2R）
       await this.socket.bind({ address: '0.0.0.0', family: 1 })
@@ -102,7 +102,8 @@ export class TCPClientManager {
 
       })
       return true;
-    } catch {
+    } catch (e) {
+      console.error(TAG, 'connect failed', JSON.stringify(e))
       // 如果连接失败需要断开连接
       // 在Mate50 HarmonyOS 4.2.0.130 API 9上连接失败 如果不断开导致下次无法正常连接
       this.socket.close();
@@ -124,7 +125,12 @@ export class TCPClientManager {
 
     let state: socket.SocketStateBase | undefined = undefined;
 
-    state = await this.socket.getState();
+    try {
+      state = await this.socket.getState();
+    } catch (e) {
+      console.error(TAG, 'getState failed', JSON.stringify(e))
+      return false;
+    }
     console.log(TAG, `isConnect`,
       `state = ${state == undefined} `)
 
@@ -146,13 +152,16 @@ export class TCPClientManager {
     // 如果正常那么发送数据
     if (await this.isConnect() == true) {
       console.log(TAG, `sendMessage-------------------------`, `message=${message}`)
-      this.socket.send({ data: message })
+      await this.socket.send({ data: message })
       return true
     }
 
     // 如果断线了需要重连
     console.log(TAG, '正在重连')
-    await this.connect();
+    if (await this.connect()) {
+      await this.socket.send({ data: message })
+      return true;
+    }
     return false;
 
   }

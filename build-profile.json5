@@ -7,11 +7,11 @@
         "material": {
           "certpath": "C:\\Users\\28772\\.ohos\\config\\default_oh-ai-car-ros-app_SmMFOvKe5d20jnRbhKCN_ct1rsPzb-zgHUDVrhUbKFU=.cer",
           "keyAlias": "debugKey",
-          "keyPassword": "0000001BF97B2CF5F2658B21D1C950638A9E8D6F67AE0669EC442D8AB22853F0EBB24782321F1208462355",
+          "keyPassword": "0000001B3A8496B397A888EEA37105FD4AE5C67F3230D938DD788AD5B4B749DA3BCCA19D9169B5128D944C",
           "profile": "C:\\Users\\28772\\.ohos\\config\\default_oh-ai-car-ros-app_SmMFOvKe5d20jnRbhKCN_ct1rsPzb-zgHUDVrhUbKFU=.p7b",
           "signAlg": "SHA256withECDSA",
           "storeFile": "C:\\Users\\28772\\.ohos\\config\\default_oh-ai-car-ros-app_SmMFOvKe5d20jnRbhKCN_ct1rsPzb-zgHUDVrhUbKFU=.p12",
-          "storePassword": "0000001B01904CE561E4FBC0F3589FDE9BDF6B8A57A42854B8D09013F17212BC45BF70793A7CD10999A1D5"
+          "storePassword": "0000001BC97308C994905B320982B9C46F3D4A877793264319A3E878387A5219249EE58C7A3208A66017EA"
         }
       }
     ],
@@ -22,7 +22,6 @@
         "targetSdkVersion": "6.0.1(21)",
         "runtimeOS": "HarmonyOS",
         "signingConfig": "default"
-        // 这一行缺失就会输出unsigned包
       }
     ]
   },
