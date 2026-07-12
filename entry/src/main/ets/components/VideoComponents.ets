@@ -117,6 +117,7 @@ export struct VideoComponents {
       .width(this.previewWidth)
       .height(this.previewHeight)
       .backgroundColor(Color.White)
+      .clip(true)
 
       if (this.showActions) {
         Row({ space: '10vp' }) {
@@ -144,6 +145,8 @@ export struct VideoComponents {
         .justifyContent(FlexAlign.Center)
       }
     }
+    .width('100%')
+    .height('100%')
     .justifyContent(FlexAlign.Center)
     .alignItems(HorizontalAlign.Center)
   }
@@ -184,21 +187,10 @@ export struct VideoComponents {
       display: block;
       background: #000;
     }
-    .tip {
-      position: fixed;
-      left: 10px;
-      bottom: 10px;
-      right: 10px;
-      color: rgba(255,255,255,0.72);
-      font: 12px sans-serif;
-      word-break: break-all;
-      pointer-events: none;
-    }
   </style>
 </head>
 <body>
   <img src="${streamUrl}" alt="video stream">
-  <div class="tip">${streamUrl}</div>
 </body>
 </html>`;
     return `data:text/html;charset=utf-8,${encodeURIComponent(html)}`

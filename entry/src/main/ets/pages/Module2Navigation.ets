@@ -8,7 +8,7 @@ import {
 } from '../model/PatrolModels';
 import { PatrolStore } from '../store/PatrolStore';
 import { PatrolCommandUtils } from '../tcp/PatrolCommandUtils';
-import { PageHeader, ModuleTabBar, InfoCard } from '../components/PageHeader';
+import { ModuleTabBar, InfoCard } from '../components/PageHeader';
 import { ModuleAlertList } from '../components/ModuleAlertList';
 import { patrolStatusColor } from '../utils/PatrolUiUtils';
 import { ButtonShadow, CardShadow } from '../styles/styles';
@@ -24,7 +24,7 @@ struct Module2Navigation {
   @State route: string = 'warehouse_A';
   @State message: string = '等待连接';
   @State patrolPoints: PatrolPoint[] = [];
-  private tabs: string[] = ['巡检路线', '导航控制', '异常点位'];
+  private tabs: string[] = ['实时数据', '阈值规则', '异常记录'];
   private refreshHandler: () => void = (): void => {
     this.refreshData();
   };
@@ -53,13 +53,13 @@ struct Module2Navigation {
 
   build() {
     Column({ space: '0vp' }) {
-      PageHeader({
-        title: '模块2：SLAM 建图与导航',
-        subtitle: '仓库地图 / 固定巡检点 / 多点导航',
-        accentColor: $r('app.color.module2_accent')
+      ModuleTabBar({
+        currentIndex: $currentTabIndex,
+        tabs: this.tabs,
+        accentColor: $r('app.color.module2_accent'),
+        title: 'SLAM导航',
+        subtitle: '巡检路线、点位进度、导航策略与控制规则'
       })
-
-      ModuleTabBar({ currentIndex: $currentTabIndex, tabs: this.tabs, accentColor: $r('app.color.module2_accent') })
 
       Scroll() {
         Column() {
@@ -82,19 +82,19 @@ struct Module2Navigation {
 
   @Builder
   RouteView() {
-    Column({ space: '12vp' }) {
-      Row({ space: '12vp' }) {
-        Column({ space: '6vp' }) {
+    Column({ space: '10vp' }) {
+      Row({ space: '10vp' }) {
+        Column({ space: '8vp' }) {
           Row({ space: '10vp' }) {
             Text(this.patrolStatusTextValue)
-              .fontSize('15fp')
+              .fontSize('11fp')
               .fontColor(Color.White)
               .backgroundColor(patrolStatusColor(PatrolStore.getInstance().vehicle.patrolStatus))
-              .padding({ left: '12vp', right: '12vp', top: '8vp', bottom: '8vp' })
-              .borderRadius('10vp')
+              .padding({ left: '8vp', right: '8vp', top: '5vp', bottom: '5vp' })
+              .borderRadius('8vp')
           }
           .width('100%')
-          Row({ space: '16vp' }) {
+          Row({ space: '10vp' }) {
             Column({ space: '2vp' }) {
               Text('当前点位')
                 .fontSize('12fp')
@@ -104,8 +104,10 @@ struct Module2Navigation {
                 .fontColor($r('app.color.text'))
                 .fontWeight(FontWeight.Medium)
                 .maxLines(1)
+                .textOverflow({ overflow: TextOverflow.Ellipsis })
             }
             .alignItems(HorizontalAlign.Start)
+            .layoutWeight(1)
             Column({ space: '2vp' }) {
               Text('下一点位')
                 .fontSize('12fp')
@@ -115,8 +117,10 @@ struct Module2Navigation {
                 .fontColor($r('app.color.text'))
                 .fontWeight(FontWeight.Medium)
                 .maxLines(1)
+                .textOverflow({ overflow: TextOverflow.Ellipsis })
             }
             .alignItems(HorizontalAlign.Start)
+            .layoutWeight(1)
           }
           .width('100%')
           Column({ space: '4vp' }) {
@@ -128,6 +132,7 @@ struct Module2Navigation {
                 .fontSize('13fp')
                 .fontColor($r('app.color.text'))
                 .fontWeight(FontWeight.Medium)
+                .maxLines(1)
             }
             Progress({ value: this.progress, total: 100, type: ProgressType.Linear })
               .width('100%')
@@ -138,15 +143,15 @@ struct Module2Navigation {
           }
         }
         .layoutWeight(1)
-        .padding('14vp')
+        .padding('11vp')
         .backgroundColor($r('app.color.card_background'))
-        .borderRadius('14vp')
+        .borderRadius('12vp')
         .border({ width: '1vp', color: $r('app.color.divider') })
         .shadow(CardShadow)
       }
-      .padding({ left: '20vp', right: '20vp' })
+      .padding({ left: '14vp', right: '14vp' })
 
-      Row({ space: '12vp' }) {
+      Row({ space: '10vp' }) {
         Column({ space: '8vp' }) {
           ForEach(this.patrolPoints.slice(0, Math.ceil(this.patrolPoints.length / 2)), (point: PatrolPoint) => {
             PatrolPointCard({ point: point })
@@ -161,24 +166,27 @@ struct Module2Navigation {
         }
         .layoutWeight(1)
       }
-      .padding({ left: '20vp', right: '20vp' })
+      .padding({ left: '14vp', right: '14vp' })
     }
     .width('100%')
+    .padding({ top: '10vp', bottom: '12vp' })
   }
 
   @Builder
   ControlView() {
-    Column({ space: '12vp' }) {
+    Column({ space: '10vp' }) {
       InfoCard({ title: '当前状态' }) {
         Column({ space: '6vp' }) {
           Text(this.message)
-            .fontSize('14fp')
+            .fontSize('13fp')
             .fontColor($r('app.color.text'))
             .maxLines(2)
+            .textOverflow({ overflow: TextOverflow.Ellipsis })
           Text(`当前路线：${this.route}`)
             .fontSize('13fp')
             .fontColor($r('app.color.text_secondary'))
             .maxLines(1)
+            .textOverflow({ overflow: TextOverflow.Ellipsis })
         }
       }
 
@@ -197,22 +205,23 @@ struct Module2Navigation {
           .fontColor($r('app.color.text'))
           .fontWeight(FontWeight.Bold)
           .width('100%')
-          .padding({ left: '20vp' })
+          .maxLines(1)
 
         Row({ space: '8vp' }) {
           ActionButton({ title: '开始巡检', bgColor: $r('app.color.alert_normal'), action: 'start', onAction: this.sendCommand })
           ActionButton({ title: '暂停', bgColor: $r('app.color.alert_warning'), action: 'pause', onAction: this.sendCommand })
           ActionButton({ title: '继续', bgColor: $r('app.color.button_primary'), action: 'resume', onAction: this.sendCommand })
         }
-        .padding({ left: '20vp', right: '20vp' })
+        .width('100%')
 
         Row({ space: '8vp' }) {
           ActionButton({ title: '返回起点', bgColor: $r('app.color.button_primary'), action: 'return', onAction: this.sendCommand })
           ActionButton({ title: '停止巡检', bgColor: $r('app.color.alert_critical'), action: 'stop', onAction: this.sendCommand })
         }
-        .padding({ left: '20vp', right: '20vp' })
+        .width('100%')
       }
     }
+    .padding({ left: '14vp', right: '14vp', top: '10vp', bottom: '12vp' })
     .width('100%')
   }
 
@@ -224,7 +233,7 @@ struct Module2Navigation {
         emptyHint: '暂无巡检异常点位记录'
       })
     }
-    .padding({ left: '20vp', right: '20vp' })
+    .padding({ left: '14vp', right: '14vp', top: '10vp' })
     .width('100%')
   }
 
@@ -261,45 +270,48 @@ struct PatrolPointCard {
   @Prop point: PatrolPoint = { id: '', name: '', visited: false, abnormal: false };
 
   build() {
-    Row({ space: '12vp' }) {
+    Row({ space: '10vp' }) {
       Column({ space: '4vp' }) {
         Text(this.point.id)
-          .fontSize('16fp')
+          .fontSize('14fp')
           .fontColor(Color.White)
           .backgroundColor(this.point.abnormal ? $r('app.color.alert_critical') :
             (this.point.visited ? $r('app.color.alert_normal') : $r('app.color.button_primary')))
-          .width('48vp')
-          .height('48vp')
+          .width('40vp')
+          .height('40vp')
           .textAlign(TextAlign.Center)
-          .borderRadius('12vp')
+          .borderRadius('10vp')
           .fontWeight(FontWeight.Bold)
       }
       .alignItems(HorizontalAlign.Center)
-      Column({ space: '4vp' }) {
+      Column({ space: '2vp' }) {
         Text(this.point.name)
-          .fontSize('16fp')
+          .fontSize('14fp')
           .fontColor($r('app.color.text'))
           .fontWeight(FontWeight.Medium)
+          .maxLines(1)
+          .textOverflow({ overflow: TextOverflow.Ellipsis })
         Text(this.point.abnormal ? '异常' : (this.point.visited ? '已巡检' : '待巡检'))
-          .fontSize('13fp')
+          .fontSize('12fp')
           .fontColor(this.point.abnormal ? $r('app.color.alert_critical') :
             (this.point.visited ? $r('app.color.alert_normal') : $r('app.color.text_secondary')))
+          .maxLines(1)
       }
       .alignItems(HorizontalAlign.Start)
       .layoutWeight(1)
       if (this.point.abnormal) {
         Text('⚠')
-          .fontSize('20fp')
+          .fontSize('18fp')
       } else if (this.point.visited) {
         Text('✓')
-          .fontSize('20fp')
+          .fontSize('18fp')
           .fontColor($r('app.color.alert_normal'))
       }
     }
     .width('100%')
-    .padding('14vp')
+    .padding('11vp')
     .backgroundColor($r('app.color.card_background'))
-    .borderRadius('14vp')
+    .borderRadius('12vp')
     .border({ width: '1vp', color: $r('app.color.divider') })
     .shadow(CardShadow)
   }
@@ -313,10 +325,13 @@ struct StrategyItem {
   build() {
     Row({ space: '10vp' }) {
       Text(this.icon)
-        .fontSize('18fp')
+        .fontSize('16fp')
       Text(this.text)
-        .fontSize('14fp')
+        .fontSize('13fp')
         .fontColor($r('app.color.text'))
+        .maxLines(1)
+        .textOverflow({ overflow: TextOverflow.Ellipsis })
+        .layoutWeight(1)
     }
     .width('100%')
   }

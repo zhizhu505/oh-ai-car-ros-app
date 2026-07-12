@@ -86,7 +86,7 @@ struct Module5AppMonitor {
 
   @Builder
   OverviewView() {
-    Column({ space: '12vp' }) {
+    Column({ space: '10vp' }) {
       Row({ space: '10vp' }) {
         OverviewCard({
           title: '连接状态',
@@ -113,96 +113,111 @@ struct Module5AppMonitor {
           icon: this.controlMode === ControlMode.Auto ? '🤖' : '🎮'
         })
       }
-      .padding({ left: '20vp', right: '20vp' })
+      .padding({ left: '15vp', right: '15vp' })
 
-      InfoCard({ title: '巡检进度' }) {
-        Column({ space: '6vp' }) {
-          Row({ space: '16vp' }) {
-            Column({ space: '2vp' }) {
-              Text('当前点位')
-                .fontSize('12fp')
-                .fontColor($r('app.color.text_secondary'))
-              Text(this.currentPoint)
-                .fontSize('14fp')
-                .fontColor($r('app.color.text'))
-                .fontWeight(FontWeight.Medium)
-                .maxLines(1)
+      Column() {
+        InfoCard({ title: '巡检进度' }) {
+          Column({ space: '6vp' }) {
+            Row({ space: '16vp' }) {
+              Column({ space: '2vp' }) {
+                Text('当前点位')
+                  .fontSize('12fp')
+                  .fontColor($r('app.color.text_secondary'))
+                Text(this.currentPoint)
+                  .fontSize('14fp')
+                  .fontColor($r('app.color.text'))
+                  .fontWeight(FontWeight.Medium)
+                  .maxLines(1)
+                  .textOverflow({ overflow: TextOverflow.Ellipsis })
+              }
+              .alignItems(HorizontalAlign.Start)
+              Column({ space: '2vp' }) {
+                Text('下一点位')
+                  .fontSize('12fp')
+                  .fontColor($r('app.color.text_secondary'))
+                Text(this.nextPoint)
+                  .fontSize('14fp')
+                  .fontColor($r('app.color.text'))
+                  .fontWeight(FontWeight.Medium)
+                  .maxLines(1)
+                  .textOverflow({ overflow: TextOverflow.Ellipsis })
+              }
+              .alignItems(HorizontalAlign.Start)
             }
-            .alignItems(HorizontalAlign.Start)
-            Column({ space: '2vp' }) {
-              Text('下一点位')
-                .fontSize('12fp')
-                .fontColor($r('app.color.text_secondary'))
-              Text(this.nextPoint)
-                .fontSize('14fp')
-                .fontColor($r('app.color.text'))
-                .fontWeight(FontWeight.Medium)
-                .maxLines(1)
+            .width('100%')
+            Column({ space: '4vp' }) {
+              Row({ space: '10vp' }) {
+                Text('进度')
+                  .fontSize('12fp')
+                  .fontColor($r('app.color.text_secondary'))
+                Text(`${this.progress}%`)
+                  .fontSize('14fp')
+                  .fontColor($r('app.color.text'))
+                  .fontWeight(FontWeight.Medium)
+                  .maxLines(1)
+                  .textOverflow({ overflow: TextOverflow.Ellipsis })
+              }
+              Progress({ value: this.progress, total: 100, type: ProgressType.Linear })
+                .width('100%')
+                .height('6vp')
+                .color($r('app.color.module5_accent'))
+                .backgroundColor($r('app.color.divider'))
+                .borderRadius('3vp')
             }
-            .alignItems(HorizontalAlign.Start)
-          }
-          .width('100%')
-          Column({ space: '4vp' }) {
-            Row({ space: '10vp' }) {
-              Text('进度')
-                .fontSize('12fp')
-                .fontColor($r('app.color.text_secondary'))
-              Text(`${this.progress}%`)
-                .fontSize('14fp')
-                .fontColor($r('app.color.text'))
-                .fontWeight(FontWeight.Medium)
-            }
-            Progress({ value: this.progress, total: 100, type: ProgressType.Linear })
+            Text(this.message)
+              .fontSize('13fp')
+              .fontColor($r('app.color.text_secondary'))
               .width('100%')
-              .height('6vp')
-              .color($r('app.color.module5_accent'))
-              .backgroundColor($r('app.color.divider'))
-              .borderRadius('3vp')
+              .maxLines(2)
+              .textOverflow({ overflow: TextOverflow.Ellipsis })
           }
-          Text(this.message)
-            .fontSize('13fp')
-            .fontColor($r('app.color.text_secondary'))
-            .width('100%')
-            .maxLines(2)
         }
       }
+      .padding({ left: '15vp', right: '15vp' })
 
-      InfoCard({ title: '巡检闭环流程' }) {
-        Column({ space: '6vp' }) {
-          Text('建图 → 路线巡检 → 环境采集 → 雷达避障 → 视觉识别 → APP告警')
-            .fontSize('13fp')
-            .fontColor($r('app.color.text'))
-            .width('100%')
-            .maxLines(1)
-          Scroll() {
-            Row({ space: '8vp' }) {
-              ForEach(this.patrolPoints, (point: PatrolPoint) => {
-                Column({ space: '3vp' }) {
-                  Text(point.id)
-                    .fontSize('12fp')
-                    .fontColor(Color.White)
-                    .backgroundColor(point.abnormal ? $r('app.color.alert_critical') :
-                      (point.visited ? $r('app.color.alert_normal') : $r('app.color.button_primary')))
-                    .width('70vp')
-                    .height('38vp')
-                    .textAlign(TextAlign.Center)
-                    .borderRadius('8vp')
-                  Text(point.name)
-                    .fontSize('11fp')
-                    .fontColor($r('app.color.text'))
-                    .maxLines(1)
-                    .textAlign(TextAlign.Center)
-                }
-              }, (point: PatrolPoint) => point.id)
+      Column() {
+        InfoCard({ title: '巡检闭环流程' }) {
+          Column({ space: '6vp' }) {
+            Text('建图 → 路线巡检 → 环境采集 → 雷达避障 → 视觉识别 → APP告警')
+              .fontSize('13fp')
+              .fontColor($r('app.color.text'))
+              .width('100%')
+              .maxLines(1)
+              .textOverflow({ overflow: TextOverflow.Ellipsis })
+            Scroll() {
+              Row({ space: '8vp' }) {
+                ForEach(this.patrolPoints, (point: PatrolPoint) => {
+                  Column({ space: '3vp' }) {
+                    Text(point.id)
+                      .fontSize('12fp')
+                      .fontColor(Color.White)
+                      .backgroundColor(point.abnormal ? $r('app.color.alert_critical') :
+                        (point.visited ? $r('app.color.alert_normal') : $r('app.color.button_primary')))
+                      .width('70vp')
+                      .height('38vp')
+                      .textAlign(TextAlign.Center)
+                      .borderRadius('8vp')
+                      .maxLines(1)
+                    Text(point.name)
+                      .fontSize('11fp')
+                      .fontColor($r('app.color.text'))
+                      .maxLines(1)
+                      .textOverflow({ overflow: TextOverflow.Ellipsis })
+                      .textAlign(TextAlign.Center)
+                  }
+                }, (point: PatrolPoint) => point.id)
+              }
+              .width('100%')
             }
-            .width('100%')
+            .scrollable(ScrollDirection.Horizontal)
+            .scrollBar(BarState.Off)
           }
-          .scrollable(ScrollDirection.Horizontal)
-          .scrollBar(BarState.Off)
         }
       }
+      .padding({ left: '15vp', right: '15vp' })
     }
     .width('100%')
+    .padding({ top: '10vp', bottom: '10vp' })
   }
 
   @Builder
@@ -210,11 +225,11 @@ struct Module5AppMonitor {
     Column({ space: '8vp' }) {
       Button('清空告警')
         .width('80vp')
-        .height('34vp')
+        .height('36vp')
         .fontSize('13fp')
         .fontColor($r('app.color.text'))
         .backgroundColor($r('app.color.button_secondary'))
-        .borderRadius('17vp')
+        .borderRadius('18vp')
         .shadow(ButtonShadow)
         .onClick((): void => {
           PatrolStore.getInstance().clearAlerts();
@@ -228,45 +243,55 @@ struct Module5AppMonitor {
       })
     }
     .width('100%')
-    .padding({ left: '20vp', right: '20vp', top: '8vp' })
+    .padding({ left: '15vp', right: '15vp', top: '10vp' })
   }
 
   @Builder
   ControlView() {
-    Column({ space: '12vp' }) {
-      InfoCard({ title: '模式切换' }) {
-        Row({ space: '10vp' }) {
-          ModeButton({
-            title: '手动模式',
-            active: this.controlMode === ControlMode.Manual,
-            action: () => { this.switchMode(ControlMode.Manual); }
-          })
-          ModeButton({
-            title: '自动巡检',
-            active: this.controlMode === ControlMode.Auto,
-            action: () => { this.switchMode(ControlMode.Auto); }
-          })
-        }
-      }
-
-      InfoCard({ title: '巡检控制' }) {
-        Column({ space: '10vp' }) {
-          Row({ space: '8vp' }) {
-            ControlButton({ title: '开始巡检', bgColor: $r('app.color.alert_normal'), action: 'start', onAction: this.sendCommand })
-            ControlButton({ title: '暂停', bgColor: $r('app.color.alert_warning'), action: 'pause', onAction: this.sendCommand })
-            ControlButton({ title: '返回起点', bgColor: $r('app.color.button_primary'), action: 'return', onAction: this.sendCommand })
+    Column({ space: '10vp' }) {
+      Column() {
+        InfoCard({ title: '模式切换' }) {
+          Row({ space: '10vp' }) {
+            ModeButton({
+              title: '手动模式',
+              active: this.controlMode === ControlMode.Manual,
+              action: () => { this.switchMode(ControlMode.Manual); }
+            })
+            ModeButton({
+              title: '自动巡检',
+              active: this.controlMode === ControlMode.Auto,
+              action: () => { this.switchMode(ControlMode.Auto); }
+            })
           }
         }
       }
+      .padding({ left: '15vp', right: '15vp' })
 
-      InfoCard({ title: '遥控入口' }) {
-        Row({ space: '10vp' }) {
-          NavButton({ title: '手动遥控', icon: '🎮', url: 'pages/RemoteControl' })
-          NavButton({ title: '麦科朗姆轮', icon: '⚙️', url: 'pages/MecanumWheel' })
+      Column() {
+        InfoCard({ title: '巡检控制' }) {
+          Column({ space: '10vp' }) {
+            Row({ space: '8vp' }) {
+              ControlButton({ title: '开始巡检', bgColor: $r('app.color.alert_normal'), action: 'start', onAction: this.sendCommand })
+              ControlButton({ title: '暂停', bgColor: $r('app.color.alert_warning'), action: 'pause', onAction: this.sendCommand })
+              ControlButton({ title: '返回起点', bgColor: $r('app.color.button_primary'), action: 'return', onAction: this.sendCommand })
+            }
+          }
         }
       }
+      .padding({ left: '15vp', right: '15vp' })
+
+      Column() {
+        InfoCard({ title: '遥控入口' }) {
+          Row({ space: '10vp' }) {
+            NavButton({ title: '手动遥控', icon: '🎮', url: 'pages/RemoteControl' })
+            NavButton({ title: '麦科朗姆轮', icon: '⚙️', url: 'pages/MecanumWheel' })
+          }
+        }
+      }
+      .padding({ left: '15vp', right: '15vp' })
     }
     .width('100%')
+    .padding({ top: '10vp', bottom: '10vp' })
   }
 
   private async switchMode(mode: ControlMode): Promise<void> {
@@ -304,23 +329,27 @@ struct OverviewCard {
   @Prop icon: string = '';
 
   build() {
-    Column({ space: '8vp' }) {
+    Column({ space: '6vp' }) {
       Text(this.icon)
-        .fontSize('24fp')
+        .fontSize('22fp')
       Text(this.title)
-        .fontSize('13fp')
+        .fontSize('12fp')
         .fontColor($r('app.color.text_secondary'))
+        .maxLines(1)
+        .textOverflow({ overflow: TextOverflow.Ellipsis })
       Text(this.value)
-        .fontSize('15fp')
+        .fontSize('14fp')
         .fontColor(Color.White)
         .backgroundColor(this.bgColor)
-        .padding({ left: '10vp', right: '10vp', top: '6vp', bottom: '6vp' })
-        .borderRadius('10vp')
+        .padding({ left: '8vp', right: '8vp', top: '5vp', bottom: '5vp' })
+        .borderRadius('8vp')
+        .maxLines(1)
+        .textOverflow({ overflow: TextOverflow.Ellipsis })
     }
     .layoutWeight(1)
-    .padding('14vp')
+    .padding('12vp')
     .backgroundColor($r('app.color.card_background'))
-    .borderRadius('14vp')
+    .borderRadius('12vp')
     .border({ width: '1vp', color: $r('app.color.divider') })
     .shadow(CardShadow)
     .alignItems(HorizontalAlign.Center)
@@ -336,11 +365,11 @@ struct ModeButton {
   build() {
     Button(this.title)
       .width('100%')
-      .height('48vp')
-      .fontSize('15fp')
+      .height('38vp')
+      .fontSize('14fp')
       .fontColor(this.active ? Color.White : $r('app.color.text'))
       .backgroundColor(this.active ? $r('app.color.module5_accent') : $r('app.color.card_elevated'))
-      .borderRadius('24vp')
+      .borderRadius('19vp')
       .shadow(this.active ? ButtonShadow : CardShadow)
       .onClick(this.action)
   }
@@ -356,11 +385,11 @@ struct ControlButton {
   build() {
     Button(this.title)
       .width('100%')
-      .height('44vp')
-      .fontSize('15fp')
+      .height('38vp')
+      .fontSize('14fp')
       .fontColor(Color.White)
       .backgroundColor(this.bgColor)
-      .borderRadius('22vp')
+      .borderRadius('19vp')
       .shadow(ButtonShadow)
       .onClick((): void => {
         this.onAction(this.action);
@@ -376,18 +405,20 @@ struct NavButton {
 
   build() {
     Button() {
-      Column({ space: '6vp' }) {
+      Column({ space: '4vp' }) {
         Text(this.icon)
-          .fontSize('24fp')
+          .fontSize('22fp')
         Text(this.title)
-          .fontSize('14fp')
+          .fontSize('13fp')
           .fontColor($r('app.color.text'))
+          .maxLines(1)
+          .textOverflow({ overflow: TextOverflow.Ellipsis })
       }
     }
     .width('100%')
-    .height('80vp')
+    .height('72vp')
     .backgroundColor($r('app.color.card_elevated'))
-    .borderRadius('16vp')
+    .borderRadius('12vp')
     .shadow(CardShadow)
     .onClick((): void => {
       router.pushUrl({ url: this.url });

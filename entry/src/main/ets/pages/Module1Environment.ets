@@ -7,7 +7,7 @@ import {
   alertLevelText
 } from '../model/PatrolModels';
 import { PatrolStore } from '../store/PatrolStore';
-import { PageHeader, ModuleTabBar, InfoCard } from '../components/PageHeader';
+import { ModuleTabBar, InfoCard } from '../components/PageHeader';
 import { EnvCard, ThresholdTable } from '../components/EnvCard';
 import { ModuleAlertList } from '../components/ModuleAlertList';
 import { levelColor } from '../utils/PatrolUiUtils';
@@ -57,13 +57,13 @@ struct Module1Environment {
 
   build() {
     Column({ space: '0vp' }) {
-      PageHeader({
-        title: '模块1：环境感知',
-        subtitle: '温湿度 / 烟雾 / 气体 / 光照 / PM2.5',
-        accentColor: $r('app.color.module1_accent')
+      ModuleTabBar({
+        currentIndex: $currentTabIndex,
+        tabs: this.tabs,
+        accentColor: $r('app.color.module1_accent'),
+        title: '环境感知',
+        subtitle: '温湿度、烟雾、气体、光照与空气质量监测'
       })
-
-      ModuleTabBar({ currentIndex: $currentTabIndex, tabs: this.tabs, accentColor: $r('app.color.module1_accent') })
 
       Scroll() {
         Column() {
@@ -86,10 +86,10 @@ struct Module1Environment {
 
   @Builder
   LiveDataView() {
-    Column({ space: '12vp' }) {
-      Row({ space: '12vp' }) {
-        Column({ space: '6vp' }) {
-          Row({ space: '10vp' }) {
+    Column({ space: '10vp' }) {
+      Row({ space: '10vp' }) {
+        Column({ space: '8vp' }) {
+          Row({ space: '8vp' }) {
             Column({ space: '2vp' }) {
               Text('巡检点位')
                 .fontSize('12fp')
@@ -101,16 +101,16 @@ struct Module1Environment {
                 .maxLines(1)
             }
             .alignItems(HorizontalAlign.Start)
-            Blank()
+            .layoutWeight(1)
             Text(alertLevelText(this.level))
-              .fontSize('12fp')
+              .fontSize('11fp')
               .fontColor(Color.White)
               .backgroundColor(levelColor(this.level))
-              .padding({ left: '10vp', right: '10vp', top: '6vp', bottom: '6vp' })
-              .borderRadius('10vp')
+              .padding({ left: '8vp', right: '8vp', top: '5vp', bottom: '5vp' })
+              .borderRadius('8vp')
           }
           .width('100%')
-          Row({ space: '10vp' }) {
+          Row({ space: '8vp' }) {
             Column({ space: '2vp' }) {
               Text('更新时间')
                 .fontSize('12fp')
@@ -124,45 +124,46 @@ struct Module1Environment {
           }
         }
         .layoutWeight(1)
-        .padding('14vp')
+        .padding('11vp')
         .backgroundColor($r('app.color.card_background'))
-        .borderRadius('14vp')
+        .borderRadius('12vp')
         .border({ width: '1vp', color: $r('app.color.divider') })
         .shadow(CardShadow)
       }
-      .padding({ left: '20vp', right: '20vp' })
+      .padding({ left: '14vp', right: '14vp' })
 
-      Row({ space: '12vp' }) {
-        Column({ space: '10vp' }) {
+      Row({ space: '10vp' }) {
+        Column({ space: '8vp' }) {
           EnvCard({ title: '温度', value: `${this.temperature}`, unit: '℃', threshold: ENV_THRESHOLDS[0] })
           EnvCard({ title: '湿度', value: `${this.humidity}`, unit: '%', threshold: ENV_THRESHOLDS[1] })
           EnvCard({ title: '烟雾', value: `${this.smoke}`, unit: 'ppm', threshold: ENV_THRESHOLDS[2] })
         }
         .layoutWeight(1)
 
-        Column({ space: '10vp' }) {
+        Column({ space: '8vp' }) {
           EnvCard({ title: '可燃气体', value: `${this.gas}`, unit: 'ppm', threshold: ENV_THRESHOLDS[3] })
           EnvCard({ title: '光照', value: `${this.light}`, unit: 'lux', threshold: ENV_THRESHOLDS[4] })
           EnvCard({ title: 'PM2.5', value: `${this.pm25}`, unit: 'μg/m³', threshold: ENV_THRESHOLDS[5] })
         }
         .layoutWeight(1)
 
-        Column({ space: '10vp' }) {
+        Column({ space: '8vp' }) {
           EnvCard({ title: '气压', value: `${this.pressure}`, unit: 'hPa', threshold: PRESSURE_THRESHOLD })
         }
         .layoutWeight(1)
       }
-      .padding({ left: '20vp', right: '20vp' })
+      .padding({ left: '14vp', right: '14vp' })
     }
     .width('100%')
+    .padding({ top: '10vp', bottom: '12vp' })
   }
 
   @Builder
   RuleView() {
-    Column({ space: '16vp' }) {
+    Column({ space: '10vp' }) {
       ThresholdTable()
       InfoCard({ title: '异常判断流程' }) {
-        Column({ space: '8vp' }) {
+        Column({ space: '6vp' }) {
           Text('1. 多次采样取平均，去除突变值')
             .fontSize('13fp')
             .fontColor($r('app.color.text'))
@@ -178,7 +179,7 @@ struct Module1Environment {
         }
       }
     }
-    .padding({ left: '20vp', right: '20vp', bottom: '16vp' })
+    .padding({ left: '14vp', right: '14vp', top: '10vp', bottom: '12vp' })
     .width('100%')
   }
 
@@ -190,7 +191,7 @@ struct Module1Environment {
         emptyHint: '暂无环境异常记录'
       })
     }
-    .padding({ left: '20vp', right: '20vp' })
+    .padding({ left: '14vp', right: '14vp', top: '10vp' })
     .width('100%')
   }
 }

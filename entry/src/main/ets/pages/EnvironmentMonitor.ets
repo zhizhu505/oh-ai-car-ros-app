@@ -53,7 +53,7 @@ struct EnvironmentMonitor {
   }
 
   build() {
-    Column({ space: '16vp' }) {
+    Column({ space: '10vp' }) {
       PageHeader({
         title: '环境数据监测',
         subtitle: `当前点位：${this.point}`,
@@ -61,16 +61,20 @@ struct EnvironmentMonitor {
       })
 
       InfoCard({ title: '实时状态' }) {
-        Column({ space: '12vp' }) {
+        Column({ space: '10vp' }) {
           Row({ space: '16vp' }) {
             Column({ space: '4vp' }) {
               Text('更新时间')
                 .fontSize('14fp')
                 .fontColor($r('app.color.text_secondary'))
+                .maxLines(1)
+                .textOverflow({ overflow: TextOverflow.Ellipsis })
               Text(this.updateTime)
                 .fontSize('16fp')
                 .fontColor($r('app.color.text'))
                 .fontWeight(FontWeight.Medium)
+                .maxLines(1)
+                .textOverflow({ overflow: TextOverflow.Ellipsis })
             }
             Blank()
             StatusBadge({
@@ -82,7 +86,7 @@ struct EnvironmentMonitor {
       }
 
       Scroll() {
-        Column({ space: '12vp' }) {
+        Column({ space: '10vp' }) {
           EnvCard({ title: '温度', value: `${this.temperature}`, unit: '℃', threshold: ENV_THRESHOLDS[0] })
           EnvCard({ title: '湿度', value: `${this.humidity}`, unit: '%', threshold: ENV_THRESHOLDS[1] })
           EnvCard({ title: '烟雾', value: `${this.smoke}`, unit: 'ppm', threshold: ENV_THRESHOLDS[2] })
@@ -98,7 +102,7 @@ struct EnvironmentMonitor {
     .width('100%')
     .height('100%')
     .backgroundColor($r('app.color.window_background'))
-    .padding({ left: '20vp', right: '20vp', bottom: '20vp' })
+    .padding({ left: '15vp', right: '15vp', bottom: '15vp' })
   }
 }
 
@@ -138,13 +142,19 @@ struct EnvCard {
         Text(this.title)
           .fontSize('15fp')
           .fontColor($r('app.color.text_secondary'))
+          .maxLines(1)
+          .textOverflow({ overflow: TextOverflow.Ellipsis })
         Text(`${this.value}`)
           .fontSize('32fp')
           .fontWeight(FontWeight.Bold)
           .fontColor($r('app.color.text'))
+          .maxLines(1)
+          .textOverflow({ overflow: TextOverflow.Ellipsis })
         Text(this.unit)
           .fontSize('14fp')
           .fontColor($r('app.color.text_secondary'))
+          .maxLines(1)
+          .textOverflow({ overflow: TextOverflow.Ellipsis })
       }
       .alignItems(HorizontalAlign.Start)
       .layoutWeight(1)
@@ -154,20 +164,23 @@ struct EnvCard {
           .fontSize('13fp')
           .fontColor($r('app.color.text_on_accent'))
           .backgroundColor(levelColor(this.getLevel()))
-          .padding({ left: '12vp', right: '12vp', top: '8vp', bottom: '8vp' })
-          .borderRadius('14vp')
+          .padding({ left: '12vp', right: '12vp', top: '6vp', bottom: '6vp' })
+          .borderRadius('12vp')
+          .maxLines(1)
+          .textOverflow({ overflow: TextOverflow.Ellipsis })
         Text(`预警≥${this.threshold.warningMax}  严重≥${this.threshold.criticalMax}`)
           .fontSize('11fp')
           .fontColor($r('app.color.text_secondary'))
           .maxLines(2)
+          .textOverflow({ overflow: TextOverflow.Ellipsis })
           .textAlign(TextAlign.Center)
       }
       .alignItems(HorizontalAlign.End)
     }
     .width('100%')
-    .padding('16vp')
+    .padding('13vp')
     .backgroundColor($r('app.color.card_background'))
-    .borderRadius('16vp')
+    .borderRadius('12vp')
     .border({ width: '1vp', color: $r('app.color.divider') })
     .shadow(CardShadow)
   }

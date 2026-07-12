@@ -1,5 +1,5 @@
 import router from '@ohos.router';
-import { CardShadow, GlowShadow } from '../styles/styles';
+import { ButtonShadow, CardShadow, GlowShadow } from '../styles/styles';
 
 @Component
 export struct PageHeader {
@@ -11,46 +11,51 @@ export struct PageHeader {
   };
 
   build() {
-    Column({ space: '12vp' }) {
-      Row({ space: '16vp' }) {
-        Row({ space: '14vp' }) {
+    Column({ space: '10vp' }) {
+      Row({ space: '12vp' }) {
+        Row({ space: '12vp' }) {
           Stack() {
             Column()
-              .width('6vp')
-              .height('40vp')
+              .width('5vp')
+              .height('36vp')
               .backgroundColor(this.accentColor)
               .borderRadius('3vp')
           }
           .shadow({
-            radius: 10,
+            radius: 8,
             offsetX: 0,
             offsetY: 0,
             color: this.accentColor + '40'
           })
 
-          Column({ space: '6vp' }) {
+          Column({ space: '4vp' }) {
             Text(this.title)
-              .fontSize('26fp')
+              .fontSize('22fp')
               .fontColor($r('app.color.text'))
               .fontWeight(FontWeight.Bold)
+              .maxLines(1)
+              .textOverflow({ overflow: TextOverflow.Ellipsis })
             if (this.subtitle.length > 0) {
               Text(this.subtitle)
-                .fontSize('14fp')
+                .fontSize('13fp')
                 .fontColor($r('app.color.text_secondary'))
-                .opacity(0.8)
+                .maxLines(1)
+                .textOverflow({ overflow: TextOverflow.Ellipsis })
+                .opacity(0.85)
             }
           }
           .alignItems(HorizontalAlign.Start)
+          .layoutWeight(1)
         }
         .layoutWeight(1)
 
         Button('返回')
-          .width('80vp')
-          .height('40vp')
-          .fontSize('15fp')
+          .width('68vp')
+          .height('36vp')
+          .fontSize('13fp')
           .fontColor($r('app.color.text'))
           .backgroundColor($r('app.color.button_secondary'))
-          .borderRadius('20vp')
+          .borderRadius('18vp')
           .onClick((): void => {
             this.backEvent();
           })
@@ -63,7 +68,7 @@ export struct PageHeader {
         .opacity(0.5)
     }
     .width('100%')
-    .padding({ left: '24vp', right: '24vp', top: '20vp', bottom: '12vp' })
+    .padding({ left: '16vp', right: '16vp', top: '14vp', bottom: '10vp' })
     .backgroundColor($r('app.color.header_background'))
     .shadow(CardShadow)
   }
@@ -74,30 +79,95 @@ export struct ModuleTabBar {
   @Link currentIndex: number;
   @Prop tabs: string[] = [];
   @Prop accentColor: ResourceColor = $r('app.color.button_primary');
+  @Prop title: string = '';
+  @Prop subtitle: string = '';
 
   build() {
-    Scroll() {
-      Row({ space: '10vp' }) {
-        ForEach(this.tabs, (tab: string, index: number) => {
-          Text(tab)
-            .fontSize('14fp')
-            .fontColor(this.currentIndex === index ?
-              $r('app.color.text_on_accent') : $r('app.color.text_secondary'))
-            .fontWeight(this.currentIndex === index ? FontWeight.Medium : FontWeight.Normal)
-            .padding({ left: '18vp', right: '18vp', top: '10vp', bottom: '10vp' })
-            .backgroundColor(this.currentIndex === index ? this.accentColor : $r('app.color.card_background'))
-            .borderRadius('22vp')
-            .border({ width: '1vp', color: this.currentIndex === index ? this.accentColor : $r('app.color.divider') })
+    Column({ space: '10vp' }) {
+      if (this.title.length > 0) {
+        Row({ space: '12vp' }) {
+          Stack() {
+            Column()
+              .width('5vp')
+              .height('36vp')
+              .backgroundColor(this.accentColor)
+              .borderRadius('3vp')
+          }
+          .shadow({
+            radius: 8,
+            offsetX: 0,
+            offsetY: 0,
+            color: this.accentColor + '40'
+          })
+
+          Column({ space: '4vp' }) {
+            Text(this.title)
+              .fontSize('22fp')
+              .fontColor($r('app.color.text'))
+              .fontWeight(FontWeight.Bold)
+              .maxLines(1)
+              .textOverflow({ overflow: TextOverflow.Ellipsis })
+            Text(this.subtitle.length > 0 ? this.subtitle : '实时数据、规则与异常记录')
+              .fontSize('12fp')
+              .fontColor($r('app.color.text_secondary'))
+              .maxLines(1)
+              .textOverflow({ overflow: TextOverflow.Ellipsis })
+              .opacity(0.85)
+          }
+          .alignItems(HorizontalAlign.Start)
+          .layoutWeight(1)
+
+          Button('返回')
+            .width('68vp')
+            .height('36vp')
+            .fontSize('13fp')
+            .fontColor($r('app.color.text'))
+            .backgroundColor($r('app.color.button_secondary'))
+            .borderRadius('18vp')
+            .border({ width: '1vp', color: $r('app.color.divider') })
+            .shadow(ButtonShadow)
             .onClick((): void => {
-              this.currentIndex = index;
+              router.back();
             })
-        }, (tab: string, index: number) => `${tab}_${index}`)
+        }
+        .width('100%')
       }
+
+      Row() {
+        Scroll() {
+          Row({ space: '8vp' }) {
+            ForEach(this.tabs, (tab: string, index: number) => {
+              Text(tab)
+                .fontSize('13fp')
+                .fontColor(this.currentIndex === index ?
+                  $r('app.color.text_on_accent') : $r('app.color.text'))
+                .fontWeight(this.currentIndex === index ? FontWeight.Bold : FontWeight.Medium)
+                .padding({ left: '16vp', right: '16vp', top: '8vp', bottom: '8vp' })
+                .backgroundColor(this.currentIndex === index ? this.accentColor : $r('app.color.card_elevated'))
+                .borderRadius('16vp')
+                .border({ width: '1vp', color: this.currentIndex === index ? this.accentColor : $r('app.color.divider') })
+                .shadow(this.currentIndex === index ? {
+                  radius: 10,
+                  offsetX: 0,
+                  offsetY: 3,
+                  color: this.accentColor + '40'
+                } : CardShadow)
+                .onClick((): void => {
+                  this.currentIndex = index;
+                })
+            }, (tab: string, index: number) => `${tab}_${index}`)
+          }
+        }
+        .scrollable(ScrollDirection.Horizontal)
+        .scrollBar(BarState.Off)
+        .layoutWeight(1)
+      }
+      .width('100%')
     }
-    .scrollable(ScrollDirection.Horizontal)
-    .scrollBar(BarState.Off)
     .width('100%')
-    .padding({ left: '20vp', right: '20vp', top: '12vp', bottom: '8vp' })
+    .padding({ left: '16vp', right: '16vp', top: '14vp', bottom: '10vp' })
+    .backgroundColor($r('app.color.header_background'))
+    .shadow(CardShadow)
   }
 }
 
@@ -112,20 +182,29 @@ export struct InfoCard {
   }
 
   build() {
-    Column({ space: '12vp' }) {
+    Column({ space: '10vp' }) {
       if (this.title.length > 0) {
-        Text(this.title)
-          .fontSize('17fp')
-          .fontColor($r('app.color.text'))
-          .fontWeight(FontWeight.Bold)
-          .width('100%')
+        Row({ space: '8vp' }) {
+          Column()
+            .width('4vp')
+            .height('18vp')
+            .backgroundColor($r('app.color.button_primary'))
+            .borderRadius('2vp')
+          Text(this.title)
+            .fontSize('16fp')
+            .fontColor($r('app.color.text'))
+            .fontWeight(FontWeight.Bold)
+            .maxLines(1)
+            .textOverflow({ overflow: TextOverflow.Ellipsis })
+        }
+        .width('100%')
       }
       this.content()
     }
     .width('100%')
-    .padding('16vp')
+    .padding('14vp')
     .backgroundColor($r('app.color.card_background'))
-    .borderRadius('16vp')
+    .borderRadius('14vp')
     .border({ width: '1vp', color: $r('app.color.divider') })
     .shadow(CardShadow)
   }
@@ -138,10 +217,12 @@ export struct StatusBadge {
 
   build() {
     Text(this.text)
-      .fontSize('13fp')
+      .fontSize('12fp')
       .fontColor($r('app.color.text_on_accent'))
       .backgroundColor(this.bgColor)
-      .padding({ left: '12vp', right: '12vp', top: '6vp', bottom: '6vp' })
-      .borderRadius('16vp')
+      .padding({ left: '10vp', right: '10vp', top: '5vp', bottom: '5vp' })
+      .borderRadius('12vp')
+      .maxLines(1)
+      .textOverflow({ overflow: TextOverflow.Ellipsis })
   }
 }

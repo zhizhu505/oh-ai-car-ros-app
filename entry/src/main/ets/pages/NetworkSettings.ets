@@ -21,78 +21,86 @@ struct NetworkSettings {
 
   build(): void {
     Stack() {
-      Row({ space: '0vp' }) {
-        Column({ space: '28vp' }) {
-          Column({ space: '8vp' }) {
-            Text('狭域巡航')
-              .fontSize('40fp')
-              .fontColor($r('app.color.text'))
-              .fontWeight(FontWeight.Bold)
-            Text('Warehouse Intelligent Patrol System')
-              .fontSize('16fp')
-              .fontColor($r('app.color.text_secondary'))
-          }
-          .alignItems(HorizontalAlign.Start)
+      Column({ space: '16vp' }) {
+        Column({ space: '6vp' }) {
+          Text('狭域巡航')
+            .fontSize('32fp')
+            .fontColor($r('app.color.text'))
+            .fontWeight(FontWeight.Bold)
+          Text('Warehouse Intelligent Patrol System')
+            .fontSize('14fp')
+            .fontColor($r('app.color.text_secondary'))
+            .maxLines(1)
+        }
+        .alignItems(HorizontalAlign.Start)
+        .width('100%')
+        .padding({ top: '40vp', left: '20vp', right: '20vp' })
 
+        Scroll() {
           Column({ space: '16vp' }) {
-            FlowStep({ step: '01', text: '环境感知 · 温湿度/烟雾监测', icon: '🌡️' })
-            FlowStep({ step: '02', text: 'SLAM导航 · 多点自动巡检', icon: '🗺️' })
-            FlowStep({ step: '03', text: '激光雷达 · 通道占用检测', icon: '📡' })
-            FlowStep({ step: '04', text: '视觉识别 · 人员/货物异常', icon: '👁️' })
-            FlowStep({ step: '05', text: 'APP监控 · 告警与远程控制', icon: '🎮' })
+            Column({ space: '12vp' }) {
+              FlowStep({ step: '01', text: '环境感知 · 温湿度/烟雾监测', icon: '🌡️' })
+              FlowStep({ step: '02', text: 'SLAM导航 · 多点自动巡检', icon: '🗺️' })
+              FlowStep({ step: '03', text: '激光雷达 · 通道占用检测', icon: '📡' })
+              FlowStep({ step: '04', text: '视觉识别 · 人员/货物异常', icon: '👁️' })
+              FlowStep({ step: '05', text: 'APP监控 · 告警与远程控制', icon: '🎮' })
+            }
+            .width('100%')
+            .padding('16vp')
+            .backgroundColor($r('app.color.card_background'))
+            .borderRadius('16vp')
+            .border({ width: '1vp', color: $r('app.color.divider') })
+            .shadow(CardShadow)
+
+            Row({ space: '10vp' }) {
+              FeatureCard({ title: '实时监控', desc: '数据实时同步', icon: '⚡' })
+              FeatureCard({ title: '智能告警', desc: '多级异常预警', icon: '🔔' })
+              FeatureCard({ title: '远程控制', desc: '遥控与自动模式', icon: '🔧' })
+            }
+            .width('100%')
+
+            if (this.online) {
+              Row({ space: '8vp' }) {
+                Stack() {
+                  Column()
+                    .width('10vp')
+                    .height('10vp')
+                    .backgroundColor($r('app.color.status_success'))
+                    .borderRadius('5vp')
+                }
+                .shadow({
+                  radius: 10,
+                  offsetX: 0,
+                  offsetY: 0,
+                  color: '#22C55E60'
+                })
+                Text('已连接')
+                  .fontSize('13fp')
+                  .fontColor($r('app.color.status_success'))
+                  .fontWeight(FontWeight.Medium)
+              }
+              .alignItems(VerticalAlign.Center)
+              .padding({ left: '16vp', right: '16vp', top: '10vp', bottom: '10vp' })
+              .backgroundColor($r('app.color.card_background'))
+              .borderRadius('12vp')
+              .border({ width: '1vp', color: $r('app.color.divider') })
+              .alignSelf(ItemAlign.Center)
+            }
           }
           .width('100%')
-          .padding('28vp')
-          .backgroundColor($r('app.color.card_background'))
-          .borderRadius('24vp')
-          .border({ width: '1vp', color: $r('app.color.divider') })
-          .shadow(CardShadow)
-
-          Row({ space: '20vp' }) {
-            FeatureCard({ title: '实时监控', desc: '数据实时同步', icon: '⚡' })
-            FeatureCard({ title: '智能告警', desc: '多级异常预警', icon: '🔔' })
-            FeatureCard({ title: '远程控制', desc: '遥控与自动模式', icon: '🔧' })
-          }
+          .padding({ left: '20vp', right: '20vp', bottom: '20vp' })
         }
         .layoutWeight(1)
-        .padding({ left: '60vp', top: '60vp', bottom: '60vp' })
-
-        Column({ space: '0vp' }) {
-          if (this.online) {
-            Row({ space: '10vp' }) {
-              Stack() {
-                Column()
-                  .width('12vp')
-                  .height('12vp')
-                  .backgroundColor($r('app.color.status_success'))
-                  .borderRadius('6vp')
-              }
-              .shadow({
-                radius: 12,
-                offsetX: 0,
-                offsetY: 0,
-                color: '#22C55E60'
-              })
-              Text('已连接')
-                .fontSize('15fp')
-                .fontColor($r('app.color.status_success'))
-            }
-            .alignItems(VerticalAlign.Center)
-            .padding({ right: '60vp', top: '60vp' })
-            .justifyContent(FlexAlign.End)
-          }
-          Blank()
-        }
-        .layoutWeight(1)
+        .scrollBar(BarState.Off)
       }
       .width('100%')
       .height('100%')
+      .backgroundColor($r('app.color.window_background'))
 
       this.LoginOverlay()
     }
     .width('100%')
     .height('100%')
-    .backgroundColor($r('app.color.window_background'))
   }
 
   @Builder
@@ -124,30 +132,32 @@ struct FlowStep {
 
   build() {
     Row({ space: '12vp' }) {
-      Column({ space: '4vp' }) {
+      Column({ space: '2vp' }) {
         Text(this.icon)
-          .fontSize('18fp')
+          .fontSize('16fp')
         Text(this.step)
           .fontSize('10fp')
           .fontColor($r('app.color.text_on_accent'))
           .backgroundColor($r('app.color.button_primary'))
-          .width('24vp')
-          .height('24vp')
+          .width('22vp')
+          .height('22vp')
           .textAlign(TextAlign.Center)
-          .borderRadius('12vp')
+          .borderRadius('11vp')
       }
       .alignItems(HorizontalAlign.Center)
       Text(this.text)
-        .fontSize('15fp')
+        .fontSize('14fp')
         .fontColor($r('app.color.text'))
         .layoutWeight(1)
+        .maxLines(1)
+        .textOverflow({ overflow: TextOverflow.Ellipsis })
       Text('→')
-        .fontSize('16fp')
+        .fontSize('14fp')
         .fontColor($r('app.color.text_secondary'))
         .opacity(0.5)
     }
     .width('100%')
-    .padding('8vp')
+    .padding({ top: '6vp', bottom: '6vp' })
   }
 }
 
@@ -158,19 +168,21 @@ struct FeatureCard {
   @Prop icon: string = '';
 
   build() {
-    Column({ space: '8vp' }) {
+    Column({ space: '6vp' }) {
       Text(this.icon)
-        .fontSize('24fp')
+        .fontSize('20fp')
       Text(this.title)
-        .fontSize('15fp')
+        .fontSize('13fp')
         .fontColor($r('app.color.text'))
         .fontWeight(FontWeight.Medium)
+        .maxLines(1)
       Text(this.desc)
-        .fontSize('12fp')
+        .fontSize('11fp')
         .fontColor($r('app.color.text_secondary'))
+        .maxLines(1)
     }
     .layoutWeight(1)
-    .padding('16vp')
+    .padding('12vp')
     .backgroundColor($r('app.color.card_elevated'))
     .borderRadius('12vp')
     .alignItems(HorizontalAlign.Center)
@@ -196,15 +208,15 @@ struct LoginComponent {
   }
 
   build(): void {
-    Column({ space: '14vp' }) {
+    Column({ space: '12vp' }) {
       Column({ space: '6vp' }) {
         Text('连接小车')
-          .fontSize('22fp')
+          .fontSize('20fp')
           .fontColor($r('app.color.text'))
           .fontWeight(FontWeight.Bold)
           .maxLines(1)
         Text('配置网络参数后连接，或跳过直接进入预览')
-          .fontSize('13fp')
+          .fontSize('12fp')
           .fontColor($r('app.color.text_secondary'))
           .maxLines(1)
       }
@@ -243,16 +255,16 @@ struct LoginComponent {
       }
 
       Text('离线模式下可浏览全部页面')
-        .fontSize('12fp')
+        .fontSize('11fp')
         .fontColor($r('app.color.text_secondary'))
         .width('100%')
         .textAlign(TextAlign.Center)
         .maxLines(1)
     }
-    .width('min(85%, 360vp)')
-    .padding('20vp')
+    .width('min(88%, 340vp)')
+    .padding('18vp')
     .backgroundColor($r('app.color.card_background'))
-    .borderRadius('20vp')
+    .borderRadius('18vp')
     .shadow(ElevatedShadow)
   }
 
@@ -260,18 +272,18 @@ struct LoginComponent {
   InputRow(label: string, value: string, onChange: (v: string) => void) {
     Column({ space: '6vp' }) {
       Text(label)
-        .fontSize('14fp')
+        .fontSize('13fp')
         .fontColor($r('app.color.text_secondary'))
         .width('100%')
       TextInput({ text: value, placeholder: `请输入${label}` })
-        .fontSize('16fp')
+        .fontSize('15fp')
         .fontColor($r('app.color.text'))
         .placeholderColor($r('app.color.text_secondary'))
         .backgroundColor($r('app.color.edit_text_background'))
         .border({ width: '1vp', color: $r('app.color.edit_text_border') })
         .borderRadius('12vp')
-        .height('44vp')
-        .padding({ left: '14vp', right: '14vp' })
+        .height('42vp')
+        .padding({ left: '12vp', right: '12vp' })
         .onChange(onChange)
     }
     .width('100%')

@@ -1,5 +1,6 @@
 import router from '@ohos.router';
 import { PatrolStore } from '../store/PatrolStore';
+import { AlertRecord, AlertLevel } from '../model/PatrolModels';
 import { CardShadow, CardShadowHover, ElevatedShadow } from '../styles/styles';
 import { onlineColor } from '../utils/PatrolUiUtils';
 
@@ -22,60 +23,58 @@ struct Index {
 
   build() {
     Column({ space: '0vp' }) {
-this.Header()
+      this.Header()
 
       Scroll() {
-        Column({ space: '14vp' }) {
-          Row({ space: '12vp' }) {
+        Column({ space: '12vp' }) {
+          Row({ space: '10vp' }) {
             ModuleEntry({
-              moduleNo: '01',
               title: '环境感知',
-              desc: '温湿度 / 烟雾 / 气体',
-              metric: '实时采集',
+              desc: '温湿度 / 烟雾 / 光照',
+              metric: '异常阈值',
               accent: $r('app.color.module1_accent'),
               url: 'pages/Module1Environment'
             })
               .layoutWeight(1)
             ModuleEntry({
-              moduleNo: '02',
               title: 'SLAM导航',
-              desc: '建图 / 路线 / 巡检点',
-              metric: '路线巡检',
+              desc: '建图 / 路线 / 返回',
+              metric: '巡检路线',
               accent: $r('app.color.module2_accent'),
               url: 'pages/Module2Navigation'
             })
               .layoutWeight(1)
+          }
+
+          Row({ space: '10vp' }) {
             ModuleEntry({
-              moduleNo: '03',
               title: '激光雷达',
-              desc: '避障 / 通道占用检测',
-              metric: '通道安全',
+              desc: '避障 / 占用 / 停车',
+              metric: '通道占用',
               accent: $r('app.color.module3_accent'),
               url: 'pages/Module3Lidar'
             })
               .layoutWeight(1)
             ModuleEntry({
-              moduleNo: '04',
               title: '视觉识别',
-              desc: '人员 / 货物异常',
-              metric: '异常识别',
+              desc: '人员 / 货物 / 截图',
+              metric: '视觉告警',
               accent: $r('app.color.module4_accent'),
               url: 'pages/Module4Vision'
             })
               .layoutWeight(1)
           }
-          .height('118vp')
 
-          Row({ space: '14vp' }) {
-            ControlCard()
-              .layoutWeight(1)
-            AlertPreviewCard()
-              .layoutWeight(1.25)
-          }
+          ControlCard()
+            .width('100%')
+
+          AlertPreviewCard()
+            .width('100%')
 
           PatrolSummary()
+            .width('100%')
         }
-        .padding({ left: '24vp', right: '24vp', top: '18vp', bottom: '24vp' })
+        .padding({ left: '14vp', right: '14vp', top: '12vp', bottom: '16vp' })
       }
       .layoutWeight(1)
       .scrollBar(BarState.Off)
@@ -87,47 +86,63 @@ this.Header()
 
   @Builder
   Header() {
-    Row({ space: '12vp' }) {
-      Column({ space: '4vp' }) {
+    Row({ space: '10vp' }) {
+      Row({ space: '8vp' }) {
         Text('狭域巡航')
-          .fontSize('30fp')
+          .fontSize('20fp')
           .fontColor($r('app.color.text'))
           .fontWeight(FontWeight.Bold)
           .maxLines(1)
-        Text('Narrow-Space Intelligent Patrol System')
-          .fontSize('12fp')
-          .fontColor($r('app.color.text_secondary'))
-          .maxLines(1)
+        Text('AI PATROL')
+          .fontSize('9fp')
+          .fontColor($r('app.color.module1_accent'))
+          .fontWeight(FontWeight.Bold)
+          .padding({ left: '6vp', right: '6vp', top: '2vp', bottom: '2vp' })
+          .backgroundColor($r('app.color.module1_accent') + '18')
+          .borderRadius('6vp')
       }
-      .alignItems(HorizontalAlign.Start)
+      .alignItems(VerticalAlign.Center)
       .layoutWeight(1)
 
-      NetworkButton()
-
-      Row({ space: '10vp' }) {
+      Row({ space: '6vp' }) {
         Stack() {
           Column()
-            .width('12vp')
-            .height('12vp')
+            .width('8vp')
+            .height('8vp')
             .backgroundColor(onlineColor(this.online))
-            .borderRadius('6vp')
+            .borderRadius('4vp')
         }
         .shadow({
-          radius: 12,
+          radius: 8,
           offsetX: 0,
           offsetY: 0,
           color: onlineColor(this.online) + '60'
         })
-        Text(this.online ? '已连接' : '离线预览')
-          .fontSize('13fp')
+        Text(this.online ? '已连接' : '离线')
+          .fontSize('12fp')
           .fontColor($r('app.color.text_secondary'))
+          .fontWeight(FontWeight.Medium)
+          .maxLines(1)
       }
       .alignItems(VerticalAlign.Center)
+      .padding({ left: '10vp', right: '12vp', top: '6vp', bottom: '6vp' })
+      .backgroundColor($r('app.color.card_elevated'))
+      .borderRadius('14vp')
+      .border({ width: '1vp', color: $r('app.color.divider') })
+
+      NetworkButton()
     }
     .width('100%')
-    .padding({ left: '24vp', right: '24vp', top: '20vp', bottom: '16vp' })
+    .height('56vp')
+    .padding({ left: '14vp', right: '14vp', top: '6vp', bottom: '6vp' })
+    .alignItems(VerticalAlign.Center)
     .backgroundColor($r('app.color.header_background'))
-    .shadow(CardShadow)
+    .shadow({
+      radius: 6,
+      offsetX: 0,
+      offsetY: 2,
+      color: '#00000030'
+    })
   }
 }
 
@@ -136,18 +151,18 @@ struct SectionTitle {
   @Prop title: string = '';
 
   build() {
-    Row({ space: '12vp' }) {
+    Row({ space: '8vp' }) {
       Column()
-        .width('5vp')
-        .height('24vp')
+        .width('4vp')
+        .height('18vp')
         .backgroundColor($r('app.color.button_primary'))
-        .borderRadius('3vp')
+        .borderRadius('2vp')
       Text(this.title)
-        .fontSize('20fp')
+        .fontSize('16fp')
         .fontColor($r('app.color.text'))
         .fontWeight(FontWeight.Bold)
+        .maxLines(1)
     }
-    .width('100%')
   }
 }
 
@@ -159,20 +174,29 @@ struct NetworkButton {
     Button() {
       Stack() {
         Column()
-          .width('36vp')
-          .height('36vp')
-          .backgroundColor(this.isHover ? $r('app.color.button_primary') : $r('app.color.card_elevated'))
-          .borderRadius('18vp')
-        Text('⌁')
-          .fontSize('23fp')
-          .fontColor(this.isHover ? $r('app.color.text_on_accent') : $r('app.color.button_primary'))
-          .fontWeight(FontWeight.Bold)
+          .width('40vp')
+          .height('40vp')
+          .backgroundColor(this.isHover ? $r('app.color.module1_accent') + '22' : $r('app.color.card_elevated'))
+          .borderRadius('20vp')
+        Image($r('app.media.patrol_logo'))
+          .width('34vp')
+          .height('34vp')
+          .borderRadius('17vp')
+          .objectFit(ImageFit.Cover)
       }
+      .alignContent(Alignment.Center)
     }
     .width('44vp')
     .height('44vp')
     .backgroundColor(Color.Transparent)
     .borderRadius('22vp')
+    .border({ width: '1vp', color: this.isHover ? $r('app.color.module1_accent') : $r('app.color.divider') })
+    .shadow({
+      radius: this.isHover ? 12 : 6,
+      offsetX: 0,
+      offsetY: this.isHover ? 0 : 3,
+      color: this.isHover ? $r('app.color.module1_accent') + '45' : '#00000045'
+    })
     .onHover((isHover: boolean): void => {
       this.isHover = isHover;
     })
@@ -184,7 +208,6 @@ struct NetworkButton {
 
 @Component
 struct ModuleEntry {
-  @Prop moduleNo: string = '01';
   @Prop title: string = '';
   @Prop desc: string = '';
   @Prop metric: string = '';
@@ -194,68 +217,58 @@ struct ModuleEntry {
 
   build() {
     Column({ space: '8vp' }) {
-      Row() {
-        Text(`M${this.moduleNo}`)
-          .fontSize('11fp')
-          .fontColor($r('app.color.text_on_accent'))
-          .fontWeight(FontWeight.Bold)
-          .backgroundColor(this.accent)
-          .padding({ left: '9vp', right: '9vp', top: '3vp', bottom: '3vp' })
-          .borderRadius('10vp')
-        Blank()
-        Text('进入')
-          .fontSize('11fp')
-          .fontColor(this.accent)
-      }
-      .width('100%')
-      .alignItems(VerticalAlign.Center)
-
-      Row({ space: '10vp' }) {
+      Row({ space: '8vp' }) {
         Column()
           .width('4vp')
-          .height('44vp')
+          .height('28vp')
           .backgroundColor(this.accent)
           .borderRadius('2vp')
-        Column({ space: '5vp' }) {
+        Column({ space: '2vp' }) {
           Text(this.title)
-            .fontSize('18fp')
+            .fontSize('15fp')
             .fontColor($r('app.color.text'))
             .fontWeight(FontWeight.Bold)
-            .maxLines(1)
-          Text(this.desc)
-            .fontSize('12fp')
-            .fontColor($r('app.color.text_secondary'))
             .maxLines(1)
         }
         .alignItems(HorizontalAlign.Start)
         .layoutWeight(1)
       }
+      .width('100%')
       .alignItems(VerticalAlign.Center)
 
-      Row() {
-        Text(this.metric)
-          .fontSize('11fp')
-          .fontColor(this.accent)
-          .backgroundColor(this.accent + '18')
-          .padding({ left: '8vp', right: '8vp', top: '4vp', bottom: '4vp' })
-          .borderRadius('10vp')
-        Blank()
-        Text(this.title)
+      Column({ space: '6vp' }) {
+        Text(this.desc)
           .fontSize('11fp')
           .fontColor($r('app.color.text_secondary'))
+          .textAlign(TextAlign.Center)
+          .maxLines(1)
+        Text(this.metric)
+          .fontSize('10fp')
+          .fontColor(this.accent)
+          .fontWeight(FontWeight.Bold)
+          .textAlign(TextAlign.Center)
+          .padding({ left: '10vp', right: '10vp', top: '3vp', bottom: '3vp' })
+          .backgroundColor(this.accent + '18')
+          .borderRadius('10vp')
           .maxLines(1)
       }
       .width('100%')
-      .alignItems(VerticalAlign.Center)
+      .justifyContent(FlexAlign.Center)
+      .alignItems(HorizontalAlign.Center)
     }
     .width('100%')
-    .height('100%')
-    .padding({ left: '14vp', right: '14vp', top: '12vp', bottom: '12vp' })
+    .height('110vp')
+    .padding({ left: '12vp', right: '12vp', top: '10vp', bottom: '10vp' })
     .backgroundColor($r('app.color.card_background'))
-    .borderRadius('16vp')
-    .border({ width: '1vp', color: this.isHover ? this.accent + '55' : $r('app.color.divider') })
-    .shadow(this.isHover ? CardShadowHover : CardShadow)
-    .scale({ x: this.isHover ? 1.01 : 1, y: this.isHover ? 1.01 : 1 })
+    .borderRadius('14vp')
+    .border({ width: this.isHover ? '2vp' : '1vp', color: this.isHover ? this.accent : $r('app.color.divider') })
+    .shadow(this.isHover ? {
+      radius: 12,
+      offsetX: 0,
+      offsetY: 0,
+      color: this.accent + '55'
+    } : CardShadow)
+    .scale({ x: this.isHover ? 1.02 : 1, y: this.isHover ? 1.02 : 1 })
     .animation({ duration: 180, curve: Curve.EaseOut })
     .onClick((): void => {
       router.pushUrl({ url: this.url });
@@ -269,104 +282,222 @@ struct ModuleEntry {
 @Component
 struct ControlCard {
   build() {
-    Column({ space: '12vp' }) {
-      SectionTitle({ title: '手动接管' })
-      Row({ space: '12vp' }) {
+    Column({ space: '10vp' }) {
+      Row() {
+        SectionTitle({ title: '手动接管' })
+          .layoutWeight(1)
+      }
+      .width('100%')
+
+      Row({ space: '10vp' }) {
         Stack() {
           Column()
-            .width('42vp')
-            .height('42vp')
+            .width('36vp')
+            .height('36vp')
             .backgroundColor($r('app.color.module5_accent') + '18')
-            .borderRadius('14vp')
+            .borderRadius('12vp')
           Image($r('app.media.vector'))
-            .width('24vp')
-            .height('24vp')
+            .width('20vp')
+            .height('20vp')
         }
         .alignContent(Alignment.Center)
-        Column({ space: '4vp' }) {
+        Column({ space: '3vp' }) {
           Text('摇杆遥控')
-            .fontSize('17fp')
+            .fontSize('14fp')
             .fontColor($r('app.color.text'))
             .fontWeight(FontWeight.Bold)
           Text('视频预览 / 轮速调节 / 实时接管')
-            .fontSize('12fp')
+            .fontSize('11fp')
             .fontColor($r('app.color.text_secondary'))
+            .maxLines(1)
         }
         .alignItems(HorizontalAlign.Start)
         .layoutWeight(1)
-        Text('进入')
-          .fontSize('13fp')
-          .fontColor($r('app.color.button_primary'))
+        Button('进入')
+          .height('30vp')
+          .fontSize('12fp')
+          .fontColor($r('app.color.text_on_accent'))
+          .backgroundColor($r('app.color.button_primary'))
+          .borderRadius('15vp')
+          .onClick((): void => {
+            router.pushUrl({ url: 'pages/RemoteControl' });
+          })
       }
-      .height('82vp')
-      .padding({ left: '16vp', right: '16vp' })
-      .backgroundColor($r('app.color.card_background'))
-      .borderRadius('16vp')
-      .border({ width: '1vp', color: $r('app.color.divider') })
-      .shadow(CardShadow)
-      .onClick((): void => {
-        router.pushUrl({ url: 'pages/RemoteControl' });
-      })
+      .width('100%')
+      .alignItems(VerticalAlign.Center)
     }
+    .width('100%')
+    .padding('14vp')
+    .backgroundColor($r('app.color.card_background'))
+    .borderRadius('14vp')
+    .border({ width: '1vp', color: $r('app.color.divider') })
+    .shadow(CardShadow)
   }
 }
 
 @Component
 struct AlertPreviewCard {
   @State isHover: boolean = false;
+  @State alerts: AlertRecord[] = [];
+  private refreshHandler: () => void = (): void => {
+    this.loadAlerts();
+  };
+
+  aboutToAppear(): void {
+    this.loadAlerts();
+    PatrolStore.getInstance().subscribe(this.refreshHandler);
+  }
+
+  aboutToDisappear(): void {
+    PatrolStore.getInstance().unsubscribe(this.refreshHandler);
+  }
+
+  loadAlerts(): void {
+    this.alerts = PatrolStore.getInstance().alerts.slice(0, 1) as AlertRecord[];
+  }
 
   build() {
-    Column({ space: '12vp' }) {
+    Column({ space: '8vp' }) {
       Row() {
         SectionTitle({ title: '告警预览' })
           .layoutWeight(1)
         Text('查看记录')
-          .fontSize('13fp')
-          .fontColor($r('app.color.button_primary'))
-      }
-      Column({ space: '10vp' }) {
-        Row({ space: '10vp' }) {
-          Text('预警')
-            .fontSize('12fp')
-            .fontColor($r('app.color.text_on_accent'))
-            .backgroundColor($r('app.color.alert_warning'))
-            .padding({ left: '10vp', right: '10vp', top: '4vp', bottom: '4vp' })
-            .borderRadius('12vp')
-          Text('A区货架2 湿度偏高')
-            .fontSize('16fp')
-            .fontColor($r('app.color.text'))
-            .fontWeight(FontWeight.Bold)
-            .layoutWeight(1)
-        }
-        Text('[10:32:18] 湿度 78%，超过仓储阈值，建议复检通风状态')
           .fontSize('12fp')
-          .fontColor($r('app.color.text_secondary'))
-          .maxLines(1)
+          .fontColor($r('app.color.button_primary'))
+          .fontWeight(FontWeight.Bold)
+          .padding({ left: '10vp', right: '10vp', top: '4vp', bottom: '4vp' })
+          .backgroundColor($r('app.color.button_primary') + '16')
+          .borderRadius('10vp')
       }
       .width('100%')
-      .padding('14vp')
-      .backgroundColor($r('app.color.card_background'))
-      .borderRadius('16vp')
-      .border({ width: '1vp', color: this.isHover ? $r('app.color.alert_warning') : $r('app.color.divider') })
-      .shadow(this.isHover ? ElevatedShadow : CardShadow)
-      .onClick((): void => {
-        router.pushUrl({ url: 'pages/AlertRecords' });
-      })
-      .onHover((isHover: boolean): void => {
-        this.isHover = isHover;
-      })
+
+      if (this.alerts.length > 0) {
+        this.AlertContent(this.alerts[0])
+      } else {
+        Column({ space: '8vp' }) {
+          Row({ space: '8vp' }) {
+            Text('正常')
+              .fontSize('11fp')
+              .fontColor($r('app.color.text_on_accent'))
+              .backgroundColor($r('app.color.status_success'))
+              .padding({ left: '8vp', right: '8vp', top: '3vp', bottom: '3vp' })
+              .borderRadius('8vp')
+            Text('暂无告警')
+              .fontSize('15fp')
+              .fontColor($r('app.color.text'))
+              .fontWeight(FontWeight.Bold)
+              .layoutWeight(1)
+          }
+          Text('小车巡检过程中检测到的异常会显示在这里')
+            .fontSize('12fp')
+            .fontColor($r('app.color.text_secondary'))
+            .maxLines(1)
+        }
+        .width('100%')
+        .padding('12vp')
+        .backgroundColor($r('app.color.card_background'))
+        .borderRadius('12vp')
+        .border({ width: '1vp', color: $r('app.color.divider') })
+        .shadow(CardShadow)
+      }
     }
+    .width('100%')
+    .padding('12vp')
+    .backgroundColor($r('app.color.card_background'))
+    .borderRadius('14vp')
+    .border({ width: '1vp', color: this.isHover ? $r('app.color.alert_warning') : $r('app.color.divider') })
+    .shadow(this.isHover ? ElevatedShadow : CardShadow)
+  }
+
+  @Builder
+  AlertContent(alert: AlertRecord) {
+    Column({ space: '6vp' }) {
+      Row({ space: '6vp' }) {
+        Text(alert.level === AlertLevel.Critical ? '严重' : alert.level === AlertLevel.Warning ? '预警' : '提示')
+          .fontSize('10fp')
+          .fontColor($r('app.color.text_on_accent'))
+          .backgroundColor(alert.level === AlertLevel.Critical ? $r('app.color.alert_critical') : alert.level === AlertLevel.Warning ? $r('app.color.alert_warning') : $r('app.color.status_success'))
+          .padding({ left: '6vp', right: '6vp', top: '3vp', bottom: '3vp' })
+          .borderRadius('6vp')
+        Text(alert.message)
+          .fontSize('13fp')
+          .fontColor($r('app.color.text'))
+          .fontWeight(FontWeight.Bold)
+          .layoutWeight(1)
+          .maxLines(1)
+          .textOverflow({ overflow: TextOverflow.Ellipsis })
+        if (alert.aiAnalyzing) {
+          Text('AI分析中...')
+            .fontSize('10fp')
+            .fontColor($r('app.color.button_primary'))
+            .maxLines(1)
+        }
+      }
+      .width('100%')
+      .alignItems(VerticalAlign.Center)
+
+      Row({ space: '6vp' }) {
+        Text(`[${alert.time}]`)
+          .fontSize('10fp')
+          .fontColor($r('app.color.text_secondary'))
+        Text(alert.point)
+          .fontSize('10fp')
+          .fontColor($r('app.color.text_secondary'))
+          .layoutWeight(1)
+          .maxLines(1)
+          .textOverflow({ overflow: TextOverflow.Ellipsis })
+      }
+      .width('100%')
+
+      if (alert.aiAnalysis) {
+        Row({ space: '6vp' }) {
+          Text('AI:')
+            .fontSize('10fp')
+            .fontColor($r('app.color.button_primary'))
+            .fontWeight(FontWeight.Bold)
+          Text(alert.aiAnalysis.summary)
+            .fontSize('11fp')
+            .fontColor($r('app.color.text'))
+            .layoutWeight(1)
+            .maxLines(1)
+            .textOverflow({ overflow: TextOverflow.Ellipsis })
+        }
+        .width('100%')
+      }
+    }
+    .width('100%')
+    .padding('12vp')
+    .backgroundColor($r('app.color.card_background'))
+    .borderRadius('12vp')
+    .border({ width: '1vp', color: this.isHover ? (alert.level === AlertLevel.Critical ? $r('app.color.alert_critical') : alert.level === AlertLevel.Warning ? $r('app.color.alert_warning') : $r('app.color.divider')) : $r('app.color.divider') })
+    .shadow(this.isHover ? ElevatedShadow : CardShadow)
+    .onClick((): void => {
+      router.pushUrl({ url: 'pages/AlertRecords' });
+    })
+    .onHover((isHover: boolean): void => {
+      this.isHover = isHover;
+    })
   }
 }
 
 @Component
 struct PatrolSummary {
   build() {
-    Row({ space: '12vp' }) {
-      SummaryItem({ label: '当前点位', value: 'P2 A区货架' })
-      SummaryItem({ label: '下一点位', value: 'P3 窄通道' })
-      SummaryItem({ label: '巡检状态', value: '待启动' })
-      SummaryItem({ label: '闭环流程', value: '采集 → 识别 → 告警' })
+    Column({ space: '8vp' }) {
+      Row({ space: '8vp' }) {
+        SummaryItem({ label: '当前点位', value: 'P2 A区货架' })
+          .layoutWeight(1)
+        SummaryItem({ label: '下一点位', value: 'P3 窄通道' })
+          .layoutWeight(1)
+      }
+      .width('100%')
+      Row({ space: '8vp' }) {
+        SummaryItem({ label: '巡检状态', value: '待启动' })
+          .layoutWeight(1)
+        SummaryItem({ label: '闭环流程', value: '采集 → 识别 → 告警' })
+          .layoutWeight(1)
+      }
+      .width('100%')
     }
     .width('100%')
   }
@@ -378,19 +509,22 @@ struct SummaryItem {
   @Prop value: string = '';
 
   build() {
-    Column({ space: '5vp' }) {
+    Column({ space: '4vp' }) {
       Text(this.label)
-        .fontSize('11fp')
+        .fontSize('10fp')
         .fontColor($r('app.color.text_secondary'))
+        .maxLines(1)
       Text(this.value)
-        .fontSize('15fp')
+        .fontSize('13fp')
         .fontColor($r('app.color.text'))
         .fontWeight(FontWeight.Medium)
         .maxLines(1)
+        .textOverflow({ overflow: TextOverflow.Ellipsis })
     }
     .layoutWeight(1)
-    .padding('12vp')
+    .justifyContent(FlexAlign.Center)
+    .padding({ left: '10vp', right: '10vp', top: '10vp', bottom: '10vp' })
     .backgroundColor($r('app.color.card_elevated'))
-    .borderRadius('12vp')
+    .borderRadius('10vp')
   }
 }

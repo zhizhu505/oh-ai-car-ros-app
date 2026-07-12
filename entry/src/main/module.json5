@@ -3,6 +3,9 @@
     "requestPermissions": [
       {
         "name": "ohos.permission.INTERNET"
+      },
+      {
+        "name": "ohos.permission.GET_NETWORK_INFO"
       }
     ],
     "name": "entry",
@@ -18,11 +21,11 @@
     "pages": "$profile:main_pages",
     "abilities": [
       {
-        "orientation": "landscape",
+        "orientation": "portrait",
         "name": "EntryAbility",
         "srcEntry": "./ets/entryability/EntryAbility.ets",
         "description": "$string:EntryAbility_desc",
-        "icon": "$media:app_logo",
+        "icon": "$media:project_logo",
         "label": "$string:EntryAbility_label",
         "startWindowIcon": "$media:startLogo",
         "startWindowBackground": "$color:start_window_background",
