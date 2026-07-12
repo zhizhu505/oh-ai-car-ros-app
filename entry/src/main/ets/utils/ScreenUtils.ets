@@ -48,11 +48,21 @@ export namespace ScreenUtils {
    * 将应用设置为横屏
    */
   export function setLandscape(ctx: common.BaseContext): void {
-    //将应用设置为横屏
     let promise = window.getLastWindow(ctx);
     promise.then((data: window.Window): void => {
-      //切换成横屏
       let orientation = window.Orientation.LANDSCAPE;
+      data.setPreferredOrientation(orientation, (err: BusinessError): void => {
+      });
+    })
+  }
+
+  /**
+   * 将应用设置为竖屏
+   */
+  export function setPortrait(ctx: common.BaseContext): void {
+    let promise = window.getLastWindow(ctx);
+    promise.then((data: window.Window): void => {
+      let orientation = window.Orientation.PORTRAIT;
       data.setPreferredOrientation(orientation, (err: BusinessError): void => {
       });
     })

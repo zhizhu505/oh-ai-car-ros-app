@@ -48,8 +48,8 @@ export default class EntryAbility extends UIAbility {
       hilog.info(0x0000, 'testTag', 'Succeeded in loading the content.');
     });
 
-    // 设置应用为横屏
-    ScreenUtils.setLandscape(this.context)
+    // 设置应用为竖屏
+    ScreenUtils.setPortrait(this.context)
     // 设置屏幕常量
     ScreenUtils.keepScreenOn(this.context, true)
     // 设置标题栏不可见

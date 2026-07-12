@@ -6,6 +6,7 @@ import { CarRockerComponents } from '../components/CarRockerComponents';
 import { VideoComponents } from '../components/VideoComponents';
 import { ButtonShadow, CardShadow } from '../styles/styles';
 import promptAction from '@ohos.promptAction';
+import { ScreenUtils } from '../utils/ScreenUtils';
 
 const TAG = 'RemoteControl'
 
@@ -19,6 +20,14 @@ struct RemoteControl {
   @State R2Value: number = 0;
   @State scrollEnabled: boolean = true;
   @State advancedExpanded: boolean = false;
+
+  aboutToAppear(): void {
+    ScreenUtils.setLandscape(getContext());
+  }
+
+  aboutToDisappear(): void {
+    ScreenUtils.setPortrait(getContext());
+  }
 
   build() {
     Stack() {
