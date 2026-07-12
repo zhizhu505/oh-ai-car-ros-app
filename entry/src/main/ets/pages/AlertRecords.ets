@@ -172,7 +172,7 @@ struct AlertRecords {
 
   @Builder
   ChatContent(item: AlertRecord, chatItems: ChatItem[], inputText: string) {
-    Column({ space: '6vp' }) {
+    Column() {
       Scroll() {
         Column({ space: '6vp' }) {
           ForEach(chatItems, (chat: ChatItem) => {
@@ -189,26 +189,18 @@ struct AlertRecords {
                     .borderRadius('10vp')
                     .borderRadius({ bottomLeft: '2vp' })
                 }
+                .width('70%')
               } else {
                 Column() {
-                  if (chat.loading) {
-                    Text('AI思考中...')
-                      .fontSize('12fp')
-                      .fontColor($r('app.color.text_secondary'))
-                      .padding({ left: '8vp', right: '8vp', top: '6vp', bottom: '6vp' })
-                      .backgroundColor($r('app.color.card_elevated'))
-                      .borderRadius('10vp')
-                      .borderRadius({ bottomRight: '2vp' })
-                  } else {
-                    Text(chat.text)
-                      .fontSize('12fp')
-                      .fontColor($r('app.color.text'))
-                      .padding({ left: '8vp', right: '8vp', top: '6vp', bottom: '6vp' })
-                      .backgroundColor($r('app.color.card_elevated'))
-                      .borderRadius('10vp')
-                      .borderRadius({ bottomRight: '2vp' })
-                  }
+                  Text(chat.text)
+                    .fontSize('12fp')
+                    .fontColor($r('app.color.text'))
+                    .padding({ left: '8vp', right: '8vp', top: '6vp', bottom: '6vp' })
+                    .backgroundColor($r('app.color.card_background'))
+                    .borderRadius('10vp')
+                    .borderRadius({ bottomRight: '2vp' })
                 }
+                .width('70%')
                 Blank()
                   .layoutWeight(1)
               }
@@ -218,7 +210,7 @@ struct AlertRecords {
         }
         .width('100%')
       }
-      .layoutWeight(1)
+      .height('80vp')
       Row({ space: '4vp' }) {
         TextInput({ placeholder: '输入您的问题...', text: inputText })
           .layoutWeight(1)
@@ -246,7 +238,7 @@ struct AlertRecords {
       .width('100%')
     }
     .width('100%')
-    .height('160vp')
+    .height('120vp')
     .padding('8vp')
     .backgroundColor($r('app.color.card_elevated'))
     .borderRadius('10vp')
