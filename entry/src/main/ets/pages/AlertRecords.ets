@@ -1,17 +1,63 @@
 import router from '@ohos.router';
 import promptAction from '@ohos.promptAction';
-import { AlertRecord, alertLevelText, categoryLabel, AlertLevel } from '../model/PatrolModels';
+import { AlertRecord, alertLevelText, categoryLabel, AlertLevel, AlarmData } from '../model/PatrolModels';
 import { PatrolStore } from '../store/PatrolStore';
 import { levelColor } from '../utils/PatrolUiUtils';
-import { DeepSeekUtil } from '../utils/DeepSeekUtil';
+import { queryAlarmQuestion } from '../utils/DeepSeekUtil';
 import { PageHeader, InfoCard } from '../components/PageHeader';
 import { CardShadow, ButtonShadow } from '../styles/styles';
 
-interface ChatItem {
-  id: string;
-  isUser: boolean;
-  text: string;
-  loading?: boolean;
+export class ChatItem {
+  id: string = '';
+  isUser: boolean = false;
+  text: string = '';
+  loading: boolean = false;
+
+  constructor(id: string, isUser: boolean, text: string, loading?: boolean) {
+    this.id = id;
+    this.isUser = isUser;
+    this.text = text;
+    this.loading = loading ?? false;
+  }
+}
+
+export class ChatSession {
+  alertId: string = '';
+  items: ChatItem[] = [];
+  inputText: string = '';
+
+  constructor(alertId: string) {
+    this.alertId = alertId;
+    this.items = [];
+    this.inputText = '';
+  }
+
+  addUserMessage(text: string): void {
+    this.items.push(new ChatItem(Date.now().toString(), true, text));
+  }
+
+  addAiMessage(text: string, loading?: boolean): void {
+    this.items.push(new ChatItem((Date.now() + 1).toString(), false, text, loading));
+  }
+
+  updateLastMessage(text: string): void {
+    if (this.items.length > 0) {
+      this.items[this.items.length - 1].text = text;
+      this.items[this.items.length - 1].loading = false;
+    }
+  }
+
+  getItems(): ChatItem[] {
+    return this.items;
+  }
+
+  getInputText(): string {
+    return this.inputText;
+  }
+
+  setInputText(text: string): void {
+    this.inputText = text;
+  }
 }
 
 @Entry
@@ -20,8 +66,7 @@ struct AlertRecords {
   @State alerts: AlertRecord[] = [];
   @State analysisExpandedId: string = '';
   @State chatExpandedId: string = '';
-  @State chatData: { [key: string]: ChatItem[] } = {};
-  @State chatInputText: { [key: string]: string } = {};
+  @State chatSessions: ChatSession[] = [];
   private refreshHandler: () => void = (): void => {
     this.refreshData();
   };
@@ -38,17 +83,22 @@ struct AlertRecords {
   refreshData(): void {
     const storeAlerts = PatrolStore.getInstance().alerts;
     this.alerts = storeAlerts.map((item: AlertRecord): AlertRecord => {
-      return {
+      let record: AlertRecord = {
         id: item.id,
         time: item.time,
         point: item.point,
         category: item.category,
         message: item.message,
         level: item.level,
-        imageUrl: item.imageUrl,
-        aiAnalysis: item.aiAnalysis,
-        aiAnalyzing: item.aiAnalyzing
+        imageUrl: item.imageUrl
       };
+      if (item.aiAnalysis) {
+        record.aiAnalysis = item.aiAnalysis;
+      }
+      if (item.aiAnalyzing !== undefined) {
+        record.aiAnalyzing = item.aiAnalyzing;
+      }
+      return record;
     });
   }
 
@@ -58,41 +108,149 @@ struct AlertRecords {
 
   toggleChat(id: string): void {
     this.chatExpandedId = this.chatExpandedId === id ? '' : id;
+    if (this.chatExpandedId === id) {
+      this.getOrCreateChatSession(id);
+    }
+  }
+
+  getOrCreateChatSession(alertId: string): ChatSession {
+    let session = this.chatSessions.find((s: ChatSession): boolean => s.alertId === alertId);
+    if (!session) {
+      session = new ChatSession(alertId);
+      this.chatSessions = [...this.chatSessions, session];
+    }
+    return session;
   }
 
   async sendChat(alertId: string, alert: AlertRecord): Promise<void> {
-    const input = this.chatInputText[alertId] || '';
+    const session = this.getOrCreateChatSession(alertId);
+    const input = session.getInputText();
     if (!input.trim()) {
       return;
     }
-    const records = this.chatData[alertId] || [];
-    const newRecords = [...records, { id: Date.now().toString(), isUser: true, text: input.trim() }, { id: (Date.now() + 1).toString(), isUser: false, text: '', loading: true }];
-    this.chatData = { ...this.chatData, [alertId]: newRecords };
-    this.chatInputText = { ...this.chatInputText, [alertId]: '' };
-    const alarmData = {
+    session.addUserMessage(input.trim());
+    session.addAiMessage('', true);
+    session.setInputText('');
+    this.notifyUiUpdate();
+    let levelStr: string = '正常';
+    if (alert.level === AlertLevel.Critical) {
+      levelStr = '严重';
+    } else if (alert.level === AlertLevel.Warning) {
+      levelStr = '预警';
+    }
+    const alarmData: AlarmData = {
       alarm_id: alert.id,
       time: alert.time,
       point: alert.point,
       alarm_type: alert.category,
       message: alert.message,
-      level: alert.level === AlertLevel.Critical ? '严重' : alert.level === AlertLevel.Warning ? '预警' : '正常'
+      level: levelStr
     };
     try {
-      const answer = await DeepSeekUtil.queryAlarmQuestion(JSON.stringify(alarmData), input.trim());
-      const currentRecords = this.chatData[alertId] || [];
-      if (currentRecords.length > 0) {
-        const updatedRecords = [...currentRecords];
-        updatedRecords[updatedRecords.length - 1] = { id: updatedRecords[updatedRecords.length - 1].id, isUser: false, text: answer };
-        this.chatData = { ...this.chatData, [alertId]: updatedRecords };
-      }
+      const answer: string = await queryAlarmQuestion(JSON.stringify(alarmData), input.trim());
+      session.updateLastMessage(answer);
+      this.notifyUiUpdate();
     } catch (err) {
-      const currentRecords = this.chatData[alertId] || [];
-      if (currentRecords.length > 0) {
-        const updatedRecords = [...currentRecords];
-        updatedRecords[updatedRecords.length - 1] = { id: updatedRecords[updatedRecords.length - 1].id, isUser: false, text: 'AI咨询失败，请检查网络' };
-        this.chatData = { ...this.chatData, [alertId]: updatedRecords };
-      }
+      session.updateLastMessage('AI咨询失败，请检查网络');
+      this.notifyUiUpdate();
     }
+  }
+
+  notifyUiUpdate(): void {
+    this.chatSessions = [...this.chatSessions];
+  }
+
+  getChatItems(alertId: string): ChatItem[] {
+    const session = this.getOrCreateChatSession(alertId);
+    return session.getItems();
+  }
+
+  getChatInputText(alertId: string): string {
+    const session = this.getOrCreateChatSession(alertId);
+    return session.getInputText();
+  }
+
+  @Builder
+  ChatContent(item: AlertRecord, chatItems: ChatItem[], inputText: string) {
+    Column({ space: '10vp' }) {
+      if (chatItems.length > 0) {
+        Scroll() {
+          Column({ space: '10vp' }) {
+            ForEach(chatItems, (chat: ChatItem) => {
+              Row({ space: '10vp' }) {
+                if (chat.isUser) {
+                  Blank()
+                    .layoutWeight(1)
+                  Column() {
+                    Text(chat.text)
+                      .fontSize('14fp')
+                      .fontColor($r('app.color.text'))
+                      .padding('10vp')
+                      .backgroundColor($r('app.color.button_primary'))
+                      .borderRadius('12vp')
+                      .borderRadius({ bottomLeft: '2vp' })
+                  }
+                } else {
+                  Column() {
+                    if (chat.loading) {
+                      Text('AI思考中...')
+                        .fontSize('14fp')
+                        .fontColor($r('app.color.text_secondary'))
+                        .padding('10vp')
+                        .backgroundColor($r('app.color.card_elevated'))
+                        .borderRadius('12vp')
+                        .borderRadius({ bottomRight: '2vp' })
+                    } else {
+                      Text(chat.text)
+                        .fontSize('14fp')
+                        .fontColor($r('app.color.text'))
+                        .padding('10vp')
+                        .backgroundColor($r('app.color.card_elevated'))
+                        .borderRadius('12vp')
+                        .borderRadius({ bottomRight: '2vp' })
+                    }
+                  }
+                  Blank()
+                    .layoutWeight(1)
+                }
+              }
+              .width('100%')
+            }, (chat: ChatItem) => chat.id)
+          }
+          .width('100%')
+        }
+        .height('200vp')
+      }
+      Row({ space: '8vp' }) {
+        TextInput({ placeholder: '输入您的问题...', text: inputText })
+          .width('100%')
+          .height('40vp')
+          .fontSize('14fp')
+          .backgroundColor($r('app.color.card_elevated'))
+          .borderRadius('20vp')
+          .padding({ left: '16vp', right: '16vp' })
+          .onChange((value: string): void => {
+            const session = this.getOrCreateChatSession(item.id);
+            session.setInputText(value);
+            this.notifyUiUpdate();
+          })
+        Button('发送')
+          .width('60vp')
+          .height('40vp')
+          .fontSize('13fp')
+          .fontColor($r('app.color.text_on_accent'))
+          .backgroundColor($r('app.color.button_primary'))
+          .borderRadius('20vp')
+          .onClick((): void => {
+            this.sendChat(item.id, item);
+          })
+      }
+      .width('100%')
+    }
+    .width('100%')
+    .padding('12vp')
+    .backgroundColor($r('app.color.card_elevated'))
+    .borderRadius('12vp')
   }
 
   build() {
@@ -237,83 +395,7 @@ struct AlertRecords {
                     this.toggleChat(item.id);
                   })
                 if (this.chatExpandedId === item.id) {
-                  Column({ space: '10vp' }) {
-                    if ((this.chatData[item.id] || []).length > 0) {
-                      Scroll() {
-                        Column({ space: '10vp' }) {
-                          ForEach(this.chatData[item.id] || [], (chat: ChatItem) => {
-                            Row({ space: '10vp' }) {
-                              if (chat.isUser) {
-                                Blank()
-                                  .layoutWeight(1)
-                                Column() {
-                                  Text(chat.text)
-                                    .fontSize('14fp')
-                                    .fontColor($r('app.color.text'))
-                                    .padding('10vp')
-                                    .backgroundColor($r('app.color.button_primary'))
-                                    .borderRadius('12vp')
-                                    .borderRadius({ bottomLeft: '2vp' })
-                                }
-                              } else {
-                                Column() {
-                                  if (chat.loading) {
-                                    Text('AI思考中...')
-                                      .fontSize('14fp')
-                                      .fontColor($r('app.color.text_secondary'))
-                                      .padding('10vp')
-                                      .backgroundColor($r('app.color.card_elevated'))
-                                      .borderRadius('12vp')
-                                      .borderRadius({ bottomRight: '2vp' })
-                                  } else {
-                                    Text(chat.text)
-                                      .fontSize('14fp')
-                                      .fontColor($r('app.color.text'))
-                                      .padding('10vp')
-                                      .backgroundColor($r('app.color.card_elevated'))
-                                      .borderRadius('12vp')
-                                      .borderRadius({ bottomRight: '2vp' })
-                                  }
-                                }
-                                Blank()
-                                  .layoutWeight(1)
-                              }
-                            }
-                            .width('100%')
-                          }, (chat: ChatItem) => chat.id)
-                        }
-                        .width('100%')
-                      }
-                      .maxHeight('200vp')
-                    }
-                    Row({ space: '8vp' }) {
-                      TextInput({ placeholder: '输入您的问题...', text: this.chatInputText[item.id] || '' })
-                        .width('100%')
-                        .height('40vp')
-                        .fontSize('14fp')
-                        .backgroundColor($r('app.color.card_elevated'))
-                        .borderRadius('20vp')
-                        .padding({ left: '16vp', right: '16vp' })
-                        .onChange((value: string): void => {
-                          this.chatInputText = { ...this.chatInputText, [item.id]: value };
-                        })
-                      Button('发送')
-                        .width('60vp')
-                        .height('40vp')
-                        .fontSize('13fp')
-                        .fontColor($r('app.color.text_on_accent'))
-                        .backgroundColor($r('app.color.button_primary'))
-                        .borderRadius('20vp')
-                        .onClick((): void => {
-                          this.sendChat(item.id, item);
-                        })
-                    }
-                    .width('100%')
-                  }
-                  .width('100%')
-                  .padding('12vp')
-                  .backgroundColor($r('app.color.card_elevated'))
-                  .borderRadius('12vp')
+                  this.ChatContent(item, this.getChatItems(item.id), this.getChatInputText(item.id));
                 }
               }
               .width('100%')

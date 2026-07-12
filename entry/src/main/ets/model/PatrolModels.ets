@@ -58,6 +58,15 @@ export interface AiAnalysisResult {
   solve: string[];
 }
 
+export interface AlarmData {
+  alarm_id: string;
+  time: string;
+  point: string;
+  alarm_type: string;
+  message: string;
+  level: string;
+}
+
 /** 异常告警记录 */
 export interface AlertRecord {
   id: string;

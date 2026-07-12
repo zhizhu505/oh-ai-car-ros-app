@@ -350,7 +350,7 @@ struct AlertPreviewCard {
             Text('正常')
               .fontSize('12fp')
               .fontColor($r('app.color.text_on_accent'))
-              .backgroundColor($r('app.color.status_normal'))
+              .backgroundColor($r('app.color.status_success'))
               .padding({ left: '10vp', right: '10vp', top: '4vp', bottom: '4vp' })
               .borderRadius('12vp')
             Text('暂无告警')
