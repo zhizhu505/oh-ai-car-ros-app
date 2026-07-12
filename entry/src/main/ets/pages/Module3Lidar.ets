@@ -48,7 +48,13 @@ struct Module3Lidar {
 
   build() {
     Column({ space: '0vp' }) {
-      ModuleTabBar({ currentIndex: $currentTabIndex, tabs: this.tabs, accentColor: $r('app.color.module3_accent') })
+      ModuleTabBar({
+        currentIndex: $currentTabIndex,
+        tabs: this.tabs,
+        accentColor: $r('app.color.module3_accent'),
+        title: '激光雷达',
+        subtitle: '前方扇区、左右货架距离与通道占用检测'
+      })
 
       Scroll() {
         Column() {

@@ -53,7 +53,13 @@ struct Module2Navigation {
 
   build() {
     Column({ space: '0vp' }) {
-      ModuleTabBar({ currentIndex: $currentTabIndex, tabs: this.tabs, accentColor: $r('app.color.module2_accent') })
+      ModuleTabBar({
+        currentIndex: $currentTabIndex,
+        tabs: this.tabs,
+        accentColor: $r('app.color.module2_accent'),
+        title: 'SLAM导航',
+        subtitle: '巡检路线、点位进度、导航策略与控制规则'
+      })
 
       Scroll() {
         Column() {

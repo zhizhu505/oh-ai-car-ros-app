@@ -57,7 +57,13 @@ struct Module1Environment {
 
   build() {
     Column({ space: '0vp' }) {
-      ModuleTabBar({ currentIndex: $currentTabIndex, tabs: this.tabs, accentColor: $r('app.color.module1_accent') })
+      ModuleTabBar({
+        currentIndex: $currentTabIndex,
+        tabs: this.tabs,
+        accentColor: $r('app.color.module1_accent'),
+        title: '环境感知',
+        subtitle: '温湿度、烟雾、气体、光照与空气质量监测'
+      })
 
       Scroll() {
         Column() {

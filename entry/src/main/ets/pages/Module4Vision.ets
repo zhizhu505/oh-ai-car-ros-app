@@ -44,7 +44,13 @@ struct Module4Vision {
 
   build() {
     Column({ space: '0vp' }) {
-      ModuleTabBar({ currentIndex: $currentTabIndex, tabs: this.tabs, accentColor: $r('app.color.module4_accent') })
+      ModuleTabBar({
+        currentIndex: $currentTabIndex,
+        tabs: this.tabs,
+        accentColor: $r('app.color.module4_accent'),
+        title: '视觉识别',
+        subtitle: '人员闯入、货物占道、异常截图与识别规则'
+      })
 
       Scroll() {
         Column() {
