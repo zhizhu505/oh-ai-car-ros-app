@@ -172,75 +172,73 @@ struct AlertRecords {
 
   @Builder
   ChatContent(item: AlertRecord, chatItems: ChatItem[], inputText: string) {
-    Column({ space: '8vp' }) {
-      if (chatItems.length > 0) {
-        Scroll() {
-          Column({ space: '8vp' }) {
-            ForEach(chatItems, (chat: ChatItem) => {
-              Row({ space: '8vp' }) {
-                if (chat.isUser) {
-                  Blank()
-                    .layoutWeight(1)
-                  Column() {
-                    Text(chat.text)
-                      .fontSize('13fp')
-                      .fontColor($r('app.color.text'))
-                      .padding({ left: '10vp', right: '10vp', top: '8vp', bottom: '8vp' })
-                      .backgroundColor($r('app.color.button_primary'))
-                      .borderRadius('12vp')
-                      .borderRadius({ bottomLeft: '2vp' })
-                  }
-                } else {
-                  Column() {
-                    if (chat.loading) {
-                      Text('AI思考中...')
-                        .fontSize('13fp')
-                        .fontColor($r('app.color.text_secondary'))
-                        .padding({ left: '10vp', right: '10vp', top: '8vp', bottom: '8vp' })
-                        .backgroundColor($r('app.color.card_elevated'))
-                        .borderRadius('12vp')
-                        .borderRadius({ bottomRight: '2vp' })
-                    } else {
-                      Text(chat.text)
-                        .fontSize('13fp')
-                        .fontColor($r('app.color.text'))
-                        .padding({ left: '10vp', right: '10vp', top: '8vp', bottom: '8vp' })
-                        .backgroundColor($r('app.color.card_elevated'))
-                        .borderRadius('12vp')
-                        .borderRadius({ bottomRight: '2vp' })
-                    }
-                  }
-                  Blank()
-                    .layoutWeight(1)
+    Column({ space: '6vp' }) {
+      Scroll() {
+        Column({ space: '6vp' }) {
+          ForEach(chatItems, (chat: ChatItem) => {
+            Row({ space: '6vp' }) {
+              if (chat.isUser) {
+                Blank()
+                  .layoutWeight(1)
+                Column() {
+                  Text(chat.text)
+                    .fontSize('12fp')
+                    .fontColor($r('app.color.text'))
+                    .padding({ left: '8vp', right: '8vp', top: '6vp', bottom: '6vp' })
+                    .backgroundColor($r('app.color.button_primary'))
+                    .borderRadius('10vp')
+                    .borderRadius({ bottomLeft: '2vp' })
                 }
+              } else {
+                Column() {
+                  if (chat.loading) {
+                    Text('AI思考中...')
+                      .fontSize('12fp')
+                      .fontColor($r('app.color.text_secondary'))
+                      .padding({ left: '8vp', right: '8vp', top: '6vp', bottom: '6vp' })
+                      .backgroundColor($r('app.color.card_elevated'))
+                      .borderRadius('10vp')
+                      .borderRadius({ bottomRight: '2vp' })
+                  } else {
+                    Text(chat.text)
+                      .fontSize('12fp')
+                      .fontColor($r('app.color.text'))
+                      .padding({ left: '8vp', right: '8vp', top: '6vp', bottom: '6vp' })
+                      .backgroundColor($r('app.color.card_elevated'))
+                      .borderRadius('10vp')
+                      .borderRadius({ bottomRight: '2vp' })
+                  }
+                }
+                Blank()
+                  .layoutWeight(1)
               }
-              .width('100%')
-            }, (chat: ChatItem) => chat.id)
-          }
-          .width('100%')
+            }
+            .width('100%')
+          }, (chat: ChatItem) => chat.id)
         }
-        .height('120vp')
+        .width('100%')
       }
-      Row({ space: '6vp' }) {
+      .layoutWeight(1)
+      Row({ space: '4vp' }) {
         TextInput({ placeholder: '输入您的问题...', text: inputText })
-          .width('100%')
-          .height('36vp')
-          .fontSize('13fp')
-          .backgroundColor($r('app.color.card_elevated'))
-          .borderRadius('18vp')
-          .padding({ left: '14vp', right: '14vp' })
+          .layoutWeight(1)
+          .height('32vp')
+          .fontSize('12fp')
+          .backgroundColor($r('app.color.card_background'))
+          .borderRadius('16vp')
+          .padding({ left: '12vp', right: '12vp' })
           .onChange((value: string): void => {
             const session = this.getOrCreateChatSession(item.id);
             session.setInputText(value);
             this.notifyUiUpdate();
           })
         Button('发送')
-          .width('56vp')
-          .height('36vp')
-          .fontSize('12fp')
+          .width('48vp')
+          .height('32vp')
+          .fontSize('11fp')
           .fontColor($r('app.color.text_on_accent'))
           .backgroundColor($r('app.color.button_primary'))
-          .borderRadius('18vp')
+          .borderRadius('16vp')
           .onClick((): void => {
             this.sendChat(item.id, item);
           })
@@ -248,9 +246,10 @@ struct AlertRecords {
       .width('100%')
     }
     .width('100%')
-    .padding('10vp')
+    .height('160vp')
+    .padding('8vp')
     .backgroundColor($r('app.color.card_elevated'))
-    .borderRadius('12vp')
+    .borderRadius('10vp')
   }
 
   build() {
