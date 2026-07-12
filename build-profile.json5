@@ -5,13 +5,13 @@
         "name": "default",
         "type": "HarmonyOS",
         "material": {
-          "certpath": "C:\\Users\\28772\\.ohos\\config\\default_oh-ai-car-ros-app_SmMFOvKe5d20jnRbhKCN_ct1rsPzb-zgHUDVrhUbKFU=.cer",
+          "certpath": "C:\\Users\\lenovo\\.ohos\\config\\default_huawei_OuaTivxpGus8KNKcccmIkis6Gt9tBliL76qvlwhSjZE=.cer",
           "keyAlias": "debugKey",
-          "keyPassword": "0000001BF97B2CF5F2658B21D1C950638A9E8D6F67AE0669EC442D8AB22853F0EBB24782321F1208462355",
-          "profile": "C:\\Users\\28772\\.ohos\\config\\default_oh-ai-car-ros-app_SmMFOvKe5d20jnRbhKCN_ct1rsPzb-zgHUDVrhUbKFU=.p7b",
+          "keyPassword": "0000001B5F17682ACC049E82816A63A5BA8854514A591FAF05174EB0794BCE20107D503680B6CD94A67E7E",
+          "profile": "C:\\Users\\lenovo\\.ohos\\config\\default_huawei_OuaTivxpGus8KNKcccmIkis6Gt9tBliL76qvlwhSjZE=.p7b",
           "signAlg": "SHA256withECDSA",
-          "storeFile": "C:\\Users\\28772\\.ohos\\config\\default_oh-ai-car-ros-app_SmMFOvKe5d20jnRbhKCN_ct1rsPzb-zgHUDVrhUbKFU=.p12",
-          "storePassword": "0000001B01904CE561E4FBC0F3589FDE9BDF6B8A57A42854B8D09013F17212BC45BF70793A7CD10999A1D5"
+          "storeFile": "C:\\Users\\lenovo\\.ohos\\config\\default_huawei_OuaTivxpGus8KNKcccmIkis6Gt9tBliL76qvlwhSjZE=.p12",
+          "storePassword": "0000001B5109B7E3D770857B8CB5CFF6A52CEDE9B3F7DD7F9F101AAFE60F4E313E4C80354B219DDA27BA5F"
         }
       }
     ],

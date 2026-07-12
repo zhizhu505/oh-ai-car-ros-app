@@ -65,9 +65,9 @@ export class NetInfoPreferencesUtils {
 
   getIP(): Promise<preferences.ValueType> {
     if (!this.pref) {
-      return Promise.resolve('192.168.1.11')
+      return Promise.resolve('172.20.10.2')
     }
-    return this.pref.get(NetInfoPreferencesUtils.KEY_IP, '192.168.1.11')
+    return this.pref.get(NetInfoPreferencesUtils.KEY_IP, '172.20.10.2')
   }
 
   setIp(v: string): void {
