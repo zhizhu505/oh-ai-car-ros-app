@@ -36,8 +36,8 @@ struct PatrolControl {
   }
 
   build() {
-    Row({ space: '16vp' }) {
-      Column({ space: '16vp' }) {
+    Row({ space: '12vp' }) {
+      Column({ space: '10vp' }) {
         PageHeader({
           title: '巡检控制',
           subtitle: this.statusMessage,
@@ -51,10 +51,14 @@ struct PatrolControl {
                 Text('控制模式')
                   .fontSize('13fp')
                   .fontColor($r('app.color.text_secondary'))
+                  .maxLines(1)
+                  .textOverflow({ overflow: TextOverflow.Ellipsis })
                 Text(this.controlMode === ControlMode.Auto ? '自动巡检' : '手动遥控')
                   .fontSize('16fp')
                   .fontColor($r('app.color.text'))
                   .fontWeight(FontWeight.Medium)
+                  .maxLines(1)
+                  .textOverflow({ overflow: TextOverflow.Ellipsis })
               }
               Blank()
               StatusBadge({
@@ -65,6 +69,8 @@ struct PatrolControl {
             Text(`当前路线：${this.route}`)
               .fontSize('14fp')
               .fontColor($r('app.color.text_secondary'))
+              .maxLines(1)
+              .textOverflow({ overflow: TextOverflow.Ellipsis })
           }
         }
 
@@ -72,12 +78,12 @@ struct PatrolControl {
           Row({ space: '12vp' }) {
             Button('手动模式')
               .width('120vp')
-              .height('44vp')
-              .fontSize('15fp')
+              .height('38vp')
+              .fontSize('14fp')
               .fontColor($r('app.color.text'))
               .backgroundColor(this.controlMode === ControlMode.Manual ?
                 $r('app.color.button_primary') : $r('app.color.card_elevated'))
-              .borderRadius('22vp')
+              .borderRadius('19vp')
               .border({ width: '1vp', color: $r('app.color.divider') })
               .shadow(ButtonShadow)
               .onClick((): void => {
@@ -85,12 +91,12 @@ struct PatrolControl {
               })
             Button('自动巡检')
               .width('120vp')
-              .height('44vp')
-              .fontSize('15fp')
+              .height('38vp')
+              .fontSize('14fp')
               .fontColor($r('app.color.text'))
               .backgroundColor(this.controlMode === ControlMode.Auto ?
                 $r('app.color.button_primary') : $r('app.color.card_elevated'))
-              .borderRadius('22vp')
+              .borderRadius('19vp')
               .border({ width: '1vp', color: $r('app.color.divider') })
               .shadow(ButtonShadow)
               .onClick((): void => {
@@ -104,33 +110,33 @@ struct PatrolControl {
             Row({ space: '10vp' }) {
               Button('开始巡检')
                 .width('100vp')
-                .height('40vp')
-                .fontSize('14fp')
+                .height('38vp')
+                .fontSize('13fp')
                 .fontColor($r('app.color.text_on_accent'))
                 .backgroundColor($r('app.color.alert_normal'))
-                .borderRadius('20vp')
+                .borderRadius('19vp')
                 .shadow(ButtonShadow)
                 .onClick((): void => {
                   this.sendPatrolCommand('start');
                 })
               Button('暂停巡检')
                 .width('100vp')
-                .height('40vp')
-                .fontSize('14fp')
+                .height('38vp')
+                .fontSize('13fp')
                 .fontColor($r('app.color.text_on_accent'))
                 .backgroundColor($r('app.color.alert_warning'))
-                .borderRadius('20vp')
+                .borderRadius('19vp')
                 .shadow(ButtonShadow)
                 .onClick((): void => {
                   this.sendPatrolCommand('pause');
                 })
               Button('继续巡检')
                 .width('100vp')
-                .height('40vp')
-                .fontSize('14fp')
+                .height('38vp')
+                .fontSize('13fp')
                 .fontColor($r('app.color.text'))
                 .backgroundColor($r('app.color.button_secondary'))
-                .borderRadius('20vp')
+                .borderRadius('19vp')
                 .shadow(ButtonShadow)
                 .onClick((): void => {
                   this.sendPatrolCommand('resume');
@@ -139,33 +145,33 @@ struct PatrolControl {
             Row({ space: '10vp' }) {
               Button('返回起点')
                 .width('100vp')
-                .height('40vp')
-                .fontSize('14fp')
+                .height('38vp')
+                .fontSize('13fp')
                 .fontColor($r('app.color.text'))
                 .backgroundColor($r('app.color.button_secondary'))
-                .borderRadius('20vp')
+                .borderRadius('19vp')
                 .shadow(ButtonShadow)
                 .onClick((): void => {
                   this.sendPatrolCommand('return');
                 })
               Button('停止巡检')
                 .width('100vp')
-                .height('40vp')
-                .fontSize('14fp')
+                .height('38vp')
+                .fontSize('13fp')
                 .fontColor($r('app.color.text_on_accent'))
                 .backgroundColor($r('app.color.alert_critical'))
-                .borderRadius('20vp')
+                .borderRadius('19vp')
                 .shadow(ButtonShadow)
                 .onClick((): void => {
                   this.sendPatrolCommand('stop');
                 })
               Button('手动遥控')
                 .width('100vp')
-                .height('40vp')
-                .fontSize('14fp')
+                .height('38vp')
+                .fontSize('13fp')
                 .fontColor($r('app.color.text'))
                 .backgroundColor($r('app.color.button_secondary'))
-                .borderRadius('20vp')
+                .borderRadius('19vp')
                 .shadow(ButtonShadow)
                 .onClick((): void => {
                   router.pushUrl({ url: 'pages/RemoteControl' });
@@ -175,14 +181,14 @@ struct PatrolControl {
         }
       }
       .layoutWeight(1)
-      .padding({ left: '20vp', right: '10vp', bottom: '20vp' })
+      .padding({ left: '15vp', right: '10vp', bottom: '15vp' })
       .backgroundColor($r('app.color.window_background'))
 
       Column() {
         VideoComponents()
       }
       .layoutWeight(1)
-      .padding({ right: '20vp', bottom: '20vp' })
+      .padding({ right: '15vp', bottom: '15vp' })
     }
     .width('100%')
     .height('100%')

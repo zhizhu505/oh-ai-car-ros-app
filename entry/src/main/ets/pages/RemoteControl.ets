@@ -51,11 +51,11 @@ struct RemoteControl {
                     .fontColor($r('app.color.text_secondary'))
                   Blank()
                   Button('急停')
-                    .height('30vp')
+                    .height('36vp')
                     .fontSize('12fp')
                     .fontColor(Color.White)
                     .backgroundColor($r('app.color.alert_critical'))
-                    .borderRadius('15vp')
+                    .borderRadius('18vp')
                     .onClick((): void => {
                       carApi.send(CarEncode.ButtonCarEncode(CarDirection.Stop));
                       this.resetAll();
@@ -109,7 +109,7 @@ struct RemoteControl {
         }
         .width('100%')
         .layoutWeight(1)
-        .padding({ left: '28vp', right: '20vp', top: '6vp', bottom: '8vp' })
+        .padding({ left: '15vp', right: '15vp', top: '6vp', bottom: '8vp' })
       }
       .width('100%')
       .height('100%')
@@ -128,7 +128,7 @@ struct RemoteControl {
     Row({ space: '12vp' }) {
       Button('返回')
         .width('68vp')
-        .height('32vp')
+        .height('36vp')
         .fontSize('13fp')
         .fontColor($r('app.color.text'))
         .backgroundColor($r('app.color.button_secondary'))
@@ -143,21 +143,24 @@ struct RemoteControl {
           .fontSize('19fp')
           .fontColor($r('app.color.text'))
           .fontWeight(FontWeight.Bold)
+          .maxLines(1)
+          .textOverflow({ overflow: TextOverflow.Ellipsis })
         Text('摇杆控制  |  视频预览  |  远程接管')
           .fontSize('10fp')
           .fontColor($r('app.color.text_secondary'))
           .maxLines(1)
+          .textOverflow({ overflow: TextOverflow.Ellipsis })
       }
       .alignItems(HorizontalAlign.Start)
       .layoutWeight(1)
 
       Button(this.advancedExpanded ? '关闭调节' : '高级调节')
         .width('86vp')
-        .height('32vp')
+        .height('36vp')
         .fontSize('13fp')
         .fontColor(Color.White)
         .backgroundColor($r('app.color.button_primary'))
-        .borderRadius('17vp')
+        .borderRadius('18vp')
         .shadow(ButtonShadow)
         .onClick((): void => {
           this.advancedExpanded = !this.advancedExpanded;
@@ -165,52 +168,55 @@ struct RemoteControl {
     }
     .width('100%')
     .height('48vp')
-    .padding({ left: '28vp', right: '20vp' })
+    .padding({ left: '15vp', right: '15vp' })
     .backgroundColor($r('app.color.header_background'))
     .alignItems(VerticalAlign.Center)
   }
 
   @Builder
   AdvancedOverlay() {
-    Column({ space: '8vp' }) {
+    Column({ space: '10vp' }) {
       Row({ space: '10vp' }) {
         Column({ space: '2vp' }) {
           Text('高级调节')
             .fontSize('15fp')
             .fontColor($r('app.color.text'))
             .fontWeight(FontWeight.Bold)
+            .maxLines(1)
+            .textOverflow({ overflow: TextOverflow.Ellipsis })
           Text('四轮速度 / 状态 / 快捷动作')
             .fontSize('10fp')
             .fontColor($r('app.color.text_secondary'))
             .maxLines(1)
+            .textOverflow({ overflow: TextOverflow.Ellipsis })
         }
         .alignItems(HorizontalAlign.Start)
         .layoutWeight(1)
 
         Button('关闭')
           .width('72vp')
-          .height('30vp')
+          .height('36vp')
           .fontSize('12fp')
           .fontColor(Color.White)
           .backgroundColor($r('app.color.button_primary'))
-          .borderRadius('15vp')
+          .borderRadius('18vp')
           .onClick((): void => {
             this.advancedExpanded = false;
           })
       }
-      .height('34vp')
+      .height('38vp')
       .alignItems(VerticalAlign.Center)
 
       Row({ space: '10vp' }) {
-        Column({ space: '5vp' }) {
+        Column({ space: '6vp' }) {
           SliderComponent({ value: $L1Value, title: '左前轮', label: 'L1' })
           SliderComponent({ value: $R1Value, title: '右前轮', label: 'R1' })
           SliderComponent({ value: $L2Value, title: '左后轮', label: 'L2' })
           SliderComponent({ value: $R2Value, title: '右后轮', label: 'R2' })
         }
-        .height('116vp')
+        .height('120vp')
         .layoutWeight(4)
-        .padding({ left: '8vp', right: '8vp', top: '6vp', bottom: '6vp' })
+        .padding({ left: '10vp', right: '10vp', top: '8vp', bottom: '8vp' })
         .backgroundColor($r('app.color.card_elevated'))
         .borderRadius('12vp')
 
@@ -224,13 +230,13 @@ struct RemoteControl {
             SpeedDisplay({ label: 'R2', value: this.R2Value })
           }
         }
-        .height('116vp')
+        .height('120vp')
         .layoutWeight(2)
-        .padding({ left: '8vp', right: '8vp', top: '16vp', bottom: '16vp' })
+        .padding({ left: '10vp', right: '10vp', top: '12vp', bottom: '12vp' })
         .backgroundColor($r('app.color.card_elevated'))
         .borderRadius('12vp')
       }
-      .height('116vp')
+      .height('120vp')
 
       Row({ space: '10vp' }) {
         ActionButton({ title: '应用轮速', action: () => { this.sendSpeed(); } })
@@ -238,13 +244,13 @@ struct RemoteControl {
         ActionButton({ title: '前进预设', action: () => { this.setSpeed(50, 50, 50, 50); } })
         ActionButton({ title: '后退预设', action: () => { this.setSpeed(-50, -50, -50, -50); } })
       }
-      .height('32vp')
+      .height('36vp')
     }
     .width('70%')
-    .height('208vp')
-    .padding({ left: '12vp', right: '12vp', top: '8vp', bottom: '10vp' })
+    .height('216vp')
+    .padding({ left: '12vp', right: '12vp', top: '10vp', bottom: '12vp' })
     .backgroundColor($r('app.color.card_background'))
-    .borderRadius('16vp')
+    .borderRadius('12vp')
     .border({ width: '1vp', color: $r('app.color.divider') })
     .shadow(CardShadow)
     .position({ x: '28%', y: '62vp' })
@@ -291,6 +297,8 @@ struct ControlPanel {
         .fontColor($r('app.color.text'))
         .fontWeight(FontWeight.Bold)
         .width('100%')
+        .maxLines(1)
+        .textOverflow({ overflow: TextOverflow.Ellipsis })
 
       Column() {
         this.content()
@@ -303,9 +311,9 @@ struct ControlPanel {
     }
     .width('100%')
     .height('100%')
-    .padding({ left: '10vp', right: '10vp', top: '8vp', bottom: '8vp' })
+    .padding({ left: '12vp', right: '12vp', top: '10vp', bottom: '10vp' })
     .backgroundColor($r('app.color.card_background'))
-    .borderRadius('16vp')
+    .borderRadius('12vp')
     .border({ width: '1vp', color: $r('app.color.divider') })
     .shadow(CardShadow)
   }
@@ -371,11 +379,11 @@ struct ActionButton {
   build() {
     Button(this.title)
       .layoutWeight(1)
-      .height('32vp')
+      .height('36vp')
       .fontSize('12fp')
       .fontColor(Color.White)
       .backgroundColor($r('app.color.button_primary'))
-      .borderRadius('16vp')
+      .borderRadius('18vp')
       .shadow(ButtonShadow)
       .onClick(this.action)
   }
@@ -391,14 +399,18 @@ struct SpeedDisplay {
       Text(this.label)
         .fontSize('11fp')
         .fontColor($r('app.color.text_secondary'))
+        .maxLines(1)
+        .textOverflow({ overflow: TextOverflow.Ellipsis })
       Blank()
       Text(`${this.value}`)
         .fontSize('15fp')
         .fontColor(this.value > 0 ? $r('app.color.alert_normal') : (this.value < 0 ? $r('app.color.alert_critical') : $r('app.color.text')))
         .fontWeight(FontWeight.Bold)
+        .maxLines(1)
+        .textOverflow({ overflow: TextOverflow.Ellipsis })
     }
     .layoutWeight(1)
-    .height('24vp')
+    .height('26vp')
     .padding({ left: '10vp', right: '10vp' })
     .backgroundColor($r('app.color.card_elevated'))
     .borderRadius('10vp')

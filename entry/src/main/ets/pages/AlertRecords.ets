@@ -170,83 +170,125 @@ struct AlertRecords {
     return session.getInputText();
   }
 
+  @State tempInputText: string = '';
+
   @Builder
   ChatContent(item: AlertRecord, chatItems: ChatItem[], inputText: string) {
-    Column() {
+    Column({ space: '6vp' }) {
       Scroll() {
-        Column({ space: '6vp' }) {
+        Column({ space: '5vp' }) {
           ForEach(chatItems, (chat: ChatItem) => {
-            Row({ space: '6vp' }) {
+            Column({ space: '2vp' }) {
               if (chat.isUser) {
-                Blank()
-                  .layoutWeight(1)
-                Column() {
-                  Text(chat.text)
-                    .fontSize('12fp')
-                    .fontColor($r('app.color.text'))
-                    .padding({ left: '8vp', right: '8vp', top: '6vp', bottom: '6vp' })
-                    .backgroundColor($r('app.color.button_primary'))
-                    .borderRadius('10vp')
-                    .borderRadius({ bottomLeft: '2vp' })
-                }
-                .width('70%')
+                Text('我')
+                  .fontSize('10fp')
+                  .fontColor($r('app.color.text_secondary'))
+                  .textAlign(TextAlign.End)
+                  .width('100%')
+                Text(chat.text)
+                  .fontSize('12fp')
+                  .fontColor(Color.White)
+                  .padding({ left: '10vp', right: '10vp', top: '7vp', bottom: '7vp' })
+                  .backgroundColor($r('app.color.button_primary'))
+                  .borderRadius('12vp')
+                  .borderRadius({ bottomRight: '4vp' })
+                  .maxLines(10)
+                  .textOverflow({ overflow: TextOverflow.Ellipsis })
               } else {
-                Column() {
-                  Text(chat.text)
-                    .fontSize('12fp')
-                    .fontColor($r('app.color.text'))
-                    .padding({ left: '8vp', right: '8vp', top: '6vp', bottom: '6vp' })
-                    .backgroundColor($r('app.color.card_background'))
-                    .borderRadius('10vp')
-                    .borderRadius({ bottomRight: '2vp' })
-                }
-                .width('70%')
-                Blank()
-                  .layoutWeight(1)
+                Text('AI')
+                  .fontSize('10fp')
+                  .fontColor($r('app.color.text_secondary'))
+                  .textAlign(TextAlign.Start)
+                  .width('100%')
+                Text(chat.text)
+                  .fontSize('12fp')
+                  .fontColor($r('app.color.text'))
+                  .padding({ left: '10vp', right: '10vp', top: '7vp', bottom: '7vp' })
+                  .backgroundColor($r('app.color.card_background'))
+                  .borderRadius('12vp')
+                  .borderRadius({ bottomLeft: '4vp' })
+                  .maxLines(10)
+                  .textOverflow({ overflow: TextOverflow.Ellipsis })
               }
             }
             .width('100%')
+            .alignItems(chat.isUser ? HorizontalAlign.End : HorizontalAlign.Start)
           }, (chat: ChatItem) => chat.id)
         }
         .width('100%')
       }
-      .height('80vp')
-      Row({ space: '4vp' }) {
-        TextInput({ placeholder: '输入您的问题...', text: inputText })
+      .height('120vp')
+      .scrollBar(BarState.Off)
+
+      Row({ space: '8vp' }) {
+        TextInput({ placeholder: '输入您的问题...', text: this.tempInputText })
           .layoutWeight(1)
-          .height('32vp')
+          .height('36vp')
           .fontSize('12fp')
           .backgroundColor($r('app.color.card_background'))
-          .borderRadius('16vp')
-          .padding({ left: '12vp', right: '12vp' })
+          .borderRadius('18vp')
+          .padding({ left: '14vp', right: '14vp' })
           .onChange((value: string): void => {
-            const session = this.getOrCreateChatSession(item.id);
-            session.setInputText(value);
-            this.notifyUiUpdate();
+            this.tempInputText = value;
           })
         Button('发送')
-          .width('48vp')
-          .height('32vp')
-          .fontSize('11fp')
+          .width('64vp')
+          .height('36vp')
+          .fontSize('12fp')
           .fontColor($r('app.color.text_on_accent'))
           .backgroundColor($r('app.color.button_primary'))
-          .borderRadius('16vp')
-          .onClick((): void => {
-            this.sendChat(item.id, item);
+          .borderRadius('18vp')
+          .onClick(() => {
+            const inputValue = this.tempInputText.trim();
+            if (!inputValue) {
+              return;
+            }
+            const session = this.getOrCreateChatSession(item.id);
+            session.addUserMessage(inputValue);
+            session.addAiMessage('', true);
+            this.tempInputText = '';
+            this.notifyUiUpdate();
+            let levelStr: string = '正常';
+            if (item.level === AlertLevel.Critical) {
+              levelStr = '严重';
+            } else if (item.level === AlertLevel.Warning) {
+              levelStr = '预警';
+            }
+            const alarmData: AlarmData = {
+              alarm_id: item.id,
+              time: item.time,
+              point: item.point,
+              alarm_type: item.category,
+              message: item.message,
+              level: levelStr
+            };
+            this.queryAndUpdate(item.id, JSON.stringify(alarmData), inputValue);
           })
       }
       .width('100%')
     }
     .width('100%')
-    .height('120vp')
-    .padding('8vp')
+    .padding('12vp')
     .backgroundColor($r('app.color.card_elevated'))
-    .borderRadius('10vp')
+    .borderRadius('12vp')
+  }
+
+  async queryAndUpdate(alertId: string, alarmData: string, question: string): Promise<void> {
+    try {
+      const answer: string = await queryAlarmQuestion(alarmData, question);
+      const session = this.getOrCreateChatSession(alertId);
+      session.updateLastMessage(answer);
+      this.notifyUiUpdate();
+    } catch (err) {
+      const session = this.getOrCreateChatSession(alertId);
+      session.updateLastMessage('AI咨询失败，请检查网络');
+      this.notifyUiUpdate();
+    }
   }
 
   build() {
     Column({ space: '0vp' }) {
-      Row({ space: '12vp' }) {
+      Row({ space: '10vp' }) {
         Column({ space: '4vp' }) {
           Text('异常告警记录')
             .fontSize('20fp')
@@ -261,7 +303,7 @@ struct AlertRecords {
 
         Button('清空')
           .height('32vp')
-          .fontSize('13fp')
+          .fontSize('12fp')
           .fontColor($r('app.color.text'))
           .backgroundColor($r('app.color.card_elevated'))
           .borderRadius('16vp')
@@ -273,7 +315,7 @@ struct AlertRecords {
 
         Button('返回')
           .height('32vp')
-          .fontSize('13fp')
+          .fontSize('12fp')
           .fontColor($r('app.color.text'))
           .backgroundColor($r('app.color.button_secondary'))
           .borderRadius('16vp')
@@ -283,74 +325,81 @@ struct AlertRecords {
       }
       .width('100%')
       .alignItems(VerticalAlign.Center)
-      .padding({ left: '16vp', right: '16vp', top: '12vp', bottom: '10vp' })
+      .padding({ left: '14vp', right: '14vp', top: '12vp', bottom: '10vp' })
       .backgroundColor($r('app.color.header_background'))
+      .shadow(CardShadow)
 
       if (this.alerts.length === 0) {
         Column() {
-          Column({ space: '12vp' }) {
+          Column({ space: '10vp' }) {
             Text('📋')
-              .fontSize('48fp')
+              .fontSize('44fp')
             Text('暂无异常记录')
-              .fontSize('16fp')
+              .fontSize('15fp')
               .fontColor($r('app.color.text'))
               .fontWeight(FontWeight.Bold)
             Text('小车巡检过程中检测到的环境、雷达、视觉异常会显示在这里')
-              .fontSize('13fp')
+              .fontSize('12fp')
               .fontColor($r('app.color.text_secondary'))
               .textAlign(TextAlign.Center)
               .maxLines(2)
           }
           .width('100%')
-          .height('100%')
           .justifyContent(FlexAlign.Center)
           .alignItems(HorizontalAlign.Center)
           .padding({ left: '20vp', right: '20vp' })
         }
         .width('100%')
         .layoutWeight(1)
-        .backgroundColor($r('app.color.card_background'))
-        .borderRadius('16vp')
+        .justifyContent(FlexAlign.Center)
       } else {
         List({ space: '10vp' }) {
           ForEach(this.alerts, (item: AlertRecord) => {
             ListItem() {
               Column({ space: '8vp' }) {
-                Row({ space: '8vp' }) {
+                Row({ space: '6vp' }) {
                   Text(item.time)
-                    .fontSize('12fp')
+                    .fontSize('11fp')
                     .fontColor($r('app.color.text_secondary'))
                   Text(categoryLabel(item.category))
-                    .fontSize('11fp')
+                    .fontSize('10fp')
                     .fontColor($r('app.color.text_on_accent'))
                     .backgroundColor($r('app.color.status_active'))
-                    .padding({ left: '8vp', right: '8vp', top: '3vp', bottom: '3vp' })
-                    .borderRadius('8vp')
+                    .padding({ left: '6vp', right: '6vp', top: '3vp', bottom: '3vp' })
+                    .borderRadius('6vp')
                   Blank()
+                    .layoutWeight(1)
                   Text(alertLevelText(item.level))
-                    .fontSize('11fp')
+                    .fontSize('10fp')
                     .fontColor($r('app.color.text_on_accent'))
                     .backgroundColor(levelColor(item.level))
-                    .padding({ left: '10vp', right: '10vp', top: '3vp', bottom: '3vp' })
-                    .borderRadius('10vp')
+                    .padding({ left: '8vp', right: '8vp', top: '3vp', bottom: '3vp' })
+                    .borderRadius('8vp')
                 }
                 .width('100%')
+                .alignItems(VerticalAlign.Center)
+
                 Text(`${item.point}：${item.message}`)
-                  .fontSize('14fp')
+                  .fontSize('13fp')
                   .fontColor($r('app.color.text'))
                   .width('100%')
                   .fontWeight(FontWeight.Medium)
+                  .maxLines(2)
+                  .textOverflow({ overflow: TextOverflow.Ellipsis })
+
                 if (item.imageUrl.length > 0) {
                   Text(`截图已保存`)
-                    .fontSize('11fp')
+                    .fontSize('10fp')
                     .fontColor($r('app.color.status_active'))
                     .maxLines(1)
                 }
+
                 if (item.aiAnalyzing || item.aiAnalysis) {
                   Row({ space: '6vp' }) {
                     Text(item.aiAnalyzing ? 'AI分析中...' : 'AI分析')
                       .fontSize('12fp')
                       .fontColor($r('app.color.button_primary'))
+                      .fontWeight(FontWeight.Medium)
                     Text('▼')
                       .fontSize('10fp')
                       .fontColor($r('app.color.text_secondary'))
@@ -363,13 +412,17 @@ struct AlertRecords {
                   if (this.analysisExpandedId === item.id && item.aiAnalysis) {
                     Column({ space: '6vp' }) {
                       Text('摘要：' + item.aiAnalysis.summary)
-                        .fontSize('13fp')
+                        .fontSize('12fp')
                         .fontColor($r('app.color.text'))
                         .width('100%')
+                        .maxLines(3)
+                        .textOverflow({ overflow: TextOverflow.Ellipsis })
                       Text('风险：' + item.aiAnalysis.risk)
                         .fontSize('12fp')
                         .fontColor($r('app.color.alert_critical'))
                         .width('100%')
+                        .maxLines(2)
+                        .textOverflow({ overflow: TextOverflow.Ellipsis })
                       Column({ space: '4vp' }) {
                         Text('处置建议')
                           .fontSize('11fp')
@@ -378,12 +431,14 @@ struct AlertRecords {
                         ForEach(item.aiAnalysis.solve, (step: string, index: number) => {
                           Row({ space: '4vp' }) {
                             Text(`${index + 1}.`)
-                              .fontSize('12fp')
+                              .fontSize('11fp')
                               .fontColor($r('app.color.text_secondary'))
                             Text(step)
-                              .fontSize('12fp')
+                              .fontSize('11fp')
                               .fontColor($r('app.color.text_secondary'))
                               .layoutWeight(1)
+                              .maxLines(2)
+                              .textOverflow({ overflow: TextOverflow.Ellipsis })
                           }
                           .width('100%')
                         }, (step: string) => step)
@@ -396,10 +451,11 @@ struct AlertRecords {
                     .borderRadius('10vp')
                   }
                 }
+
                 Button('AI咨询')
                   .width('100%')
-                  .height('36vp')
-                  .fontSize('13fp')
+                  .height('34vp')
+                  .fontSize('12fp')
                   .fontColor($r('app.color.text_on_accent'))
                   .backgroundColor($r('app.color.button_primary'))
                   .borderRadius('10vp')
@@ -413,13 +469,14 @@ struct AlertRecords {
               .width('100%')
               .padding('12vp')
               .backgroundColor($r('app.color.card_background'))
-              .borderRadius('14vp')
+              .borderRadius('12vp')
               .border({ width: '1vp', color: $r('app.color.divider') })
+              .shadow(CardShadow)
             }
           }, (item: AlertRecord) => item.id)
         }
         .layoutWeight(1)
-        .padding({ left: '12vp', right: '12vp', top: '8vp', bottom: '8vp' })
+        .padding({ left: '12vp', right: '12vp', top: '10vp', bottom: '12vp' })
       }
     }
     .width('100%')

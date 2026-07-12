@@ -57,199 +57,227 @@ struct PatrolDashboard {
   }
 
   build() {
-    Column({ space: '16vp' }) {
-      Row({ space: '12vp' }) {
+    Column({ space: '10vp' }) {
+      Row({ space: '10vp' }) {
         PageHeader({
           title: '狭域巡航监控',
           subtitle: this.online ? '设备在线' : '设备离线',
           accentColor: $r('app.color.button_primary')
         })
+        .layoutWeight(1)
         StatusBadge({
           text: this.online ? '在线' : '离线',
           bgColor: onlineColor(this.online)
         })
       }
       .width('100%')
-      .padding({ right: '20vp' })
+      .padding({ left: '14vp', right: '14vp' })
 
-      Row({ space: '16vp' }) {
-        Column() {
-          InfoCard({ title: '巡检状态' }) {
-            Column({ space: '10vp' }) {
-              StatusBadge({
-                text: this.patrolStatusTextValue,
-                bgColor: patrolStatusColor(PatrolStore.getInstance().vehicle.patrolStatus)
-              })
-              Text(`路线：${this.route}`)
-                .fontSize('14fp')
-                .fontColor($r('app.color.text_secondary'))
-              Row({ space: '16vp' }) {
-                Column({ space: '4vp' }) {
-                  Text('当前点')
+      Scroll() {
+        Column({ space: '10vp' }) {
+          Row({ space: '10vp' }) {
+            Column() {
+              InfoCard({ title: '巡检状态' }) {
+                Column({ space: '8vp' }) {
+                  StatusBadge({
+                    text: this.patrolStatusTextValue,
+                    bgColor: patrolStatusColor(PatrolStore.getInstance().vehicle.patrolStatus)
+                  })
+                  Text(`路线：${this.route}`)
                     .fontSize('13fp')
                     .fontColor($r('app.color.text_secondary'))
-                  Text(this.currentPoint)
-                    .fontSize('18fp')
-                    .fontColor($r('app.color.text'))
-                    .fontWeight(FontWeight.Bold)
-                }
-                Column({ space: '4vp' }) {
-                  Text('下一点')
-                    .fontSize('13fp')
-                    .fontColor($r('app.color.text_secondary'))
-                  Text(this.nextPoint)
-                    .fontSize('18fp')
-                    .fontColor($r('app.color.text'))
-                    .fontWeight(FontWeight.Bold)
-                }
-              }
-              Column({ space: '6vp' }) {
-                Text(`进度 ${this.progress}%`)
-                  .fontSize('14fp')
-                  .fontColor($r('app.color.text'))
+                    .maxLines(1)
+                  Row({ space: '12vp' }) {
+                    Column({ space: '3vp' }) {
+                      Text('当前点')
+                        .fontSize('12fp')
+                        .fontColor($r('app.color.text_secondary'))
+                      Text(this.currentPoint)
+                        .fontSize('16fp')
+                        .fontColor($r('app.color.text'))
+                        .fontWeight(FontWeight.Bold)
+                        .maxLines(1)
+                    }
+                    .layoutWeight(1)
+                    Column({ space: '3vp' }) {
+                      Text('下一点')
+                        .fontSize('12fp')
+                        .fontColor($r('app.color.text_secondary'))
+                      Text(this.nextPoint)
+                        .fontSize('16fp')
+                        .fontColor($r('app.color.text'))
+                        .fontWeight(FontWeight.Bold)
+                        .maxLines(1)
+                    }
+                    .layoutWeight(1)
+                  }
                   .width('100%')
-                Progress({ value: this.progress, total: 100, type: ProgressType.Linear })
+                  Column({ space: '4vp' }) {
+                    Row({ space: '8vp' }) {
+                      Text('巡检进度')
+                        .fontSize('12fp')
+                        .fontColor($r('app.color.text_secondary'))
+                      Text(`${this.progress}%`)
+                        .fontSize('12fp')
+                        .fontColor($r('app.color.text'))
+                        .fontWeight(FontWeight.Medium)
+                    }
+                    Progress({ value: this.progress, total: 100, type: ProgressType.Linear })
+                      .width('100%')
+                      .height('6vp')
+                      .color($r('app.color.button_primary'))
+                      .backgroundColor($r('app.color.card_elevated'))
+                      .borderRadius('3vp')
+                  }
                   .width('100%')
-                  .height('8vp')
-                  .color($r('app.color.button_primary'))
-                  .backgroundColor($r('app.color.card_elevated'))
-                  .borderRadius('4vp')
+                }
               }
             }
-          }
-        }
-        .layoutWeight(1)
+            .layoutWeight(1)
 
-        Column() {
-          InfoCard({ title: '通道与视觉' }) {
-            Column({ space: '10vp' }) {
-              StatusBadge({
-                text: channelStatusText(PatrolStore.getInstance().lidar.channelStatus),
-                bgColor: channelStatusColor(PatrolStore.getInstance().lidar.channelStatus)
-              })
-              Row({ space: '12vp' }) {
-                Column({ space: '4vp' }) {
-                  Text('雷达')
-                    .fontSize('13fp')
-                    .fontColor($r('app.color.text_secondary'))
-                  Text(this.lidarMessage)
-                    .fontSize('14fp')
-                    .fontColor($r('app.color.text'))
-                    .maxLines(2)
-                    .textOverflow({ overflow: TextOverflow.Ellipsis })
+            Column() {
+              InfoCard({ title: '通道与视觉' }) {
+                Column({ space: '8vp' }) {
+                  StatusBadge({
+                    text: channelStatusText(PatrolStore.getInstance().lidar.channelStatus),
+                    bgColor: channelStatusColor(PatrolStore.getInstance().lidar.channelStatus)
+                  })
+                  Row({ space: '10vp' }) {
+                    Column({ space: '3vp' }) {
+                      Text('雷达')
+                        .fontSize('12fp')
+                        .fontColor($r('app.color.text_secondary'))
+                      Text(this.lidarMessage)
+                        .fontSize('13fp')
+                        .fontColor($r('app.color.text'))
+                        .maxLines(2)
+                        .textOverflow({ overflow: TextOverflow.Ellipsis })
+                    }
+                    .layoutWeight(1)
+                    Column({ space: '3vp' }) {
+                      Text('视觉')
+                        .fontSize('12fp')
+                        .fontColor($r('app.color.text_secondary'))
+                      Text(this.visionMessage)
+                        .fontSize('13fp')
+                        .fontColor($r('app.color.text'))
+                        .maxLines(2)
+                        .textOverflow({ overflow: TextOverflow.Ellipsis })
+                    }
+                    .layoutWeight(1)
+                  }
+                  .width('100%')
+                  Column({ space: '4vp' }) {
+                    Text('最新告警')
+                      .fontSize('13fp')
+                      .fontColor($r('app.color.text'))
+                      .fontWeight(FontWeight.Medium)
+                    Text(this.latestAlert)
+                      .fontSize('12fp')
+                      .fontColor(PatrolStore.getInstance().alerts.length > 0 ?
+                        $r('app.color.alert_warning') : $r('app.color.text_secondary'))
+                      .maxLines(2)
+                      .textOverflow({ overflow: TextOverflow.Ellipsis })
+                  }
+                  .width('100%')
                 }
-                .layoutWeight(1)
-                Column({ space: '4vp' }) {
-                  Text('视觉')
-                    .fontSize('13fp')
-                    .fontColor($r('app.color.text_secondary'))
-                  Text(this.visionMessage)
-                    .fontSize('14fp')
-                    .fontColor($r('app.color.text'))
-                    .maxLines(2)
-                    .textOverflow({ overflow: TextOverflow.Ellipsis })
-                }
-                .layoutWeight(1)
-              }
-              Column({ space: '6vp' }) {
-                Text('最新告警')
-                  .fontSize('15fp')
-                  .fontColor($r('app.color.text'))
-                  .fontWeight(FontWeight.Medium)
-                Text(this.latestAlert)
-                  .fontSize('13fp')
-                  .fontColor(PatrolStore.getInstance().alerts.length > 0 ?
-                    $r('app.color.alert_warning') : $r('app.color.text_secondary'))
-                  .maxLines(3)
-                  .textOverflow({ overflow: TextOverflow.Ellipsis })
               }
             }
+            .layoutWeight(1)
           }
-        }
-        .layoutWeight(1)
-      }
-      .width('100%')
+          .width('100%')
+          .padding({ left: '14vp', right: '14vp' })
 
-      InfoCard({ title: '巡检路线' }) {
-        Scroll() {
-          Row({ space: '12vp' }) {
-            ForEach(this.patrolPoints, (point: PatrolPoint) => {
-              Column({ space: '6vp' }) {
-                Text(point.id)
-                  .fontSize('18fp')
-                  .fontColor($r('app.color.text_on_accent'))
-                  .fontWeight(FontWeight.Bold)
-                Text(point.name)
-                  .fontSize('12fp')
-                  .fontColor(point.abnormal ? $r('app.color.text_on_accent') : $r('app.color.text'))
-                  .maxLines(2)
-                  .textAlign(TextAlign.Center)
+          Column() {
+            InfoCard({ title: '巡检路线' }) {
+              Scroll() {
+                Row({ space: '10vp' }) {
+                  ForEach(this.patrolPoints, (point: PatrolPoint) => {
+                    Column({ space: '4vp' }) {
+                      Text(point.id)
+                        .fontSize('16fp')
+                        .fontColor($r('app.color.text_on_accent'))
+                        .fontWeight(FontWeight.Bold)
+                      Text(point.name)
+                        .fontSize('11fp')
+                        .fontColor(point.abnormal ? $r('app.color.text_on_accent') : $r('app.color.text'))
+                        .maxLines(2)
+                        .textAlign(TextAlign.Center)
+                    }
+                    .width('80vp')
+                    .height('72vp')
+                    .justifyContent(FlexAlign.Center)
+                    .backgroundColor(point.abnormal ? $r('app.color.alert_critical') :
+                      (point.visited ? $r('app.color.alert_normal') : $r('app.color.card_elevated')))
+                    .borderRadius('12vp')
+                    .border({ width: '1vp', color: $r('app.color.divider') })
+                  }, (point: PatrolPoint) => point.id)
+                }
               }
-              .width('100vp')
-              .height('80vp')
-              .justifyContent(FlexAlign.Center)
-              .backgroundColor(point.abnormal ? $r('app.color.alert_critical') :
-                (point.visited ? $r('app.color.alert_normal') : $r('app.color.card_elevated')))
-              .borderRadius('14vp')
+              .scrollable(ScrollDirection.Horizontal)
+              .scrollBar(BarState.Off)
+              .width('100%')
+            }
+          }
+          .padding({ left: '14vp', right: '14vp' })
+
+          Row({ space: '10vp' }) {
+            Button('环境数据')
+              .layoutWeight(1)
+              .height('38vp')
+              .fontSize('13fp')
+              .fontColor($r('app.color.text'))
+              .backgroundColor($r('app.color.button_secondary'))
+              .borderRadius('19vp')
+              .shadow(ButtonShadow)
+              .onClick((): void => {
+                router.pushUrl({ url: 'pages/EnvironmentMonitor' });
+              })
+            Button('异常告警')
+              .layoutWeight(1)
+              .height('38vp')
+              .fontSize('13fp')
+              .fontColor($r('app.color.text'))
+              .backgroundColor($r('app.color.button_secondary'))
+              .borderRadius('19vp')
+              .shadow(ButtonShadow)
+              .onClick((): void => {
+                router.pushUrl({ url: 'pages/AlertRecords' });
+              })
+            Button('巡检控制')
+              .layoutWeight(1)
+              .height('38vp')
+              .fontSize('13fp')
+              .fontColor($r('app.color.text'))
+              .backgroundColor($r('app.color.button_secondary'))
+              .borderRadius('19vp')
+              .shadow(ButtonShadow)
+              .onClick((): void => {
+                router.pushUrl({ url: 'pages/PatrolControl' });
+              })
+            Button('返回首页')
+              .layoutWeight(1)
+              .height('38vp')
+              .fontSize('13fp')
+              .fontColor($r('app.color.text'))
+              .backgroundColor($r('app.color.card_elevated'))
+              .borderRadius('19vp')
               .border({ width: '1vp', color: $r('app.color.divider') })
-            }, (point: PatrolPoint) => point.id)
+              .onClick((): void => {
+                router.back();
+              })
           }
+          .width('100%')
+          .padding({ left: '14vp', right: '14vp', bottom: '12vp' })
         }
-        .scrollable(ScrollDirection.Horizontal)
-        .scrollBar(BarState.Off)
         .width('100%')
       }
-
-      Row({ space: '12vp' }) {
-        Button('环境数据')
-          .width('100vp')
-          .height('44vp')
-          .fontSize('14fp')
-          .fontColor($r('app.color.text'))
-          .backgroundColor($r('app.color.button_secondary'))
-          .borderRadius('22vp')
-          .shadow(ButtonShadow)
-          .onClick((): void => {
-            router.pushUrl({ url: 'pages/EnvironmentMonitor' });
-          })
-        Button('异常告警')
-          .width('100vp')
-          .height('44vp')
-          .fontSize('14fp')
-          .fontColor($r('app.color.text'))
-          .backgroundColor($r('app.color.button_secondary'))
-          .borderRadius('22vp')
-          .shadow(ButtonShadow)
-          .onClick((): void => {
-            router.pushUrl({ url: 'pages/AlertRecords' });
-          })
-        Button('巡检控制')
-          .width('100vp')
-          .height('44vp')
-          .fontSize('14fp')
-          .fontColor($r('app.color.text'))
-          .backgroundColor($r('app.color.button_secondary'))
-          .borderRadius('22vp')
-          .shadow(ButtonShadow)
-          .onClick((): void => {
-            router.pushUrl({ url: 'pages/PatrolControl' });
-          })
-        Button('返回首页')
-          .width('100vp')
-          .height('44vp')
-          .fontSize('14fp')
-          .fontColor($r('app.color.text'))
-          .backgroundColor($r('app.color.card_elevated'))
-          .borderRadius('22vp')
-          .border({ width: '1vp', color: $r('app.color.divider') })
-          .onClick((): void => {
-            router.back();
-          })
-      }
+      .layoutWeight(1)
+      .scrollBar(BarState.Off)
     }
     .width('100%')
     .height('100%')
     .backgroundColor($r('app.color.window_background'))
-    .padding({ left: '20vp', right: '20vp', bottom: '20vp' })
+    .padding({ top: '10vp' })
   }
 }

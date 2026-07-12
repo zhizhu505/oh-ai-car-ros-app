@@ -73,72 +73,79 @@ struct Module4Vision {
 
   @Builder
   DetectView() {
-    Column({ space: '12vp' }) {
-      Row({ space: '12vp' }) {
-        Column({ space: '10vp' }) {
-          InfoCard({ title: '检测状态' }) {
-            Column({ space: '6vp' }) {
-              Row({ space: '10vp' }) {
-                Column({ space: '2vp' }) {
-                  Text('检测点位')
-                    .fontSize('12fp')
-                    .fontColor($r('app.color.text_secondary'))
-                  Text(this.point)
-                    .fontSize('14fp')
-                    .fontColor($r('app.color.text'))
-                    .fontWeight(FontWeight.Medium)
-                    .maxLines(1)
-                }
-                .alignItems(HorizontalAlign.Start)
+    Column({ space: '10vp' }) {
+      Column() {
+        InfoCard({ title: '视频预览' }) {
+          VideoComponents()
+        }
+      }
+      .padding({ left: '14vp', right: '14vp' })
+
+      Column() {
+        InfoCard({ title: '检测状态' }) {
+          Column({ space: '8vp' }) {
+            Row({ space: '10vp' }) {
+              Column({ space: '2vp' }) {
+                Text('检测点位')
+                  .fontSize('12fp')
+                  .fontColor($r('app.color.text_secondary'))
+                Text(this.point)
+                  .fontSize('14fp')
+                  .fontColor($r('app.color.text'))
+                  .fontWeight(FontWeight.Medium)
+                  .maxLines(1)
+                  .textOverflow({ overflow: TextOverflow.Ellipsis })
               }
+              .alignItems(HorizontalAlign.Start)
+            }
+            Row({ space: '10vp' }) {
               DetectStatusCard({
                 title: '人员闯入',
                 detected: this.personDetected,
                 normalText: '未检测到人员',
                 alertText: '检测到人员闯入！'
               })
+              .layoutWeight(1)
               DetectStatusCard({
                 title: '通道占道',
                 detected: this.boxInChannel,
                 normalText: '通道畅通',
                 alertText: '检测到箱子占道！'
               })
-            }
-          }
-
-          InfoCard({ title: '状态信息' }) {
-            Column({ space: '4vp' }) {
-              Text(this.message)
-                .fontSize('13fp')
-                .fontColor($r('app.color.text'))
-                .maxLines(2)
-              Text(`更新时间：${this.updateTime}`)
-                .fontSize('12fp')
-                .fontColor($r('app.color.text_secondary'))
-                .maxLines(1)
-              if (this.imageUrl.length > 0) {
-                Text(`异常截图已保存`)
-                  .fontSize('12fp')
-                  .fontColor($r('app.color.status_active'))
-                  .maxLines(1)
-                  .textOverflow({ overflow: TextOverflow.Ellipsis })
-              }
+              .layoutWeight(1)
             }
           }
         }
-        .layoutWeight(1)
-        .padding({ left: '20vp' })
-
-        Column({ space: '10vp' }) {
-          InfoCard({ title: '视频预览' }) {
-            VideoComponents()
-          }
-        }
-        .layoutWeight(1)
-        .padding({ right: '20vp' })
       }
+      .padding({ left: '14vp', right: '14vp' })
+
+      Column() {
+        InfoCard({ title: '状态信息' }) {
+          Column({ space: '6vp' }) {
+            Text(this.message)
+              .fontSize('13fp')
+              .fontColor($r('app.color.text'))
+              .maxLines(2)
+              .textOverflow({ overflow: TextOverflow.Ellipsis })
+            Text(`更新时间：${this.updateTime}`)
+              .fontSize('12fp')
+              .fontColor($r('app.color.text_secondary'))
+              .maxLines(1)
+              .textOverflow({ overflow: TextOverflow.Ellipsis })
+            if (this.imageUrl.length > 0) {
+              Text(`异常截图已保存`)
+                .fontSize('12fp')
+                .fontColor($r('app.color.status_active'))
+                .maxLines(1)
+                .textOverflow({ overflow: TextOverflow.Ellipsis })
+            }
+          }
+        }
+      }
+      .padding({ left: '14vp', right: '14vp' })
     }
     .width('100%')
+    .padding({ top: '12vp', bottom: '16vp' })
   }
 
   @Builder
@@ -174,9 +181,11 @@ struct Module4Vision {
           .fontSize('13fp')
           .fontColor($r('app.color.alert_warning'))
           .width('100%')
+          .maxLines(1)
+          .textOverflow({ overflow: TextOverflow.Ellipsis })
       }
     }
-    .padding({ left: '20vp', right: '20vp', bottom: '16vp' })
+    .padding({ left: '14vp', right: '14vp', top: '12vp', bottom: '16vp' })
     .width('100%')
   }
 
@@ -188,7 +197,7 @@ struct Module4Vision {
         emptyHint: '暂无视觉异常记录'
       })
     }
-    .padding({ left: '20vp', right: '20vp' })
+    .padding({ left: '14vp', right: '14vp', top: '12vp' })
     .width('100%')
   }
 }
@@ -203,21 +212,25 @@ struct DetectStatusCard {
   build() {
     Column({ space: '6vp' }) {
       Text(this.title)
-        .fontSize('15fp')
+        .fontSize('14fp')
         .fontColor($r('app.color.text'))
         .fontWeight(FontWeight.Medium)
         .width('100%')
+        .maxLines(1)
+        .textOverflow({ overflow: TextOverflow.Ellipsis })
       Text(this.detected ? this.alertText : this.normalText)
-        .fontSize('14fp')
+        .fontSize('13fp')
         .fontColor(Color.White)
         .backgroundColor(this.detected ? $r('app.color.alert_critical') : $r('app.color.alert_normal'))
-        .padding({ left: '12vp', right: '12vp', top: '10vp', bottom: '10vp' })
-        .borderRadius('10vp')
+        .padding({ left: '10vp', right: '10vp', top: '8vp', bottom: '8vp' })
+        .borderRadius('8vp')
         .width('100%')
         .textAlign(TextAlign.Center)
+        .maxLines(1)
+        .textOverflow({ overflow: TextOverflow.Ellipsis })
     }
     .width('100%')
-    .padding('14vp')
+    .padding('12vp')
     .backgroundColor($r('app.color.card_elevated'))
     .borderRadius('12vp')
   }
@@ -230,25 +243,30 @@ struct VisionRuleCard {
   @Prop icon: string = '';
 
   build() {
-    Row({ space: '12vp' }) {
+    Row({ space: '10vp' }) {
       Text(this.icon)
-        .fontSize('20fp')
+        .fontSize('18fp')
       Column({ space: '4vp' }) {
         Text(this.title)
-          .fontSize('16fp')
+          .fontSize('14fp')
           .fontColor($r('app.color.text'))
           .fontWeight(FontWeight.Medium)
           .width('100%')
+          .maxLines(1)
+          .textOverflow({ overflow: TextOverflow.Ellipsis })
         Text(this.rule)
-          .fontSize('14fp')
+          .fontSize('13fp')
           .fontColor($r('app.color.text_secondary'))
           .width('100%')
+          .maxLines(2)
+          .textOverflow({ overflow: TextOverflow.Ellipsis })
       }
+      .layoutWeight(1)
     }
     .width('100%')
-    .padding('14vp')
+    .padding('12vp')
     .backgroundColor($r('app.color.card_background'))
-    .borderRadius('14vp')
+    .borderRadius('12vp')
     .border({ width: '1vp', color: $r('app.color.divider') })
     .shadow(CardShadow)
   }

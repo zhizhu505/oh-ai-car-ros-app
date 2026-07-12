@@ -25,9 +25,9 @@ struct MecanumWheel {
       })
 
       Scroll() {
-        Column({ space: '16vp' }) {
-          Row({ space: '16vp' }) {
-            Column({ space: '12vp' }) {
+        Column({ space: '10vp' }) {
+          Row({ space: '12vp' }) {
+            Column({ space: '10vp' }) {
               InfoCard({ title: '左前轮 (L1)' }) {
                 SliderComponent({ value: $L1Value, label: 'L1' })
               }
@@ -37,7 +37,7 @@ struct MecanumWheel {
             }
             .layoutWeight(1)
 
-            Column({ space: '12vp' }) {
+            Column({ space: '10vp' }) {
               InfoCard({ title: '右前轮 (R1)' }) {
                 SliderComponent({ value: $R1Value, label: 'R1' })
               }
@@ -60,6 +60,8 @@ struct MecanumWheel {
                 .fontSize('13fp')
                 .fontColor($r('app.color.text_secondary'))
                 .textAlign(TextAlign.Center)
+                .maxLines(2)
+                .textOverflow({ overflow: TextOverflow.Ellipsis })
             }
           }
 
@@ -81,7 +83,7 @@ struct MecanumWheel {
             }
           }
         }
-        .padding({ top: '16vp', bottom: '32vp' })
+        .padding({ left: '15vp', right: '15vp', top: '10vp', bottom: '20vp' })
       }
       .layoutWeight(1)
     }
@@ -126,6 +128,8 @@ struct SliderComponent {
           .fontColor($r('app.color.text'))
           .fontWeight(FontWeight.Medium)
           .width('32vp')
+          .maxLines(1)
+          .textOverflow({ overflow: TextOverflow.Ellipsis })
         Slider({
           value: this.value,
           min: -100,
@@ -145,6 +149,8 @@ struct SliderComponent {
           .fontColor($r('app.color.text'))
           .fontSize('14fp')
           .fontWeight(FontWeight.Medium)
+          .maxLines(1)
+          .textOverflow({ overflow: TextOverflow.Ellipsis })
       }
     }
   }
@@ -162,14 +168,16 @@ struct ActionButton {
         Text(this.icon)
           .fontSize('18fp')
         Text(this.title)
-          .fontSize('13fp')
+          .fontSize('12fp')
           .fontColor(Color.White)
+          .maxLines(1)
+          .textOverflow({ overflow: TextOverflow.Ellipsis })
       }
     }
     .width('100%')
-    .height('64vp')
+    .height('56vp')
     .backgroundColor($r('app.color.button_primary'))
-    .borderRadius('14vp')
+    .borderRadius('12vp')
     .shadow(ButtonShadow)
     .onClick(this.action)
   }
@@ -185,15 +193,19 @@ struct SpeedDisplay {
       Text(this.label)
         .fontSize('12fp')
         .fontColor($r('app.color.text_secondary'))
+        .maxLines(1)
+        .textOverflow({ overflow: TextOverflow.Ellipsis })
       Text(`${this.value}`)
         .fontSize('20fp')
         .fontColor(this.value > 0 ? $r('app.color.alert_normal') : (this.value < 0 ? $r('app.color.alert_critical') : $r('app.color.text')))
         .fontWeight(FontWeight.Bold)
+        .maxLines(1)
+        .textOverflow({ overflow: TextOverflow.Ellipsis })
     }
     .layoutWeight(1)
-    .padding('8vp')
+    .padding('10vp')
     .backgroundColor($r('app.color.card_elevated'))
-    .borderRadius('10vp')
+    .borderRadius('12vp')
     .alignItems(HorizontalAlign.Center)
   }
 }
