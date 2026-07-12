@@ -1,5 +1,6 @@
 import router from '@ohos.router';
 import { PatrolStore } from '../store/PatrolStore';
+import { AlertRecord, AlertLevel } from '../model/PatrolModels';
 import { CardShadow, CardShadowHover, ElevatedShadow } from '../styles/styles';
 import { onlineColor } from '../utils/PatrolUiUtils';
 
@@ -314,6 +315,23 @@ struct ControlCard {
 @Component
 struct AlertPreviewCard {
   @State isHover: boolean = false;
+  @State alerts: AlertRecord[] = [];
+  private refreshHandler: () => void = (): void => {
+    this.loadAlerts();
+  };
+
+  aboutToAppear(): void {
+    this.loadAlerts();
+    PatrolStore.getInstance().subscribe(this.refreshHandler);
+  }
+
+  aboutToDisappear(): void {
+    PatrolStore.getInstance().unsubscribe(this.refreshHandler);
+  }
+
+  loadAlerts(): void {
+    this.alerts = PatrolStore.getInstance().alerts.slice(0, 1) as AlertRecord[];
+  }
 
   build() {
     Column({ space: '12vp' }) {
@@ -324,38 +342,132 @@ struct AlertPreviewCard {
           .fontSize('13fp')
           .fontColor($r('app.color.button_primary'))
       }
-      Column({ space: '10vp' }) {
-        Row({ space: '10vp' }) {
-          Text('预警')
+      if (this.alerts.length > 0) {
+        this.AlertContent(this.alerts[0])
+      } else {
+        Column({ space: '10vp' }) {
+          Row({ space: '10vp' }) {
+            Text('正常')
+              .fontSize('12fp')
+              .fontColor($r('app.color.text_on_accent'))
+              .backgroundColor($r('app.color.status_normal'))
+              .padding({ left: '10vp', right: '10vp', top: '4vp', bottom: '4vp' })
+              .borderRadius('12vp')
+            Text('暂无告警')
+              .fontSize('16fp')
+              .fontColor($r('app.color.text'))
+              .fontWeight(FontWeight.Bold)
+              .layoutWeight(1)
+          }
+          Text('小车巡检过程中检测到的异常会显示在这里')
             .fontSize('12fp')
-            .fontColor($r('app.color.text_on_accent'))
-            .backgroundColor($r('app.color.alert_warning'))
-            .padding({ left: '10vp', right: '10vp', top: '4vp', bottom: '4vp' })
-            .borderRadius('12vp')
-          Text('A区货架2 湿度偏高')
-            .fontSize('16fp')
-            .fontColor($r('app.color.text'))
-            .fontWeight(FontWeight.Bold)
-            .layoutWeight(1)
+            .fontColor($r('app.color.text_secondary'))
+            .maxLines(1)
         }
-        Text('[10:32:18] 湿度 78%，超过仓储阈值，建议复检通风状态')
-          .fontSize('12fp')
-          .fontColor($r('app.color.text_secondary'))
-          .maxLines(1)
+        .width('100%')
+        .padding('14vp')
+        .backgroundColor($r('app.color.card_background'))
+        .borderRadius('16vp')
+        .border({ width: '1vp', color: $r('app.color.divider') })
+        .shadow(CardShadow)
       }
-      .width('100%')
-      .padding('14vp')
-      .backgroundColor($r('app.color.card_background'))
-      .borderRadius('16vp')
-      .border({ width: '1vp', color: this.isHover ? $r('app.color.alert_warning') : $r('app.color.divider') })
-      .shadow(this.isHover ? ElevatedShadow : CardShadow)
-      .onClick((): void => {
-        router.pushUrl({ url: 'pages/AlertRecords' });
-      })
-      .onHover((isHover: boolean): void => {
-        this.isHover = isHover;
-      })
     }
+  }
+
+  @Builder
+  AlertContent(alert: AlertRecord) {
+    Column({ space: '10vp' }) {
+      Row({ space: '10vp' }) {
+        Text(alert.level === AlertLevel.Critical ? '严重异常' : alert.level === AlertLevel.Warning ? '预警' : '提示')
+          .fontSize('12fp')
+          .fontColor($r('app.color.text_on_accent'))
+          .backgroundColor(alert.level === AlertLevel.Critical ? $r('app.color.alert_critical') : alert.level === AlertLevel.Warning ? $r('app.color.alert_warning') : $r('app.color.status_success'))
+          .padding({ left: '10vp', right: '10vp', top: '4vp', bottom: '4vp' })
+          .borderRadius('12vp')
+        Text(`${alert.point}：${alert.message}`)
+          .fontSize('16fp')
+          .fontColor($r('app.color.text'))
+          .fontWeight(FontWeight.Bold)
+          .layoutWeight(1)
+          .maxLines(1)
+        if (alert.aiAnalyzing) {
+          Text('AI分析中...')
+            .fontSize('11fp')
+            .fontColor($r('app.color.button_primary'))
+        }
+      }
+      Text(`[${alert.time}] ${alert.point}`)
+        .fontSize('12fp')
+        .fontColor($r('app.color.text_secondary'))
+        .maxLines(1)
+      if (alert.aiAnalysis) {
+        Column({ space: '8vp' }) {
+          Row({ space: '6vp' }) {
+            Text('AI分析')
+              .fontSize('11fp')
+              .fontColor($r('app.color.button_primary'))
+              .fontWeight(FontWeight.Bold)
+            Text(alert.aiAnalysis.summary)
+              .fontSize('13fp')
+              .fontColor($r('app.color.text'))
+              .layoutWeight(1)
+              .maxLines(1)
+          }
+          .width('100%')
+          Column({ space: '4vp' }) {
+            Row({ space: '6vp' }) {
+              Text('风险')
+                .fontSize('11fp')
+                .fontColor($r('app.color.alert_critical'))
+              Text(alert.aiAnalysis.risk)
+                .fontSize('12fp')
+                .fontColor($r('app.color.text_secondary'))
+                .layoutWeight(1)
+                .maxLines(1)
+            }
+            .width('100%')
+            if (alert.aiAnalysis.solve && alert.aiAnalysis.solve.length > 0) {
+              Column({ space: '3vp' }) {
+                Text('处置建议')
+                  .fontSize('11fp')
+                  .fontColor($r('app.color.button_primary'))
+                ForEach(alert.aiAnalysis.solve.slice(0, 2), (step: string, index: number) => {
+                  Row({ space: '6vp' }) {
+                    Text(`${index + 1}.`)
+                      .fontSize('12fp')
+                      .fontColor($r('app.color.text_secondary'))
+                    Text(step)
+                      .fontSize('12fp')
+                      .fontColor($r('app.color.text_secondary'))
+                      .layoutWeight(1)
+                      .maxLines(1)
+                  }
+                  .width('100%')
+                })
+              }
+              .width('100%')
+            }
+          }
+          .width('100%')
+          .padding('8vp')
+          .backgroundColor($r('app.color.card_elevated'))
+          .borderRadius('10vp')
+        }
+        .width('100%')
+      }
+    }
+    .width('100%')
+    .padding('14vp')
+    .backgroundColor($r('app.color.card_background'))
+    .borderRadius('16vp')
+    .border({ width: '1vp', color: this.isHover ? (alert.level === AlertLevel.Critical ? $r('app.color.alert_critical') : alert.level === AlertLevel.Warning ? $r('app.color.alert_warning') : $r('app.color.divider')) : $r('app.color.divider') })
+    .shadow(this.isHover ? ElevatedShadow : CardShadow)
+    .onClick((): void => {
+      router.pushUrl({ url: 'pages/AlertRecords' });
+    })
+    .onHover((isHover: boolean): void => {
+      this.isHover = isHover;
+    })
   }
 }
 

@@ -52,6 +52,12 @@ export interface EnvSnapshot {
   updateTime: string;
 }
 
+export interface AiAnalysisResult {
+  summary: string;
+  risk: string;
+  solve: string[];
+}
+
 /** 异常告警记录 */
 export interface AlertRecord {
   id: string;
@@ -61,6 +67,8 @@ export interface AlertRecord {
   message: string;
   level: AlertLevel;
   imageUrl: string;
+  aiAnalysis?: AiAnalysisResult;
+  aiAnalyzing?: boolean;
 }
 
 /** 雷达通道状态 */

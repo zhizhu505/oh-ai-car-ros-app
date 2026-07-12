@@ -1,15 +1,27 @@
 import router from '@ohos.router';
 import promptAction from '@ohos.promptAction';
-import { AlertRecord, alertLevelText, categoryLabel } from '../model/PatrolModels';
+import { AlertRecord, alertLevelText, categoryLabel, AlertLevel } from '../model/PatrolModels';
 import { PatrolStore } from '../store/PatrolStore';
 import { levelColor } from '../utils/PatrolUiUtils';
+import { DeepSeekUtil } from '../utils/DeepSeekUtil';
 import { PageHeader, InfoCard } from '../components/PageHeader';
 import { CardShadow, ButtonShadow } from '../styles/styles';
+
+interface ChatItem {
+  id: string;
+  isUser: boolean;
+  text: string;
+  loading?: boolean;
+}
 
 @Entry
 @Component
 struct AlertRecords {
   @State alerts: AlertRecord[] = [];
+  @State analysisExpandedId: string = '';
+  @State chatExpandedId: string = '';
+  @State chatData: { [key: string]: ChatItem[] } = {};
+  @State chatInputText: { [key: string]: string } = {};
   private refreshHandler: () => void = (): void => {
     this.refreshData();
   };
@@ -24,7 +36,8 @@ struct AlertRecords {
   }
 
   refreshData(): void {
-    this.alerts = PatrolStore.getInstance().alerts.map((item: AlertRecord): AlertRecord => {
+    const storeAlerts = PatrolStore.getInstance().alerts;
+    this.alerts = storeAlerts.map((item: AlertRecord): AlertRecord => {
       return {
         id: item.id,
         time: item.time,
@@ -32,9 +45,54 @@ struct AlertRecords {
         category: item.category,
         message: item.message,
         level: item.level,
-        imageUrl: item.imageUrl
+        imageUrl: item.imageUrl,
+        aiAnalysis: item.aiAnalysis,
+        aiAnalyzing: item.aiAnalyzing
       };
     });
+  }
+
+  toggleAnalysis(id: string): void {
+    this.analysisExpandedId = this.analysisExpandedId === id ? '' : id;
+  }
+
+  toggleChat(id: string): void {
+    this.chatExpandedId = this.chatExpandedId === id ? '' : id;
+  }
+
+  async sendChat(alertId: string, alert: AlertRecord): Promise<void> {
+    const input = this.chatInputText[alertId] || '';
+    if (!input.trim()) {
+      return;
+    }
+    const records = this.chatData[alertId] || [];
+    const newRecords = [...records, { id: Date.now().toString(), isUser: true, text: input.trim() }, { id: (Date.now() + 1).toString(), isUser: false, text: '', loading: true }];
+    this.chatData = { ...this.chatData, [alertId]: newRecords };
+    this.chatInputText = { ...this.chatInputText, [alertId]: '' };
+    const alarmData = {
+      alarm_id: alert.id,
+      time: alert.time,
+      point: alert.point,
+      alarm_type: alert.category,
+      message: alert.message,
+      level: alert.level === AlertLevel.Critical ? '严重' : alert.level === AlertLevel.Warning ? '预警' : '正常'
+    };
+    try {
+      const answer = await DeepSeekUtil.queryAlarmQuestion(JSON.stringify(alarmData), input.trim());
+      const currentRecords = this.chatData[alertId] || [];
+      if (currentRecords.length > 0) {
+        const updatedRecords = [...currentRecords];
+        updatedRecords[updatedRecords.length - 1] = { id: updatedRecords[updatedRecords.length - 1].id, isUser: false, text: answer };
+        this.chatData = { ...this.chatData, [alertId]: updatedRecords };
+      }
+    } catch (err) {
+      const currentRecords = this.chatData[alertId] || [];
+      if (currentRecords.length > 0) {
+        const updatedRecords = [...currentRecords];
+        updatedRecords[updatedRecords.length - 1] = { id: updatedRecords[updatedRecords.length - 1].id, isUser: false, text: 'AI咨询失败，请检查网络' };
+        this.chatData = { ...this.chatData, [alertId]: updatedRecords };
+      }
+    }
   }
 
   build() {
@@ -116,6 +174,146 @@ struct AlertRecords {
                     .fontColor($r('app.color.status_active'))
                     .maxLines(1)
                     .textOverflow({ overflow: TextOverflow.Ellipsis })
+                }
+                if (item.aiAnalyzing || item.aiAnalysis) {
+                  Row({ space: '8vp' }) {
+                    Text(item.aiAnalyzing ? 'AI分析中...' : 'AI分析')
+                      .fontSize('12fp')
+                      .fontColor($r('app.color.button_primary'))
+                    Text('▼')
+                      .fontSize('10fp')
+                      .fontColor($r('app.color.text_secondary'))
+                      .rotate({ angle: this.analysisExpandedId === item.id ? 180 : 0 })
+                  }
+                  .width('100%')
+                  .onClick((): void => {
+                    this.toggleAnalysis(item.id);
+                  })
+                  if (this.analysisExpandedId === item.id && item.aiAnalysis) {
+                    Column({ space: '8vp' }) {
+                      Text('异常摘要：' + item.aiAnalysis.summary)
+                        .fontSize('14fp')
+                        .fontColor($r('app.color.text'))
+                        .width('100%')
+                      Text('风险评估：' + item.aiAnalysis.risk)
+                        .fontSize('13fp')
+                        .fontColor($r('app.color.alert_critical'))
+                        .width('100%')
+                      Column({ space: '4vp' }) {
+                        Text('处置建议')
+                          .fontSize('12fp')
+                          .fontColor($r('app.color.button_primary'))
+                          .fontWeight(FontWeight.Bold)
+                        ForEach(item.aiAnalysis.solve, (step: string, index: number) => {
+                          Row({ space: '6vp' }) {
+                            Text(`${index + 1}.`)
+                              .fontSize('13fp')
+                              .fontColor($r('app.color.text_secondary'))
+                            Text(step)
+                              .fontSize('13fp')
+                              .fontColor($r('app.color.text_secondary'))
+                              .layoutWeight(1)
+                          }
+                          .width('100%')
+                        }, (step: string) => step)
+                      }
+                      .width('100%')
+                    }
+                    .width('100%')
+                    .padding('12vp')
+                    .backgroundColor($r('app.color.card_elevated'))
+                    .borderRadius('12vp')
+                  }
+                }
+                Button('AI咨询')
+                  .width('100%')
+                  .height('40vp')
+                  .fontSize('14fp')
+                  .fontColor($r('app.color.text_on_accent'))
+                  .backgroundColor($r('app.color.button_primary'))
+                  .borderRadius('12vp')
+                  .shadow(ButtonShadow)
+                  .onClick((): void => {
+                    this.toggleChat(item.id);
+                  })
+                if (this.chatExpandedId === item.id) {
+                  Column({ space: '10vp' }) {
+                    if ((this.chatData[item.id] || []).length > 0) {
+                      Scroll() {
+                        Column({ space: '10vp' }) {
+                          ForEach(this.chatData[item.id] || [], (chat: ChatItem) => {
+                            Row({ space: '10vp' }) {
+                              if (chat.isUser) {
+                                Blank()
+                                  .layoutWeight(1)
+                                Column() {
+                                  Text(chat.text)
+                                    .fontSize('14fp')
+                                    .fontColor($r('app.color.text'))
+                                    .padding('10vp')
+                                    .backgroundColor($r('app.color.button_primary'))
+                                    .borderRadius('12vp')
+                                    .borderRadius({ bottomLeft: '2vp' })
+                                }
+                              } else {
+                                Column() {
+                                  if (chat.loading) {
+                                    Text('AI思考中...')
+                                      .fontSize('14fp')
+                                      .fontColor($r('app.color.text_secondary'))
+                                      .padding('10vp')
+                                      .backgroundColor($r('app.color.card_elevated'))
+                                      .borderRadius('12vp')
+                                      .borderRadius({ bottomRight: '2vp' })
+                                  } else {
+                                    Text(chat.text)
+                                      .fontSize('14fp')
+                                      .fontColor($r('app.color.text'))
+                                      .padding('10vp')
+                                      .backgroundColor($r('app.color.card_elevated'))
+                                      .borderRadius('12vp')
+                                      .borderRadius({ bottomRight: '2vp' })
+                                  }
+                                }
+                                Blank()
+                                  .layoutWeight(1)
+                              }
+                            }
+                            .width('100%')
+                          }, (chat: ChatItem) => chat.id)
+                        }
+                        .width('100%')
+                      }
+                      .maxHeight('200vp')
+                    }
+                    Row({ space: '8vp' }) {
+                      TextInput({ placeholder: '输入您的问题...', text: this.chatInputText[item.id] || '' })
+                        .width('100%')
+                        .height('40vp')
+                        .fontSize('14fp')
+                        .backgroundColor($r('app.color.card_elevated'))
+                        .borderRadius('20vp')
+                        .padding({ left: '16vp', right: '16vp' })
+                        .onChange((value: string): void => {
+                          this.chatInputText = { ...this.chatInputText, [item.id]: value };
+                        })
+                      Button('发送')
+                        .width('60vp')
+                        .height('40vp')
+                        .fontSize('13fp')
+                        .fontColor($r('app.color.text_on_accent'))
+                        .backgroundColor($r('app.color.button_primary'))
+                        .borderRadius('20vp')
+                        .onClick((): void => {
+                          this.sendChat(item.id, item);
+                        })
+                    }
+                    .width('100%')
+                  }
+                  .width('100%')
+                  .padding('12vp')
+                  .backgroundColor($r('app.color.card_elevated'))
+                  .borderRadius('12vp')
                 }
               }
               .width('100%')

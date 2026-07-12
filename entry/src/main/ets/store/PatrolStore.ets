@@ -1,6 +1,7 @@
 import {
   AlertLevel,
   AlertRecord,
+  AiAnalysisResult,
   ChannelStatus,
   ControlMode,
   DEFAULT_PATROL_POINTS,
@@ -15,6 +16,7 @@ import {
   createDefaultVehicle,
   createDefaultVision
 } from '../model/PatrolModels';
+import { DeepSeekUtil } from '../utils/DeepSeekUtil';
 
 type StoreListener = () => void;
 
@@ -122,6 +124,46 @@ export class PatrolStore {
     }
     this.markPointAbnormal(record.point);
     this.notify();
+    this.triggerAiAnalysis(record);
+  }
+
+  private async triggerAiAnalysis(record: AlertRecord): Promise<void> {
+    if (record.aiAnalyzing || record.aiAnalysis) {
+      return;
+    }
+    record.aiAnalyzing = true;
+    this.notify();
+    const alarmData = {
+      alarm_id: record.id,
+      time: record.time,
+      point: record.point,
+      alarm_type: record.category,
+      message: record.message,
+      level: record.level === AlertLevel.Critical ? '严重' : record.level === AlertLevel.Warning ? '预警' : '正常'
+    };
+    try {
+      const result = await DeepSeekUtil.analyzeAlarm(JSON.stringify(alarmData));
+      record.aiAnalysis = result;
+    } catch (err) {
+      console.error(`AI分析失败: ${err}`);
+      record.aiAnalysis = {
+        summary: 'AI分析失败',
+        risk: '网络异常',
+        solve: ['检查网络连接']
+      };
+    } finally {
+      record.aiAnalyzing = false;
+      this.notify();
+    }
+  }
+
+  updateAiAnalysis(alertId: string, analysis: AiAnalysisResult): void {
+    const record = this.alerts.find((a: AlertRecord): boolean => a.id === alertId);
+    if (record) {
+      record.aiAnalysis = analysis;
+      record.aiAnalyzing = false;
+      this.notify();
+    }
   }
 
   createAlert(time: string, point: string, category: string, message: string,
