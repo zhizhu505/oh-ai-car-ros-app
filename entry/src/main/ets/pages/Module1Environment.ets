@@ -7,7 +7,7 @@ import {
   alertLevelText
 } from '../model/PatrolModels';
 import { PatrolStore } from '../store/PatrolStore';
-import { PageHeader, ModuleTabBar, InfoCard } from '../components/PageHeader';
+import { ModuleTabBar, InfoCard } from '../components/PageHeader';
 import { EnvCard, ThresholdTable } from '../components/EnvCard';
 import { ModuleAlertList } from '../components/ModuleAlertList';
 import { levelColor } from '../utils/PatrolUiUtils';
@@ -57,13 +57,13 @@ struct Module1Environment {
 
   build() {
     Column({ space: '0vp' }) {
-      PageHeader({
-        title: '模块1：环境感知',
-        subtitle: '温湿度 / 烟雾 / 气体 / 光照 / PM2.5',
-        accentColor: $r('app.color.module1_accent')
+      ModuleTabBar({
+        currentIndex: $currentTabIndex,
+        tabs: this.tabs,
+        accentColor: $r('app.color.module1_accent'),
+        title: '环境感知',
+        subtitle: '温湿度、烟雾、气体、光照与空气质量监测'
       })
-
-      ModuleTabBar({ currentIndex: $currentTabIndex, tabs: this.tabs, accentColor: $r('app.color.module1_accent') })
 
       Scroll() {
         Column() {

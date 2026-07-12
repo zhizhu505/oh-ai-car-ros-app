@@ -8,7 +8,7 @@ import {
 } from '../model/PatrolModels';
 import { PatrolStore } from '../store/PatrolStore';
 import { PatrolCommandUtils } from '../tcp/PatrolCommandUtils';
-import { PageHeader, ModuleTabBar, InfoCard } from '../components/PageHeader';
+import { ModuleTabBar, InfoCard } from '../components/PageHeader';
 import { ModuleAlertList } from '../components/ModuleAlertList';
 import { patrolStatusColor } from '../utils/PatrolUiUtils';
 import { ButtonShadow, CardShadow } from '../styles/styles';
@@ -24,7 +24,7 @@ struct Module2Navigation {
   @State route: string = 'warehouse_A';
   @State message: string = '等待连接';
   @State patrolPoints: PatrolPoint[] = [];
-  private tabs: string[] = ['巡检路线', '导航控制', '异常点位'];
+  private tabs: string[] = ['实时数据', '阈值规则', '异常记录'];
   private refreshHandler: () => void = (): void => {
     this.refreshData();
   };
@@ -53,13 +53,13 @@ struct Module2Navigation {
 
   build() {
     Column({ space: '0vp' }) {
-      PageHeader({
-        title: '模块2：SLAM 建图与导航',
-        subtitle: '仓库地图 / 固定巡检点 / 多点导航',
-        accentColor: $r('app.color.module2_accent')
+      ModuleTabBar({
+        currentIndex: $currentTabIndex,
+        tabs: this.tabs,
+        accentColor: $r('app.color.module2_accent'),
+        title: 'SLAM导航',
+        subtitle: '巡检路线、点位进度、导航策略与控制规则'
       })
-
-      ModuleTabBar({ currentIndex: $currentTabIndex, tabs: this.tabs, accentColor: $r('app.color.module2_accent') })
 
       Scroll() {
         Column() {
