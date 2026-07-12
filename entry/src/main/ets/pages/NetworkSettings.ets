@@ -24,7 +24,7 @@ struct NetworkSettings {
       Row({ space: '0vp' }) {
         Column({ space: '28vp' }) {
           Column({ space: '8vp' }) {
-            Text('智慧仓储巡检系统')
+            Text('狭域巡航')
               .fontSize('40fp')
               .fontColor($r('app.color.text'))
               .fontWeight(FontWeight.Bold)

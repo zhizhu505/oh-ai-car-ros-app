@@ -28,7 +28,7 @@ struct Index {
     Column({ space: '0vp' }) {
       Row({ space: '8vp' }) {
         Column({ space: '4vp' }) {
-          Text('智慧仓储巡检')
+          Text('狭域巡航')
             .fontSize('28fp')
             .fontColor($r('app.color.text'))
             .fontWeight(FontWeight.Bold)

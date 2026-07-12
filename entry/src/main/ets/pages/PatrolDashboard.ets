@@ -60,7 +60,7 @@ struct PatrolDashboard {
     Column({ space: '16vp' }) {
       Row({ space: '12vp' }) {
         PageHeader({
-          title: '仓储巡检监控',
+          title: '狭域巡航监控',
           subtitle: this.online ? '设备在线' : '设备离线',
           accentColor: $r('app.color.button_primary')
         })
