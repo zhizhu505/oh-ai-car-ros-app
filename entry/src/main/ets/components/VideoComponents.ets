@@ -2,6 +2,8 @@ import web_webview from '@ohos.web.webview'
 import { carApi } from '../CarUtill/CarApi';
 import { CarEncode } from '../CarUtill/CarEncode';
 import { ButtonShadow } from '../styles/styles';
+import { PreferencesUtils } from '../utils/PreferencesUtils';
+import preferences from '@ohos.data.preferences';
 
 let TAG = "VideoComponents"
 
@@ -9,22 +11,97 @@ let TAG = "VideoComponents"
 export struct VideoComponents {
   controller: web_webview.WebviewController = new web_webview.WebviewController()
   public static port: number = 6500;
-  public static ip: string = "192.168.1.11"
-  // 当前是否正在录制视频
+  public static ip: string = "172.20.10.2"
+  @Prop previewWidth: Length = '300vp';
+  @Prop previewHeight: Length = '200vp';
+  @Prop showActions: boolean = true;
   @State isRecording: boolean = false
+  @State videoSrc: string = ''
+  @State useRawStream: boolean = true
+
+  aboutToAppear(): void {
+    this.refreshVideoConfig();
+  }
 
   build() {
-    Column() {
+    Column({ space: '10vp' }) {
       RelativeContainer() {
-
         Web({
-          src: this.getWebSrc(),
+          src: this.videoSrc.length > 0 ? this.videoSrc : this.getWebSrc(),
           controller: this.controller
         })
           .id("Video")
+          .width('100%')
+          .height('100%')
+          .javaScriptAccess(true)
+          .domStorageAccess(true)
+          .imageAccess(true)
+          .onlineImageAccess(true)
 
-        // 如果正在录制，显示小红点
-        if (this.isRecording)
+        Button('刷新')
+          .id("RefreshVideo")
+          .height('28vp')
+          .fontSize('11fp')
+          .fontColor(Color.White)
+          .backgroundColor('rgba(15, 23, 42, 0.72)')
+          .borderRadius('14vp')
+          .zIndex(3)
+          .alignRules({
+            top: { anchor: "__container__", align: VerticalAlign.Top },
+            right: { anchor: "__container__", align: HorizontalAlign.End }
+          })
+          .offset({
+            x: -8,
+            y: 8
+          })
+          .onClick((): void => {
+            this.refreshVideoConfig();
+            setTimeout((): void => {
+              this.controller.refresh();
+            }, 100)
+          })
+
+        Row({ space: '6vp' }) {
+          Button(this.useRawStream ? '网页' : '视频流')
+            .height('28vp')
+            .fontSize('11fp')
+            .fontColor(Color.White)
+            .backgroundColor('rgba(15, 23, 42, 0.72)')
+            .borderRadius('14vp')
+            .onClick((): void => {
+              this.useRawStream = !this.useRawStream;
+              this.videoSrc = this.getWebSrc();
+            })
+        }
+        .id("SwitchVideoMode")
+        .zIndex(3)
+        .alignRules({
+          top: { anchor: "__container__", align: VerticalAlign.Top },
+          left: { anchor: "__container__", align: HorizontalAlign.Start }
+        })
+        .offset({
+          x: 8,
+          y: 8
+        })
+
+        Text(this.useRawStream ? '直接视频流' : '小车网页')
+          .id("VideoModeText")
+          .fontSize('10fp')
+          .fontColor(Color.White)
+          .backgroundColor('rgba(15, 23, 42, 0.58)')
+          .borderRadius('10vp')
+          .padding({ left: '8vp', right: '8vp', top: '3vp', bottom: '3vp' })
+          .zIndex(3)
+          .alignRules({
+            bottom: { anchor: "__container__", align: VerticalAlign.Bottom },
+            left: { anchor: "__container__", align: HorizontalAlign.Start }
+          })
+          .offset({
+            x: 8,
+            y: -8
+          })
+
+        if (this.isRecording) {
           RedRound()
             .id("RedRound")
             .zIndex(2)
@@ -32,50 +109,116 @@ export struct VideoComponents {
               bottom: { anchor: "__container__", align: VerticalAlign.Bottom },
               right: { anchor: "__container__", align: HorizontalAlign.End }
             }).offset({
-            x: -30,
-            y: -30
+            x: -24,
+            y: -24
           })
+        }
       }
+      .width(this.previewWidth)
+      .height(this.previewHeight)
+      .backgroundColor(Color.White)
 
-      .width('300vp')
-      .height('200vp')
+      if (this.showActions) {
+        Row({ space: '10vp' }) {
+          if (!this.isRecording) {
+            Button("拍摄")
+              .backgroundColor($r('app.color.button_background'))
+              .shadow(ButtonShadow)
+              .onClick(() => {
+                carApi.send(CarEncode.TakePhotosEncode());
+              })
+          }
 
-      Row() {
-        if (this.isRecording == false) {
-          // 如果不在录像，那么允许拍摄
-          Button("拍摄")
+          Button(this.isRecording ? "结束" : "录制")
             .backgroundColor($r('app.color.button_background'))
             .shadow(ButtonShadow)
             .onClick(() => {
-              carApi.send(CarEncode.TakePhotosEncode());
+              if (this.isRecording) {
+                carApi.send(CarEncode.CloselRecordingEncode());
+              } else {
+                carApi.send(CarEncode.StartRecordingEncode());
+              }
+              this.isRecording = !this.isRecording;
             })
         }
-
-
-        Button(this.isRecording == false ? "录制" : "结束")
-          .backgroundColor($r('app.color.button_background'))
-          .shadow(ButtonShadow)
-          .onClick(() => {
-            if (this.isRecording == true) {
-              // 如果正在录制那么暂停视频
-              carApi.send(CarEncode.CloselRecordingEncode());
-            } else {
-              // 如果不在录制那么开始录制
-              carApi.send(CarEncode.StartRecordingEncode());
-            }
-            this.isRecording = !this.isRecording;
-          })
-
+        .justifyContent(FlexAlign.Center)
       }
-    }.justifyContent(FlexAlign.Center)
-
+    }
+    .justifyContent(FlexAlign.Center)
+    .alignItems(HorizontalAlign.Center)
   }
 
   getWebSrc() {
-    let v = `http://${VideoComponents.ip}:${VideoComponents.port}/index2`
+    let v = this.useRawStream ? this.getWrappedStreamSrc() : this.getIndexSrc()
     console.log(TAG, "getWebSrc()", v)
     return v
+  }
 
+  private getStreamSrc(): string {
+    return `http://${VideoComponents.ip}:${VideoComponents.port}/video_feed?ts=${Date.now()}`
+  }
+
+  private getIndexSrc(): string {
+    return `http://${VideoComponents.ip}:${VideoComponents.port}/index2?ts=${Date.now()}`
+  }
+
+  private getWrappedStreamSrc(): string {
+    let streamUrl = this.getStreamSrc();
+    let html = `<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #000;
+    }
+    img {
+      width: 100vw;
+      height: 100vh;
+      object-fit: contain;
+      display: block;
+      background: #000;
+    }
+    .tip {
+      position: fixed;
+      left: 10px;
+      bottom: 10px;
+      right: 10px;
+      color: rgba(255,255,255,0.72);
+      font: 12px sans-serif;
+      word-break: break-all;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <img src="${streamUrl}" alt="video stream">
+  <div class="tip">${streamUrl}</div>
+</body>
+</html>`;
+    return `data:text/html;charset=utf-8,${encodeURIComponent(html)}`
+  }
+
+  private refreshVideoConfig(): void {
+    const netUtils = PreferencesUtils.getInstance().netUtils;
+    if (!netUtils) {
+      this.videoSrc = this.getWebSrc();
+      return;
+    }
+
+    netUtils.getIP().then((v: preferences.ValueType): void => {
+      VideoComponents.ip = String(v);
+      this.videoSrc = this.getWebSrc();
+    })
+    netUtils.getVideoPort().then((v: preferences.ValueType): void => {
+      VideoComponents.port = Number.parseInt(String(v));
+      this.videoSrc = this.getWebSrc();
+    })
   }
 }
 
@@ -85,10 +228,8 @@ struct RedRound {
 
   aboutToAppear(): void {
     setInterval(() => {
-      // console.log('Hello, World!');
       this.isShow = !this.isShow;
     }, 1000);
-
   }
 
   build() {
@@ -100,7 +241,7 @@ struct RedRound {
         duration: 1200,
         curve: Curve.Friction,
         delay: 500,
-        iterations: -1, // 设置-1表示动画无限循环
+        iterations: -1,
       })
       .border({
         radius: "5vp"
