@@ -5,13 +5,13 @@
         "name": "default",
         "type": "HarmonyOS",
         "material": {
-          "certpath": "C:\\Users\\lenovo\\.ohos\\config\\default_huawei_OuaTivxpGus8KNKcccmIkis6Gt9tBliL76qvlwhSjZE=.cer",
+          "certpath": "C:\\Users\\28772\\.ohos\\config\\default_oh-ai-car-ros-app_SmMFOvKe5d20jnRbhKCN_ct1rsPzb-zgHUDVrhUbKFU=.cer",
           "keyAlias": "debugKey",
-          "keyPassword": "0000001B5F17682ACC049E82816A63A5BA8854514A591FAF05174EB0794BCE20107D503680B6CD94A67E7E",
-          "profile": "C:\\Users\\lenovo\\.ohos\\config\\default_huawei_OuaTivxpGus8KNKcccmIkis6Gt9tBliL76qvlwhSjZE=.p7b",
+          "keyPassword": "0000001B3A8496B397A888EEA37105FD4AE5C67F3230D938DD788AD5B4B749DA3BCCA19D9169B5128D944C",
+          "profile": "C:\\Users\\28772\\.ohos\\config\\default_oh-ai-car-ros-app_SmMFOvKe5d20jnRbhKCN_ct1rsPzb-zgHUDVrhUbKFU=.p7b",
           "signAlg": "SHA256withECDSA",
-          "storeFile": "C:\\Users\\lenovo\\.ohos\\config\\default_huawei_OuaTivxpGus8KNKcccmIkis6Gt9tBliL76qvlwhSjZE=.p12",
-          "storePassword": "0000001B5109B7E3D770857B8CB5CFF6A52CEDE9B3F7DD7F9F101AAFE60F4E313E4C80354B219DDA27BA5F"
+          "storeFile": "C:\\Users\\28772\\.ohos\\config\\default_oh-ai-car-ros-app_SmMFOvKe5d20jnRbhKCN_ct1rsPzb-zgHUDVrhUbKFU=.p12",
+          "storePassword": "0000001BC97308C994905B320982B9C46F3D4A877793264319A3E878387A5219249EE58C7A3208A66017EA"
         }
       }
     ],
@@ -22,7 +22,6 @@
         "targetSdkVersion": "6.0.1(21)",
         "runtimeOS": "HarmonyOS",
         "signingConfig": "default"
-        // 这一行缺失就会输出unsigned包
       }
     ]
   },
