@@ -1,5 +1,6 @@
 {
   "icon": {
-    "foreground": "$media:app_logo"
+    "foreground": "$media:project_logo",
+    "background": "#FFFFFF"
   }
 }

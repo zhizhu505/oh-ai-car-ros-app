@@ -41,6 +41,19 @@ async function waitThrottle(): Promise<void> {
   lastRequestTime = Date.now();
 }
 
+function cleanMarkdownCodeBlock(text: string): string {
+  let result = text.trim();
+  if (result.startsWith('```json')) {
+    result = result.substring(7);
+  } else if (result.startsWith('```')) {
+    result = result.substring(3);
+  }
+  if (result.endsWith('```')) {
+    result = result.substring(0, result.length - 3);
+  }
+  return result.trim();
+}
+
 export async function chat(sysPrompt: string, userInput: string): Promise<string> {
   await waitThrottle();
   let httpClient = http.createHttp();
@@ -64,7 +77,8 @@ export async function chat(sysPrompt: string, userInput: string): Promise<string
       connectTimeout: 5000,
       readTimeout: 15000
     });
-    let resObj: ChatResponse = JSON.parse(res.result as string);
+    let resultStr = res.result.toString();
+    let resObj: ChatResponse = JSON.parse(resultStr);
     if (resObj.choices && resObj.choices.length > 0) {
       return resObj.choices[0].message.content.trim();
     }
@@ -85,8 +99,10 @@ export async function analyzeAlarm(alarmJsonStr: string): Promise<AiAnalysisResu
   const prompt = `你是仓储巡检告警专家，仅输出标准JSON，禁止多余文字。输出三个字段：summary：一句话概括异常；risk：仓储对应安全风险；solve：数组，3条分步处置操作。告警数据：${alarmJsonStr}`;
   const result = await chat(prompt, alarmJsonStr);
   try {
-    return JSON.parse(result) as AiAnalysisResult;
-  } catch {
+    const cleanResult = cleanMarkdownCodeBlock(result);
+    return JSON.parse(cleanResult) as AiAnalysisResult;
+  } catch (err) {
+    console.error(`AI分析JSON解析失败: ${err}, 原始内容: ${result}`);
     const defaultResult: AiAnalysisResult = {
       summary: "AI分析失败",
       risk: "模型返回格式异常",
@@ -99,5 +115,6 @@ export async function analyzeAlarm(alarmJsonStr: string): Promise<AiAnalysisResu
 export async function queryAlarmQuestion(alarmJsonStr: string, question: string): Promise<string> {
   const prompt = "结合下方仓储告警数据，简短专业回答用户巡检相关问题，适配手机展示";
   const input = `告警信息：${alarmJsonStr}\n用户问题：${question}`;
-  return chat(prompt, input);
+  const result = await chat(prompt, input);
+  return cleanMarkdownCodeBlock(result);
 }

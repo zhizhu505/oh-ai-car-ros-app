@@ -172,20 +172,20 @@ struct AlertRecords {
 
   @Builder
   ChatContent(item: AlertRecord, chatItems: ChatItem[], inputText: string) {
-    Column({ space: '10vp' }) {
+    Column({ space: '8vp' }) {
       if (chatItems.length > 0) {
         Scroll() {
-          Column({ space: '10vp' }) {
+          Column({ space: '8vp' }) {
             ForEach(chatItems, (chat: ChatItem) => {
-              Row({ space: '10vp' }) {
+              Row({ space: '8vp' }) {
                 if (chat.isUser) {
                   Blank()
                     .layoutWeight(1)
                   Column() {
                     Text(chat.text)
-                      .fontSize('14fp')
+                      .fontSize('13fp')
                       .fontColor($r('app.color.text'))
-                      .padding('10vp')
+                      .padding({ left: '10vp', right: '10vp', top: '8vp', bottom: '8vp' })
                       .backgroundColor($r('app.color.button_primary'))
                       .borderRadius('12vp')
                       .borderRadius({ bottomLeft: '2vp' })
@@ -194,17 +194,17 @@ struct AlertRecords {
                   Column() {
                     if (chat.loading) {
                       Text('AI思考中...')
-                        .fontSize('14fp')
+                        .fontSize('13fp')
                         .fontColor($r('app.color.text_secondary'))
-                        .padding('10vp')
+                        .padding({ left: '10vp', right: '10vp', top: '8vp', bottom: '8vp' })
                         .backgroundColor($r('app.color.card_elevated'))
                         .borderRadius('12vp')
                         .borderRadius({ bottomRight: '2vp' })
                     } else {
                       Text(chat.text)
-                        .fontSize('14fp')
+                        .fontSize('13fp')
                         .fontColor($r('app.color.text'))
-                        .padding('10vp')
+                        .padding({ left: '10vp', right: '10vp', top: '8vp', bottom: '8vp' })
                         .backgroundColor($r('app.color.card_elevated'))
                         .borderRadius('12vp')
                         .borderRadius({ bottomRight: '2vp' })
@@ -219,28 +219,28 @@ struct AlertRecords {
           }
           .width('100%')
         }
-        .height('200vp')
+        .height('120vp')
       }
-      Row({ space: '8vp' }) {
+      Row({ space: '6vp' }) {
         TextInput({ placeholder: '输入您的问题...', text: inputText })
           .width('100%')
-          .height('40vp')
-          .fontSize('14fp')
+          .height('36vp')
+          .fontSize('13fp')
           .backgroundColor($r('app.color.card_elevated'))
-          .borderRadius('20vp')
-          .padding({ left: '16vp', right: '16vp' })
+          .borderRadius('18vp')
+          .padding({ left: '14vp', right: '14vp' })
           .onChange((value: string): void => {
             const session = this.getOrCreateChatSession(item.id);
             session.setInputText(value);
             this.notifyUiUpdate();
           })
         Button('发送')
-          .width('60vp')
-          .height('40vp')
-          .fontSize('13fp')
+          .width('56vp')
+          .height('36vp')
+          .fontSize('12fp')
           .fontColor($r('app.color.text_on_accent'))
           .backgroundColor($r('app.color.button_primary'))
-          .borderRadius('20vp')
+          .borderRadius('18vp')
           .onClick((): void => {
             this.sendChat(item.id, item);
           })
@@ -248,7 +248,7 @@ struct AlertRecords {
       .width('100%')
     }
     .width('100%')
-    .padding('12vp')
+    .padding('10vp')
     .backgroundColor($r('app.color.card_elevated'))
     .borderRadius('12vp')
   }
