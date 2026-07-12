@@ -4,6 +4,7 @@
 /.idea
 **/build
 /.hvigor
+/oh-ai-car-ros-app/
 .cxx
 /.clangd
 /.clang-format
