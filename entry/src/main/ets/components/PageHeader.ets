@@ -76,28 +76,39 @@ export struct ModuleTabBar {
   @Prop accentColor: ResourceColor = $r('app.color.button_primary');
 
   build() {
-    Scroll() {
-      Row({ space: '10vp' }) {
+    Row() {
+      Scroll() {
+        Row({ space: '10vp' }) {
         ForEach(this.tabs, (tab: string, index: number) => {
           Text(tab)
-            .fontSize('14fp')
+            .fontSize('15fp')
             .fontColor(this.currentIndex === index ?
               $r('app.color.text_on_accent') : $r('app.color.text_secondary'))
-            .fontWeight(this.currentIndex === index ? FontWeight.Medium : FontWeight.Normal)
-            .padding({ left: '18vp', right: '18vp', top: '10vp', bottom: '10vp' })
-            .backgroundColor(this.currentIndex === index ? this.accentColor : $r('app.color.card_background'))
-            .borderRadius('22vp')
+            .fontWeight(this.currentIndex === index ? FontWeight.Bold : FontWeight.Medium)
+            .padding({ left: '26vp', right: '26vp', top: '10vp', bottom: '10vp' })
+            .backgroundColor(this.currentIndex === index ? this.accentColor : $r('app.color.card_elevated'))
+            .borderRadius('18vp')
             .border({ width: '1vp', color: this.currentIndex === index ? this.accentColor : $r('app.color.divider') })
+            .shadow(this.currentIndex === index ? {
+              radius: 16,
+              offsetX: 0,
+              offsetY: 0,
+              color: this.accentColor + '45'
+            } : CardShadow)
             .onClick((): void => {
               this.currentIndex = index;
             })
         }, (tab: string, index: number) => `${tab}_${index}`)
+        }
+        .height('42vp')
       }
+      .scrollable(ScrollDirection.Horizontal)
+      .scrollBar(BarState.Off)
+      .layoutWeight(1)
     }
-    .scrollable(ScrollDirection.Horizontal)
-    .scrollBar(BarState.Off)
     .width('100%')
-    .padding({ left: '20vp', right: '20vp', top: '12vp', bottom: '8vp' })
+    .padding({ left: '20vp', right: '20vp', top: '12vp', bottom: '12vp' })
+    .backgroundColor($r('app.color.header_background'))
   }
 }
 

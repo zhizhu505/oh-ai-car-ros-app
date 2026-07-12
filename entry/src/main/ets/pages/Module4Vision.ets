@@ -3,7 +3,7 @@ import {
   VisionSnapshot
 } from '../model/PatrolModels';
 import { PatrolStore } from '../store/PatrolStore';
-import { PageHeader, ModuleTabBar, InfoCard } from '../components/PageHeader';
+import { ModuleTabBar, InfoCard } from '../components/PageHeader';
 import { ModuleAlertList } from '../components/ModuleAlertList';
 import { VideoComponents } from '../components/VideoComponents';
 import { CardShadow } from '../styles/styles';
@@ -18,7 +18,7 @@ struct Module4Vision {
   @State message: string = '等待数据';
   @State imageUrl: string = '';
   @State updateTime: string = '-';
-  private tabs: string[] = ['实时检测', '检测规则', '视觉告警'];
+  private tabs: string[] = ['实时数据', '阈值规则', '异常记录'];
   private refreshHandler: () => void = (): void => {
     this.refreshData();
   };
@@ -44,12 +44,6 @@ struct Module4Vision {
 
   build() {
     Column({ space: '0vp' }) {
-      PageHeader({
-        title: '模块4：视觉目标识别',
-        subtitle: '人员闯入 / 货物占道 / 货箱异常',
-        accentColor: $r('app.color.module4_accent')
-      })
-
       ModuleTabBar({ currentIndex: $currentTabIndex, tabs: this.tabs, accentColor: $r('app.color.module4_accent') })
 
       Scroll() {

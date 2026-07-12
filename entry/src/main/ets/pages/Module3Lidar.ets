@@ -5,7 +5,7 @@ import {
   channelStatusText
 } from '../model/PatrolModels';
 import { PatrolStore } from '../store/PatrolStore';
-import { PageHeader, ModuleTabBar, InfoCard } from '../components/PageHeader';
+import { ModuleTabBar, InfoCard } from '../components/PageHeader';
 import { ModuleAlertList } from '../components/ModuleAlertList';
 import { channelStatusColor } from '../utils/PatrolUiUtils';
 import { CardShadow } from '../styles/styles';
@@ -21,7 +21,7 @@ struct Module3Lidar {
   @State channelStatus: ChannelStatus = ChannelStatus.Clear;
   @State message: string = '等待数据';
   @State updateTime: string = '-';
-  private tabs: string[] = ['通道检测', '占用规则', '占用告警'];
+  private tabs: string[] = ['实时数据', '阈值规则', '异常记录'];
   private refreshHandler: () => void = (): void => {
     this.refreshData();
   };
@@ -48,12 +48,6 @@ struct Module3Lidar {
 
   build() {
     Column({ space: '0vp' }) {
-      PageHeader({
-        title: '模块3：激光雷达避障',
-        subtitle: '通道占用检测 / 货架距离保持',
-        accentColor: $r('app.color.module3_accent')
-      })
-
       ModuleTabBar({ currentIndex: $currentTabIndex, tabs: this.tabs, accentColor: $r('app.color.module3_accent') })
 
       Scroll() {

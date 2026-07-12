@@ -24,41 +24,37 @@ struct Index {
     Column({ space: '0vp' }) {
 this.Header()
 
-      Scroll() {
-        Column({ space: '14vp' }) {
+    Scroll() {
+      Column({ space: '14vp' }) {
           Row({ space: '12vp' }) {
             ModuleEntry({
-              moduleNo: '01',
               title: '环境感知',
-              desc: '温湿度 / 烟雾 / 气体',
-              metric: '实时采集',
+              desc: '温湿度、烟雾、气体、光照实时采集',
+              metric: '异常阈值',
               accent: $r('app.color.module1_accent'),
               url: 'pages/Module1Environment'
             })
               .layoutWeight(1)
             ModuleEntry({
-              moduleNo: '02',
               title: 'SLAM导航',
-              desc: '建图 / 路线 / 巡检点',
-              metric: '路线巡检',
+              desc: '仓库建图、多点路线、自动返回',
+              metric: '巡检路线',
               accent: $r('app.color.module2_accent'),
               url: 'pages/Module2Navigation'
             })
               .layoutWeight(1)
             ModuleEntry({
-              moduleNo: '03',
               title: '激光雷达',
-              desc: '避障 / 通道占用检测',
-              metric: '通道安全',
+              desc: '窄通道避障、占用检测、安全停车',
+              metric: '通道占用',
               accent: $r('app.color.module3_accent'),
               url: 'pages/Module3Lidar'
             })
               .layoutWeight(1)
             ModuleEntry({
-              moduleNo: '04',
               title: '视觉识别',
-              desc: '人员 / 货物异常',
-              metric: '异常识别',
+              desc: '人员闯入、货物占道、异常截图',
+              metric: '视觉告警',
               accent: $r('app.color.module4_accent'),
               url: 'pages/Module4Vision'
             })
@@ -88,18 +84,39 @@ this.Header()
   @Builder
   Header() {
     Row({ space: '12vp' }) {
-      Column({ space: '4vp' }) {
-        Text('狭域巡航')
-          .fontSize('30fp')
-          .fontColor($r('app.color.text'))
-          .fontWeight(FontWeight.Bold)
-          .maxLines(1)
-        Text('Narrow-Space Intelligent Patrol System')
-          .fontSize('12fp')
-          .fontColor($r('app.color.text_secondary'))
-          .maxLines(1)
+      Row({ space: '14vp' }) {
+        Stack() {
+          Image($r('app.media.logo'))
+            .width('54vp')
+            .height('54vp')
+            .borderRadius('16vp')
+            .objectFit(ImageFit.Cover)
+        }
+        .width('58vp')
+        .height('58vp')
+        .borderRadius('18vp')
+        .backgroundColor($r('app.color.card_elevated'))
+        .padding('2vp')
+        .shadow({
+          radius: 18,
+          offsetX: 0,
+          offsetY: 0,
+          color: $r('app.color.module1_accent') + '35'
+        })
+
+        Column({ space: '5vp' }) {
+          Text('狭域巡航')
+            .fontSize('34fp')
+            .fontColor($r('app.color.text'))
+            .fontWeight(FontWeight.Bold)
+            .maxLines(1)
+          Text('Narrow-Space Intelligent Patrol System')
+            .fontSize('12fp')
+            .fontColor($r('app.color.text_secondary'))
+            .maxLines(1)
+        }
+        .alignItems(HorizontalAlign.Start)
       }
-      .alignItems(HorizontalAlign.Start)
       .layoutWeight(1)
 
       NetworkButton()
@@ -125,7 +142,7 @@ this.Header()
       .alignItems(VerticalAlign.Center)
     }
     .width('100%')
-    .padding({ left: '24vp', right: '24vp', top: '20vp', bottom: '16vp' })
+    .padding({ left: '24vp', right: '24vp', top: '18vp', bottom: '16vp' })
     .backgroundColor($r('app.color.header_background'))
     .shadow(CardShadow)
   }
@@ -159,20 +176,27 @@ struct NetworkButton {
     Button() {
       Stack() {
         Column()
-          .width('36vp')
-          .height('36vp')
-          .backgroundColor(this.isHover ? $r('app.color.button_primary') : $r('app.color.card_elevated'))
-          .borderRadius('18vp')
-        Text('⌁')
-          .fontSize('23fp')
-          .fontColor(this.isHover ? $r('app.color.text_on_accent') : $r('app.color.button_primary'))
-          .fontWeight(FontWeight.Bold)
+          .width('48vp')
+          .height('44vp')
+          .backgroundColor(this.isHover ? $r('app.color.module1_accent') + '24' : $r('app.color.card_elevated'))
+          .borderRadius('16vp')
+        Image($r('app.media.logo'))
+          .width('34vp')
+          .height('34vp')
+          .borderRadius('11vp')
+          .objectFit(ImageFit.Cover)
       }
     }
-    .width('44vp')
-    .height('44vp')
+    .width('54vp')
+    .height('50vp')
     .backgroundColor(Color.Transparent)
-    .borderRadius('22vp')
+    .borderRadius('18vp')
+    .shadow({
+      radius: this.isHover ? 18 : 8,
+      offsetX: 0,
+      offsetY: 0,
+      color: this.isHover ? $r('app.color.module1_accent') + '45' : $r('app.color.shadow_color')
+    })
     .onHover((isHover: boolean): void => {
       this.isHover = isHover;
     })
@@ -184,7 +208,6 @@ struct NetworkButton {
 
 @Component
 struct ModuleEntry {
-  @Prop moduleNo: string = '01';
   @Prop title: string = '';
   @Prop desc: string = '';
   @Prop metric: string = '';
@@ -193,15 +216,15 @@ struct ModuleEntry {
   @State isHover: boolean = false;
 
   build() {
-    Column({ space: '8vp' }) {
+    Column({ space: '10vp' }) {
       Row() {
-        Text(`M${this.moduleNo}`)
+        Text(this.metric)
           .fontSize('11fp')
-          .fontColor($r('app.color.text_on_accent'))
-          .fontWeight(FontWeight.Bold)
-          .backgroundColor(this.accent)
-          .padding({ left: '9vp', right: '9vp', top: '3vp', bottom: '3vp' })
-          .borderRadius('10vp')
+          .fontColor(this.accent)
+          .fontWeight(FontWeight.Medium)
+          .backgroundColor(this.accent + '18')
+          .padding({ left: '9vp', right: '9vp', top: '4vp', bottom: '4vp' })
+          .borderRadius('11vp')
         Blank()
         Text('进入')
           .fontSize('11fp')
@@ -210,15 +233,15 @@ struct ModuleEntry {
       .width('100%')
       .alignItems(VerticalAlign.Center)
 
-      Row({ space: '10vp' }) {
+      Row({ space: '12vp' }) {
         Column()
           .width('4vp')
-          .height('44vp')
+          .height('52vp')
           .backgroundColor(this.accent)
           .borderRadius('2vp')
-        Column({ space: '5vp' }) {
+        Column({ space: '6vp' }) {
           Text(this.title)
-            .fontSize('18fp')
+            .fontSize('19fp')
             .fontColor($r('app.color.text'))
             .fontWeight(FontWeight.Bold)
             .maxLines(1)
@@ -233,14 +256,11 @@ struct ModuleEntry {
       .alignItems(VerticalAlign.Center)
 
       Row() {
-        Text(this.metric)
+        Text('重点')
           .fontSize('11fp')
-          .fontColor(this.accent)
-          .backgroundColor(this.accent + '18')
-          .padding({ left: '8vp', right: '8vp', top: '4vp', bottom: '4vp' })
-          .borderRadius('10vp')
+          .fontColor($r('app.color.text_secondary'))
         Blank()
-        Text(this.title)
+        Text(this.desc)
           .fontSize('11fp')
           .fontColor($r('app.color.text_secondary'))
           .maxLines(1)
@@ -253,9 +273,14 @@ struct ModuleEntry {
     .padding({ left: '14vp', right: '14vp', top: '12vp', bottom: '12vp' })
     .backgroundColor($r('app.color.card_background'))
     .borderRadius('16vp')
-    .border({ width: '1vp', color: this.isHover ? this.accent + '55' : $r('app.color.divider') })
-    .shadow(this.isHover ? CardShadowHover : CardShadow)
-    .scale({ x: this.isHover ? 1.01 : 1, y: this.isHover ? 1.01 : 1 })
+    .border({ width: this.isHover ? '2vp' : '1vp', color: this.isHover ? this.accent : $r('app.color.divider') })
+    .shadow(this.isHover ? {
+      radius: 24,
+      offsetX: 0,
+      offsetY: 0,
+      color: this.accent + '55'
+    } : CardShadow)
+    .scale({ x: this.isHover ? 1.015 : 1, y: this.isHover ? 1.015 : 1 })
     .animation({ duration: 180, curve: Curve.EaseOut })
     .onClick((): void => {
       router.pushUrl({ url: this.url });
