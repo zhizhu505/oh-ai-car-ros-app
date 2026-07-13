@@ -116,6 +116,15 @@ export interface VisionSnapshot {
   updateTime: string;
 }
 
+/** 视觉模块运行日志 */
+export interface VisionLogRecord {
+  time: string;
+  point: string;
+  message: string;
+  personDetected: boolean;
+  boxInChannel: boolean;
+}
+
 /** 小车整体状态 */
 export interface VehicleSnapshot {
   online: boolean;

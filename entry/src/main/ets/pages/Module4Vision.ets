@@ -1,5 +1,6 @@
 import {
   ALERT_CATEGORY_VISION,
+  VisionLogRecord,
   VisionSnapshot
 } from '../model/PatrolModels';
 import { PatrolStore } from '../store/PatrolStore';
@@ -7,6 +8,9 @@ import { ModuleTabBar, InfoCard } from '../components/PageHeader';
 import { ModuleAlertList } from '../components/ModuleAlertList';
 import { VideoComponents } from '../components/VideoComponents';
 import { CardShadow } from '../styles/styles';
+import { carApi } from '../CarUtill/CarApi';
+import { CarEncode } from '../CarUtill/CarEncode';
+import promptAction from '@ohos.promptAction';
 
 @Entry
 @Component
@@ -18,6 +22,7 @@ struct Module4Vision {
   @State message: string = '等待数据';
   @State imageUrl: string = '';
   @State updateTime: string = '-';
+  @State visionLogs: VisionLogRecord[] = [];
   private tabs: string[] = ['实时数据', '阈值规则', '异常记录'];
   private refreshHandler: () => void = (): void => {
     this.refreshData();
@@ -40,6 +45,7 @@ struct Module4Vision {
     this.message = vision.message;
     this.imageUrl = vision.imageUrl;
     this.updateTime = vision.updateTime;
+    this.visionLogs = PatrolStore.getInstance().visionLogs;
   }
 
   build() {
@@ -139,7 +145,38 @@ struct Module4Vision {
                 .maxLines(1)
                 .textOverflow({ overflow: TextOverflow.Ellipsis })
             }
+            Button('停止蜂鸣')
+              .height('34vp')
+              .fontSize('12fp')
+              .fontColor($r('app.color.text_on_accent'))
+              .backgroundColor($r('app.color.alert_critical'))
+              .borderRadius('17vp')
+              .onClick((): void => {
+                carApi.send(CarEncode.StopBuzzerEncode());
+                promptAction.showToast({ message: '已发送停止蜂鸣指令' });
+              })
           }
+        }
+      }
+      .padding({ left: '14vp', right: '14vp' })
+
+      Column() {
+        InfoCard({ title: '实时视觉日志' }) {
+          Column({ space: '8vp' }) {
+            if (this.visionLogs.length === 0) {
+              Text('等待小车视觉日志')
+                .fontSize('13fp')
+                .fontColor($r('app.color.text_secondary'))
+                .width('100%')
+                .textAlign(TextAlign.Center)
+                .padding({ top: '10vp', bottom: '10vp' })
+            } else {
+              ForEach(this.visionLogs.slice(0, 8), (item: VisionLogRecord) => {
+                VisionLogItem({ item: item })
+              }, (item: VisionLogRecord): string => `${item.time}_${item.point}_${item.message}`)
+            }
+          }
+          .width('100%')
         }
       }
       .padding({ left: '14vp', right: '14vp' })
@@ -199,6 +236,54 @@ struct Module4Vision {
     }
     .padding({ left: '14vp', right: '14vp', top: '12vp' })
     .width('100%')
+  }
+}
+
+@Component
+struct VisionLogItem {
+  @Prop item: VisionLogRecord = {
+    time: '-',
+    point: '-',
+    message: '',
+    personDetected: false,
+    boxInChannel: false
+  };
+
+  build() {
+    Row({ space: '8vp' }) {
+      Text()
+        .width('8vp')
+        .height('8vp')
+        .backgroundColor(this.item.personDetected || this.item.boxInChannel ?
+          $r('app.color.alert_critical') : $r('app.color.status_active'))
+        .borderRadius('4vp')
+      Column({ space: '3vp' }) {
+        Row({ space: '8vp' }) {
+          Text(this.item.time)
+            .fontSize('12fp')
+            .fontColor($r('app.color.text_secondary'))
+            .maxLines(1)
+          Text(this.item.point)
+            .fontSize('12fp')
+            .fontColor($r('app.color.text_secondary'))
+            .maxLines(1)
+            .textOverflow({ overflow: TextOverflow.Ellipsis })
+            .layoutWeight(1)
+        }
+        .width('100%')
+        Text(this.item.message)
+          .fontSize('13fp')
+          .fontColor($r('app.color.text'))
+          .width('100%')
+          .maxLines(2)
+          .textOverflow({ overflow: TextOverflow.Ellipsis })
+      }
+      .layoutWeight(1)
+    }
+    .width('100%')
+    .padding({ left: '10vp', right: '10vp', top: '8vp', bottom: '8vp' })
+    .backgroundColor($r('app.color.card_elevated'))
+    .borderRadius('8vp')
   }
 }
 

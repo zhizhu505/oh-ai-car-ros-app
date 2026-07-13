@@ -12,6 +12,7 @@ import {
   PatrolPoint,
   PatrolStatus,
   VehicleSnapshot,
+  VisionLogRecord,
   VisionSnapshot,
   createDefaultEnv,
   createDefaultLidar,
@@ -35,6 +36,7 @@ export class PatrolStore {
   vehicle: VehicleSnapshot = createDefaultVehicle();
   lidar: LidarSnapshot = createDefaultLidar();
   vision: VisionSnapshot = createDefaultVision();
+  visionLogs: VisionLogRecord[] = [];
   patrolPoints: PatrolPoint[] = DEFAULT_PATROL_POINTS.map((p: PatrolPoint): PatrolPoint => {
     return { id: p.id, name: p.name, visited: p.visited, abnormal: p.abnormal };
   });
@@ -149,6 +151,26 @@ export class PatrolStore {
   updateVision(data: VisionSnapshot): void {
     this.vision = data;
     this.vehicle.visionStatus = data.personDetected || data.boxInChannel ? 'alert' : 'normal';
+    const latest = this.visionLogs.length > 0 ? this.visionLogs[0] : undefined;
+    const isDuplicate = latest !== undefined &&
+      latest.time === data.updateTime &&
+      latest.point === data.point &&
+      latest.message === data.message &&
+      latest.personDetected === data.personDetected &&
+      latest.boxInChannel === data.boxInChannel;
+    if (!isDuplicate) {
+      const record: VisionLogRecord = {
+        time: data.updateTime,
+        point: data.point,
+        message: data.message,
+        personDetected: data.personDetected,
+        boxInChannel: data.boxInChannel
+      };
+      this.visionLogs.unshift(record);
+      if (this.visionLogs.length > 80) {
+        this.visionLogs.pop();
+      }
+    }
     this.notify();
   }
 

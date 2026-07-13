@@ -2,7 +2,7 @@ import web_webview from '@ohos.web.webview'
 import { carApi } from '../CarUtill/CarApi';
 import { CarEncode } from '../CarUtill/CarEncode';
 import { ButtonShadow } from '../styles/styles';
-import { PreferencesUtils } from '../utils/PreferencesUtils';
+import { DEFAULT_CAR_IP, DEFAULT_VIDEO_PORT, PreferencesUtils } from '../utils/PreferencesUtils';
 import preferences from '@ohos.data.preferences';
 
 let TAG = "VideoComponents"
@@ -10,8 +10,8 @@ let TAG = "VideoComponents"
 @Component
 export struct VideoComponents {
   controller: web_webview.WebviewController = new web_webview.WebviewController()
-  public static port: number = 6500;
-  public static ip: string = "172.20.10.2"
+  public static port: number = Number.parseInt(DEFAULT_VIDEO_PORT);
+  public static ip: string = DEFAULT_CAR_IP
   @Prop previewWidth: Length = '300vp';
   @Prop previewHeight: Length = '200vp';
   @Prop showActions: boolean = true;
@@ -98,6 +98,23 @@ export struct VideoComponents {
           })
           .offset({
             x: 8,
+            y: -8
+          })
+
+        Text(`视频源 ${VideoComponents.ip}:${VideoComponents.port}`)
+          .id("VideoSourceText")
+          .fontSize('10fp')
+          .fontColor(Color.White)
+          .backgroundColor('rgba(15, 23, 42, 0.58)')
+          .borderRadius('10vp')
+          .padding({ left: '8vp', right: '8vp', top: '3vp', bottom: '3vp' })
+          .zIndex(3)
+          .alignRules({
+            bottom: { anchor: "__container__", align: VerticalAlign.Bottom },
+            right: { anchor: "__container__", align: HorizontalAlign.End }
+          })
+          .offset({
+            x: -8,
             y: -8
           })
 
