@@ -1,5 +1,6 @@
 import http from '@ohos.net.http';
 import { AiAnalysisResult } from '../model/PatrolModels';
+import { EnvUtil } from './EnvUtil';
 
 export interface AiMessage {
   role: string;
@@ -25,10 +26,13 @@ export interface ChatResponse {
   choices: ChatMessage[];
 }
 
-const API_KEY = "sk-a587882215c044768b4cdb400778ed2b";
 const URL = "https://api.deepseek.com/v1/chat/completions";
 let lastRequestTime: number = 0;
 const requestThrottleMs: number = 1000;
+
+function getApiKey(): string {
+  return EnvUtil.getInstance().get('DEEPSEEK_API_KEY', '');
+}
 
 async function waitThrottle(): Promise<void> {
   const now = Date.now();
@@ -56,6 +60,10 @@ function cleanMarkdownCodeBlock(text: string): string {
 
 export async function chat(sysPrompt: string, userInput: string): Promise<string> {
   await waitThrottle();
+  const apiKey = getApiKey();
+  if (!apiKey) {
+    throw new Error('DEEPSEEK_API_KEY is not configured. Please create entry/src/main/resources/rawfile/config.env.');
+  }
   let httpClient = http.createHttp();
   const message1: AiMessage = { role: "system", content: sysPrompt };
   const message2: AiMessage = { role: "user", content: userInput };
@@ -70,7 +78,7 @@ export async function chat(sysPrompt: string, userInput: string): Promise<string
     let res = await httpClient.request(URL, {
       method: http.RequestMethod.POST,
       header: {
-        "Authorization": `Bearer ${API_KEY}`,
+        "Authorization": `Bearer ${apiKey}`,
         "Content-Type": "application/json"
       },
       extraData: bodyStr,

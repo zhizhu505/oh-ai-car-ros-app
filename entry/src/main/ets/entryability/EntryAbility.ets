@@ -9,11 +9,15 @@ import { TCPClientSendUtils } from '../tcp/TCPClientSendUtils';
 import { PreferencesUtils } from '../utils/PreferencesUtils';
 import { PatrolStore } from '../store/PatrolStore';
 import { AlertLevel } from '../model/PatrolModels';
+import { EnvUtil } from '../utils/EnvUtil';
 import { EnvMockService } from '../mock/EnvMockService';
 
 export default class EntryAbility extends UIAbility {
   onCreate(want: Want, launchParam: AbilityConstant.LaunchParam): void {
     hilog.info(0x0000, 'testTag', '%{public}s', 'Ability onCreate');
+
+    // 初始化环境变量
+    EnvUtil.getInstance().init(this.context.resourceManager);
 
     // 初始化首选项单例
     PreferencesUtils.getInstance().init(this.context)

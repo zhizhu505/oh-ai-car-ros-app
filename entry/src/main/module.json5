@@ -27,7 +27,7 @@
         "description": "$string:EntryAbility_desc",
         "icon": "$media:project_logo",
         "label": "$string:EntryAbility_label",
-        "startWindowIcon": "$media:startLogo",
+        "startWindowIcon": "$media:transparent_start",
         "startWindowBackground": "$color:start_window_background",
         "exported": true,
         "skills": [

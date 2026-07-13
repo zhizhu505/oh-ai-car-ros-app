@@ -4,6 +4,7 @@ import { PatrolStore } from '../store/PatrolStore';
 export class EnvMockService {
   private static instance: EnvMockService;
   private timerId: number = -1;
+  private tick: number = 0;
   private temperature: number = 24.6;
   private humidity: number = 57.8;
   private gas: number = 13.6;
@@ -59,11 +60,12 @@ export class EnvMockService {
   }
 
   private nextHistoryRecord(offsetSeconds: number): EnvHistoryRecord {
-    this.temperature = this.clamp(this.temperature + this.randomStep(0.22), 22.1, 28.6);
-    this.humidity = this.clamp(this.humidity + this.randomStep(0.75), 48, 66);
-    this.gas = this.clamp(this.gas + this.randomStep(0.55), 8, 22);
-    this.pm25 = this.clamp(this.pm25 + this.randomStep(1.1), 20, 52);
-    this.light = this.clamp(this.light + this.randomStep(8), 145, 340);
+    this.tick++;
+    this.temperature = this.clamp(24.5 + Math.sin(this.tick / 3.8) * 1.8 + this.randomStep(0.22), 22.1, 28.6);
+    this.humidity = this.clamp(57 + Math.cos(this.tick / 4.5) * 5.4 + this.randomStep(0.9), 48, 66);
+    this.gas = this.clamp(14 + Math.sin(this.tick / 5.2) * 4.2 + this.randomStep(0.65), 8, 22);
+    this.pm25 = this.clamp(35 + Math.cos(this.tick / 4.1) * 10.5 + this.randomStep(1.4), 20, 52);
+    this.light = this.clamp(230 + Math.sin(this.tick / 3.2) * 62 + this.randomStep(10), 145, 340);
     return {
       time: this.formatTime(offsetSeconds),
       temperature: Number(this.temperature.toFixed(1)),

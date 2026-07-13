@@ -10,7 +10,7 @@ import {
   alertLevelText
 } from '../model/PatrolModels';
 import { PatrolStore } from '../store/PatrolStore';
-import { ModuleTabBar, InfoCard } from '../components/PageHeader';
+import { ModuleTabBar } from '../components/PageHeader';
 import { ModuleAlertList } from '../components/ModuleAlertList';
 import { levelColor } from '../utils/PatrolUiUtils';
 import { CardShadow, ElevatedShadow } from '../styles/styles';
@@ -82,14 +82,15 @@ struct Module1Environment {
     }
     .width('100%')
     .height('100%')
+    .padding({ top: '12vp' })
     .backgroundColor($r('app.color.window_background'))
   }
 
   @Builder
   LiveDataView() {
-    Column({ space: '12vp' }) {
+    Column({ space: '10vp' }) {
       Row({ space: '10vp' }) {
-        Column({ space: '4vp' }) {
+        Column({ space: '3vp' }) {
           Text('地下管廊环境总览')
             .fontSize('18fp')
             .fontColor($r('app.color.text'))
@@ -112,10 +113,10 @@ struct Module1Environment {
           .borderRadius('12vp')
       }
       .width('100%')
-      .padding({ left: '14vp', right: '14vp', top: '12vp', bottom: '12vp' })
+      .padding({ left: '16vp', right: '16vp', top: '10vp', bottom: '10vp' })
       .backgroundColor($r('app.color.card_background'))
       .borderRadius('16vp')
-      .border({ width: '1vp', color: $r('app.color.divider') })
+      .border({ width: '1vp', color: $r('app.color.module1_accent') + '30' })
       .shadow(CardShadow)
 
       EnvTrendChart({
@@ -189,25 +190,17 @@ struct Module1Environment {
       }
       .width('100%')
     }
-    .padding({ left: '14vp', right: '14vp', top: '12vp', bottom: '14vp' })
+    .padding({ left: '14vp', right: '14vp', top: '10vp', bottom: '14vp' })
     .width('100%')
   }
 
   @Builder
   RuleView() {
     Column({ space: '12vp' }) {
-      InfoCard({ title: '管廊环境阈值策略' }) {
-        Column({ space: '8vp' }) {
-          Text('实时趋势图中的红线为预警阈值，连续多次超线才写入异常记录。')
-            .fontSize('12fp')
-            .fontColor($r('app.color.text_secondary'))
-            .lineHeight('18fp')
-          Text('当前 mock 数据默认保持正常波动，历史异常用于演示处置闭环。')
-            .fontSize('12fp')
-            .fontColor($r('app.color.text_secondary'))
-            .lineHeight('18fp')
-        }
-      }
+      SectionIntro({
+        title: '阈值规则',
+        desc: '按地下管廊巡检场景定义温度、湿度、可燃气体、PM2.5 与照度边界；红线对应实时趋势中的预警阈值，连续越线后进入异常记录。'
+      })
 
       ForEach(ENV_METRICS, (meta: EnvMetricMeta, index: number) => {
         EnvRuleCard({
@@ -222,7 +215,11 @@ struct Module1Environment {
 
   @Builder
   AlertView() {
-    Column() {
+    Column({ space: '12vp' }) {
+      SectionIntro({
+        title: '异常记录',
+        desc: '展示历史测试或运行中触发的环境异常，便于复盘风险来源、处理建议和处置闭环；实时模拟数据默认保持正常波动。'
+      })
       ModuleAlertList({
         category: ALERT_CATEGORY_ENV,
         emptyHint: '暂无环境异常记录'
@@ -260,6 +257,30 @@ struct Module1Environment {
 }
 
 @Component
+struct SectionIntro {
+  @Prop title: string = '';
+  @Prop desc: string = '';
+
+  build() {
+    Column({ space: '6vp' }) {
+      Text(this.title)
+        .fontSize('21fp')
+        .fontColor($r('app.color.text'))
+        .fontWeight(FontWeight.Bold)
+        .maxLines(1)
+      Text(this.desc)
+        .fontSize('13fp')
+        .fontColor($r('app.color.text_secondary'))
+        .lineHeight('20fp')
+        .maxLines(3)
+    }
+    .width('100%')
+    .padding({ left: '4vp', right: '4vp', top: '4vp', bottom: '6vp' })
+    .alignItems(HorizontalAlign.Start)
+  }
+}
+
+@Component
 struct EnvTrendChart {
   @Prop selectedMetric: string = 'temperature';
   @Prop history: EnvHistoryRecord[] = [];
@@ -268,12 +289,12 @@ struct EnvTrendChart {
   @Prop meta: EnvMetricMeta = ENV_METRICS[0];
 
   build() {
-    Column({ space: '12vp' }) {
+    Column({ space: '10vp' }) {
       Row() {
         Column({ space: '3vp' }) {
           Row({ space: '8vp' }) {
             Text(`${this.meta.name}实时趋势`)
-              .fontSize('16fp')
+              .fontSize('17fp')
               .fontColor($r('app.color.text'))
               .fontWeight(FontWeight.Bold)
             Text('3秒/次')
@@ -286,113 +307,127 @@ struct EnvTrendChart {
           }
           .alignItems(VerticalAlign.Center)
           Text(`最近 ${this.history.length} 次采样，红线为预警阈值`)
-            .fontSize('10fp')
+            .fontSize('12fp')
             .fontColor($r('app.color.text_secondary'))
             .maxLines(1)
         }
         .layoutWeight(1)
         .alignItems(HorizontalAlign.Start)
 
-        Column({ space: '2vp' }) {
-          Text(`${this.value}`)
-            .fontSize('22fp')
+        Row({ space: '3vp' }) {
+          Text('当前')
+            .fontSize('12fp')
+            .fontColor($r('app.color.text_secondary'))
+          Text(`${this.value}${this.meta.unit}`)
+            .fontSize('16fp')
             .fontColor($r('app.color.module1_accent'))
             .fontWeight(FontWeight.Bold)
             .maxLines(1)
-          Text(this.meta.unit)
-            .fontSize('10fp')
-            .fontColor($r('app.color.text_secondary'))
-            .textAlign(TextAlign.End)
-            .width('100%')
         }
-        .alignItems(HorizontalAlign.End)
+        .padding({ left: '12vp', right: '12vp', top: '7vp', bottom: '7vp' })
+        .backgroundColor($r('app.color.module1_accent') + '18')
+        .borderRadius('12vp')
+        .alignItems(VerticalAlign.Center)
       }
       .width('100%')
       .alignItems(VerticalAlign.Center)
 
-      Stack() {
+      Row({ space: '8vp' }) {
         Column() {
-          Divider()
-            .color($r('app.color.divider'))
-            .strokeWidth('1vp')
-            .opacity(0.35)
-          Blank()
-          Divider()
-            .color($r('app.color.divider'))
-            .strokeWidth('1vp')
-            .opacity(0.28)
-          Blank()
-          Divider()
-            .color($r('app.color.divider'))
-            .strokeWidth('1vp')
-            .opacity(0.22)
-          Blank()
-          Divider()
-            .color($r('app.color.divider'))
-            .strokeWidth('1vp')
-            .opacity(0.18)
-        }
-        .height('160vp')
-        .width('100%')
-        .justifyContent(FlexAlign.SpaceBetween)
-
-        Column() {
-          Blank()
-            .layoutWeight(this.getThresholdTopWeight())
-          Row({ space: '6vp' }) {
-            Text('预警线')
-              .fontSize('9fp')
-              .fontColor($r('app.color.alert_critical'))
-            Divider()
-              .color($r('app.color.alert_critical'))
-              .strokeWidth('1vp')
-              .layoutWeight(1)
-          }
-          .width('100%')
-          .opacity(0.95)
-          Blank()
-            .layoutWeight(this.getThresholdBottomWeight())
-        }
-        .height('160vp')
-        .width('100%')
-
-        Row({ space: '4vp' }) {
-          ForEach(this.history, (item: EnvHistoryRecord, index: number) => {
-            TrendColumn({
-              value: this.getRecordValue(item),
-              percent: this.getPercent(this.getRecordValue(item)),
-              active: index === this.history.length - 1,
-              label: index === this.history.length - 1 ? item.time.slice(3) : ''
-            })
-              .layoutWeight(1)
-          }, (item: EnvHistoryRecord, index: number) => `${item.time}_${index}`)
-        }
-        .width('100%')
-        .height('160vp')
-        .alignItems(VerticalAlign.Bottom)
-
-        Row() {
-          Blank()
-          Text(this.meta.name === '光照' ? '低于红线需处理' : '超过红线需处理')
-            .fontSize('9fp')
+          Text(this.getScaleLabel(1))
+            .fontSize('12fp')
             .fontColor($r('app.color.text_secondary'))
-            .padding({ left: '8vp', right: '8vp', top: '3vp', bottom: '3vp' })
-            .backgroundColor($r('app.color.card_background') + 'DD')
-            .borderRadius('8vp')
+            .fontWeight(FontWeight.Medium)
+          Blank()
+          Text(this.getScaleLabel(0.75))
+            .fontSize('12fp')
+            .fontColor($r('app.color.text_secondary'))
+            .fontWeight(FontWeight.Medium)
+          Blank()
+          Text(this.getScaleLabel(0.5))
+            .fontSize('12fp')
+            .fontColor($r('app.color.text_secondary'))
+            .fontWeight(FontWeight.Medium)
+          Blank()
+          Text(this.getScaleLabel(0.25))
+            .fontSize('12fp')
+            .fontColor($r('app.color.text_secondary'))
+            .fontWeight(FontWeight.Medium)
+          Blank()
+          Text(this.getScaleLabel(0))
+            .fontSize('12fp')
+            .fontColor($r('app.color.text_secondary'))
+            .fontWeight(FontWeight.Medium)
         }
-        .width('100%')
-        .alignItems(VerticalAlign.Top)
+        .width('42vp')
+        .height('200vp')
+        .justifyContent(FlexAlign.SpaceBetween)
+        .alignItems(HorizontalAlign.End)
+
+        Stack() {
+          Column() {
+            Divider()
+              .color($r('app.color.divider'))
+              .strokeWidth('1vp')
+              .opacity(0.35)
+            Blank()
+            Divider()
+              .color($r('app.color.divider'))
+              .strokeWidth('1vp')
+              .opacity(0.28)
+            Blank()
+            Divider()
+              .color($r('app.color.divider'))
+              .strokeWidth('1vp')
+              .opacity(0.22)
+            Blank()
+            Divider()
+              .color($r('app.color.divider'))
+              .strokeWidth('1vp')
+              .opacity(0.18)
+            Blank()
+            Divider()
+              .color($r('app.color.divider'))
+              .strokeWidth('1vp')
+              .opacity(0.14)
+          }
+          .height('200vp')
+          .width('100%')
+          .justifyContent(FlexAlign.SpaceBetween)
+
+          TrendCanvas({
+            selectedMetric: this.selectedMetric,
+            history: this.history,
+            threshold: this.threshold,
+            meta: this.meta
+          })
+            .width('100%')
+            .height('200vp')
+
+          Row() {
+            Text(this.meta.name === '光照' ? '低于红线需处理' : '超过红线需处理')
+              .fontSize('12fp')
+              .fontColor($r('app.color.text_secondary'))
+              .fontWeight(FontWeight.Medium)
+              .padding({ left: '9vp', right: '9vp', top: '4vp', bottom: '4vp' })
+              .backgroundColor($r('app.color.card_background') + 'DD')
+              .borderRadius('10vp')
+          }
+          .position({ right: '8vp', top: '10vp' })
+        }
+        .layoutWeight(1)
+        .height('200vp')
       }
       .width('100%')
-      .height('160vp')
+      .height('208vp')
       .padding({ left: '4vp', right: '4vp', top: '4vp', bottom: '4vp' })
       .backgroundColor($r('app.color.window_background') + '78')
       .borderRadius('14vp')
 
       Row({ space: '8vp' }) {
-        ChartMetaPill({ label: '当前', value: `${this.value}${this.meta.unit}` })
+        ChartMetaPill({ label: '阈值', value: this.thresholdText() })
           .layoutWeight(1)
-        ChartMetaPill({ label: '阈值', value: `${this.threshold.warningMax}${this.meta.unit}` })
+        ChartMetaPill({ label: '刻度', value: `${this.getScaleMin()}-${this.getScaleMax()}${this.meta.unit}` })
           .layoutWeight(1)
         ChartMetaPill({ label: '样本', value: `${this.history.length}组` })
           .layoutWeight(1)
@@ -400,7 +435,7 @@ struct EnvTrendChart {
       .width('100%')
     }
     .width('100%')
-    .padding('14vp')
+    .padding({ left: '14vp', right: '14vp', top: '13vp', bottom: '13vp' })
     .backgroundColor($r('app.color.card_background'))
     .borderRadius('16vp')
     .border({ width: '1vp', color: $r('app.color.module1_accent') + '45' })
@@ -424,20 +459,68 @@ struct EnvTrendChart {
     return record.temperature;
   }
 
-  private getScaleMax(): number {
-    if (this.selectedMetric === 'light') {
-      return Math.max(this.threshold.max, 500);
+  private getScaleMin(): number {
+    if (this.selectedMetric === 'temperature') {
+      return 20;
     }
-    return Math.max(this.threshold.criticalMax * 1.2, this.value * 1.2, 1);
+    if (this.selectedMetric === 'humidity') {
+      return 40;
+    }
+    return 0;
+  }
+
+  private getScaleMax(): number {
+    if (this.selectedMetric === 'temperature') {
+      return 40;
+    }
+    if (this.selectedMetric === 'humidity') {
+      return 90;
+    }
+    if (this.selectedMetric === 'gas') {
+      return 55;
+    }
+    if (this.selectedMetric === 'pm25') {
+      return 125;
+    }
+    return 520;
+  }
+
+  private getMiddleScale(): number {
+    return Math.round((this.getScaleMin() + this.getScaleMax()) / 2);
+  }
+
+  private getScaleLabel(ratio: number): string {
+    const value = this.getScaleMin() + (this.getScaleMax() - this.getScaleMin()) * ratio;
+    if (this.selectedMetric === 'temperature' || this.selectedMetric === 'humidity' || this.selectedMetric === 'gas') {
+      return `${Number(value.toFixed(1))}`;
+    }
+    return `${Math.round(value)}`;
   }
 
   private getPercent(value: number): number {
-    const percent = value / this.getScaleMax() * 100;
-    return Math.max(8, Math.min(96, percent));
+    const range = Math.max(1, this.getScaleMax() - this.getScaleMin());
+    const percent = (value - this.getScaleMin()) / range * 100;
+    return Math.max(4, Math.min(96, percent));
+  }
+
+  private getTimeLabel(index: number, time: string): string {
+    if (index === 0 || index === this.history.length - 1) {
+      return time.slice(3);
+    }
+    return '';
   }
 
   private getThresholdPercent(): number {
-    return Math.max(8, Math.min(92, this.threshold.warningMax / this.getScaleMax() * 100));
+    const range = Math.max(1, this.getScaleMax() - this.getScaleMin());
+    const percent = (this.threshold.warningMax - this.getScaleMin()) / range * 100;
+    return Math.max(8, Math.min(92, percent));
+  }
+
+  private thresholdText(): string {
+    if (this.meta.name === '光照') {
+      return `<${this.threshold.warningMax}${this.meta.unit}`;
+    }
+    return `≥${this.threshold.warningMax}${this.meta.unit}`;
   }
 
   private getThresholdTopWeight(): number {
@@ -450,6 +533,196 @@ struct EnvTrendChart {
 }
 
 @Component
+struct TrendCanvas {
+  @Watch('redrawLater') @Prop selectedMetric: string = 'temperature';
+  @Watch('redrawLater') @Prop history: EnvHistoryRecord[] = [];
+  @Watch('redrawLater') @Prop threshold: EnvThreshold = ENV_THRESHOLDS[0];
+  @Watch('redrawLater') @Prop meta: EnvMetricMeta = ENV_METRICS[0];
+  private settings: RenderingContextSettings = new RenderingContextSettings(true);
+  private ctx: CanvasRenderingContext2D = new CanvasRenderingContext2D(this.settings);
+  private canvasWidth: number = 0;
+  private canvasHeight: number = 0;
+
+  build() {
+    Canvas(this.ctx)
+      .width('100%')
+      .height('100%')
+      .onReady((): void => {
+        this.redrawLater();
+      })
+      .onAreaChange((oldValue: Area, newValue: Area): void => {
+        this.canvasWidth = newValue.width as number;
+        this.canvasHeight = newValue.height as number;
+        this.redrawLater();
+      })
+  }
+
+  private redrawLater(): void {
+    setTimeout((): void => {
+      this.drawChart();
+    }, 0);
+  }
+
+  private drawChart(): void {
+    if (this.canvasWidth <= 0 || this.canvasHeight <= 0) {
+      return;
+    }
+
+    const width = this.canvasWidth;
+    const height = this.canvasHeight;
+    const paddingLeft = 10;
+    const paddingRight = 10;
+    const paddingTop = 18;
+    const paddingBottom = 18;
+    const chartWidth = Math.max(1, width - paddingLeft - paddingRight);
+    const chartHeight = Math.max(1, height - paddingTop - paddingBottom);
+    const list = this.history.slice(-24) as EnvHistoryRecord[];
+
+    this.ctx.clearRect(0, 0, width, height);
+    this.drawGrid(width, height, paddingLeft, paddingRight, paddingTop, paddingBottom);
+    this.drawThreshold(width, paddingLeft, paddingRight, paddingTop, chartHeight);
+
+    if (list.length < 2) {
+      return;
+    }
+
+    this.ctx.beginPath();
+    list.forEach((item: EnvHistoryRecord, index: number): void => {
+      const x = paddingLeft + chartWidth * index / Math.max(1, list.length - 1);
+      const y = paddingTop + chartHeight * (1 - this.getPercent(this.getRecordValue(item)) / 100);
+      if (index === 0) {
+        this.ctx.moveTo(x, y);
+      } else {
+        this.ctx.lineTo(x, y);
+      }
+    });
+    this.ctx.lineTo(paddingLeft + chartWidth, paddingTop + chartHeight);
+    this.ctx.lineTo(paddingLeft, paddingTop + chartHeight);
+    this.ctx.closePath();
+    this.ctx.fillStyle = '#22D3EE18';
+    this.ctx.fill();
+
+    this.ctx.beginPath();
+    list.forEach((item: EnvHistoryRecord, index: number): void => {
+      const x = paddingLeft + chartWidth * index / Math.max(1, list.length - 1);
+      const y = paddingTop + chartHeight * (1 - this.getPercent(this.getRecordValue(item)) / 100);
+      if (index === 0) {
+        this.ctx.moveTo(x, y);
+      } else {
+        this.ctx.lineTo(x, y);
+      }
+    });
+    this.ctx.strokeStyle = '#22D3EE';
+    this.ctx.lineWidth = 3;
+    this.ctx.stroke();
+
+    const latest = list[list.length - 1];
+    const latestX = paddingLeft + chartWidth;
+    const latestY = paddingTop + chartHeight * (1 - this.getPercent(this.getRecordValue(latest)) / 100);
+    const latestText = `${this.getRecordValue(latest)}${this.meta.unit}`;
+    const labelWidth = Math.min(180, Math.max(92, latestText.length * 15 + 8));
+    const labelX = Math.max(2, Math.min(width - labelWidth - 2, latestX - labelWidth / 2));
+    const labelY = latestY > 34 ? latestY - 10 : latestY + 36;
+
+    this.ctx.fillStyle = '#EAFBFF';
+    this.ctx.font = 'bold 30px sans-serif';
+    this.ctx.fillText(latestText, labelX, labelY);
+
+    this.ctx.beginPath();
+    this.ctx.fillStyle = '#EAFBFF';
+    this.ctx.arc(latestX, latestY, 4.8, 0, Math.PI * 2);
+    this.ctx.fill();
+    this.ctx.beginPath();
+    this.ctx.strokeStyle = '#22D3EEAA';
+    this.ctx.lineWidth = 2.5;
+    this.ctx.arc(latestX, latestY, 9.5, 0, Math.PI * 2);
+    this.ctx.stroke();
+  }
+
+  private drawGrid(width: number, height: number, paddingLeft: number, paddingRight: number, paddingTop: number,
+    paddingBottom: number): void {
+    const chartHeight = height - paddingTop - paddingBottom;
+    this.ctx.strokeStyle = '#53617655';
+    this.ctx.lineWidth = 1;
+    for (let index = 0; index < 5; index++) {
+      const y = paddingTop + chartHeight * index / 4;
+      this.ctx.beginPath();
+      this.ctx.moveTo(paddingLeft, y);
+      this.ctx.lineTo(width - paddingRight, y);
+      this.ctx.stroke();
+    }
+  }
+
+  private drawThreshold(width: number, paddingLeft: number, paddingRight: number, paddingTop: number,
+    chartHeight: number): void {
+    const y = paddingTop + chartHeight * (1 - this.getThresholdPercent() / 100);
+    this.ctx.beginPath();
+    this.ctx.strokeStyle = '#FF4D4F';
+    this.ctx.lineWidth = 1.5;
+    this.ctx.moveTo(paddingLeft, y);
+    this.ctx.lineTo(width - paddingRight, y);
+    this.ctx.stroke();
+    this.ctx.fillStyle = '#FF4D4F';
+    this.ctx.font = 'bold 30px sans-serif';
+    this.ctx.fillText('预警线', paddingLeft + 2, Math.max(30, y - 14));
+  }
+
+  private getRecordValue(record: EnvHistoryRecord): number {
+    if (this.selectedMetric === 'humidity') {
+      return record.humidity;
+    }
+    if (this.selectedMetric === 'gas') {
+      return record.gas;
+    }
+    if (this.selectedMetric === 'pm25') {
+      return record.pm25;
+    }
+    if (this.selectedMetric === 'light') {
+      return record.light;
+    }
+    return record.temperature;
+  }
+
+  private getScaleMin(): number {
+    if (this.selectedMetric === 'temperature') {
+      return 20;
+    }
+    if (this.selectedMetric === 'humidity') {
+      return 40;
+    }
+    return 0;
+  }
+
+  private getScaleMax(): number {
+    if (this.selectedMetric === 'temperature') {
+      return 40;
+    }
+    if (this.selectedMetric === 'humidity') {
+      return 90;
+    }
+    if (this.selectedMetric === 'gas') {
+      return 55;
+    }
+    if (this.selectedMetric === 'pm25') {
+      return 125;
+    }
+    return 520;
+  }
+
+  private getPercent(value: number): number {
+    const range = Math.max(1, this.getScaleMax() - this.getScaleMin());
+    const percent = (value - this.getScaleMin()) / range * 100;
+    return Math.max(4, Math.min(96, percent));
+  }
+
+  private getThresholdPercent(): number {
+    const range = Math.max(1, this.getScaleMax() - this.getScaleMin());
+    const percent = (this.threshold.warningMax - this.getScaleMin()) / range * 100;
+    return Math.max(8, Math.min(92, percent));
+  }
+}
+
+@Component
 struct ChartMetaPill {
   @Prop label: string = '';
   @Prop value: string = '';
@@ -457,10 +730,10 @@ struct ChartMetaPill {
   build() {
     Row({ space: '5vp' }) {
       Text(this.label)
-        .fontSize('10fp')
+        .fontSize('11fp')
         .fontColor($r('app.color.text_secondary'))
       Text(this.value)
-        .fontSize('11fp')
+        .fontSize('12fp')
         .fontColor($r('app.color.text'))
         .fontWeight(FontWeight.Bold)
         .maxLines(1)
@@ -474,7 +747,7 @@ struct ChartMetaPill {
 }
 
 @Component
-struct TrendColumn {
+struct LinePoint {
   @Prop value: number = 0;
   @Prop percent: number = 10;
   @Prop active: boolean = false;
@@ -491,29 +764,43 @@ struct TrendColumn {
           .fontWeight(FontWeight.Bold)
           .maxLines(1)
       }
-      Column()
-        .width('100%')
-        .layoutWeight(Math.max(1, this.percent))
-        .backgroundColor(this.active ? $r('app.color.module1_accent') : $r('app.color.module1_accent') + '88')
-        .borderRadius('5vp')
-        .shadow(this.active ? {
-          radius: 8,
-          offsetX: 0,
-          offsetY: 0,
-          color: '#22D3EE66'
-        } : {
-          radius: 0,
-          offsetX: 0,
-          offsetY: 0,
-          color: '#00000000'
-        })
+      Row() {
+        Stack() {
+          Column()
+            .width(this.active ? '8vp' : '6vp')
+            .height(this.active ? '8vp' : '6vp')
+            .backgroundColor(this.active ? $r('app.color.module1_accent') : $r('app.color.module1_accent') + 'DD')
+            .borderRadius(this.active ? '4vp' : '3vp')
+            .shadow(this.active ? {
+              radius: 10,
+              offsetX: 0,
+              offsetY: 0,
+              color: '#22D3EE88'
+            } : {
+              radius: 0,
+              offsetX: 0,
+              offsetY: 0,
+              color: '#00000000'
+            })
+        }
+        .width('10vp')
+        .height('10vp')
+        .alignContent(Alignment.Center)
+        Divider()
+          .color($r('app.color.module1_accent'))
+          .strokeWidth('2vp')
+          .layoutWeight(1)
+          .opacity(this.active ? 0 : 0.72)
+      }
+      .width('100%')
+      .alignItems(VerticalAlign.Center)
       Text(this.label)
         .height('10vp')
         .fontSize('8fp')
         .fontColor($r('app.color.text_secondary'))
         .maxLines(1)
     }
-    .height('154vp')
+    .height('170vp')
     .justifyContent(FlexAlign.End)
     .alignItems(HorizontalAlign.Center)
     .animation({ duration: 260, curve: Curve.EaseOut })
@@ -532,12 +819,12 @@ struct MetricCard {
     Column({ space: '8vp' }) {
       Row() {
         Text(this.meta.name)
-          .fontSize('13fp')
+          .fontSize('14fp')
           .fontColor($r('app.color.text_secondary'))
           .layoutWeight(1)
           .maxLines(1)
         Text(this.getStateText())
-          .fontSize('10fp')
+          .fontSize('11fp')
           .fontColor(Color.White)
           .fontWeight(FontWeight.Bold)
           .padding({ left: '8vp', right: '8vp', top: '3vp', bottom: '3vp' })
@@ -553,13 +840,13 @@ struct MetricCard {
           .fontWeight(FontWeight.Bold)
           .maxLines(1)
         Text(this.meta.unit)
-          .fontSize('11fp')
+          .fontSize('12fp')
           .fontColor($r('app.color.text_secondary'))
       }
       .alignItems(VerticalAlign.Bottom)
 
       Text(`预警 ${this.meta.name === '光照' ? '<' : '≥'}${this.threshold.warningMax}${this.meta.unit}`)
-        .fontSize('10fp')
+        .fontSize('11fp')
         .fontColor($r('app.color.text_secondary'))
         .maxLines(1)
     }
@@ -609,12 +896,12 @@ struct EnvRuleCard {
     Column({ space: '10vp' }) {
       Row() {
         Text(this.meta.name)
-          .fontSize('16fp')
+          .fontSize('17fp')
           .fontColor($r('app.color.text'))
           .fontWeight(FontWeight.Bold)
           .layoutWeight(1)
         Text(this.meta.unit)
-          .fontSize('11fp')
+          .fontSize('12fp')
           .fontColor($r('app.color.text_secondary'))
           .padding({ left: '8vp', right: '8vp', top: '4vp', bottom: '4vp' })
           .backgroundColor($r('app.color.card_elevated'))
@@ -633,9 +920,9 @@ struct EnvRuleCard {
       .width('100%')
 
       Text(this.suggestion())
-        .fontSize('12fp')
+        .fontSize('13fp')
         .fontColor($r('app.color.text_secondary'))
-        .lineHeight('18fp')
+        .lineHeight('20fp')
     }
     .width('100%')
     .padding('14vp')
@@ -692,11 +979,11 @@ struct RulePill {
   build() {
     Column({ space: '4vp' }) {
       Text(this.label)
-        .fontSize('10fp')
+        .fontSize('11fp')
         .fontColor($r('app.color.text_secondary'))
         .maxLines(1)
       Text(this.value)
-        .fontSize('12fp')
+        .fontSize('13fp')
         .fontColor(this.color)
         .fontWeight(FontWeight.Bold)
         .maxLines(1)
