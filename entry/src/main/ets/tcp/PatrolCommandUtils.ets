@@ -18,6 +18,14 @@ interface SimpleCmdPayload {
   cmd: string;
 }
 
+interface StartRedBottleGuardPayload {
+  cmd: string;
+  threshold_m: number;
+  alarm_duration_s: number;
+  hysteresis_m: number;
+  fail_safe_stop: boolean;
+}
+
 interface DemoCommandReply {
   type: string;
   online: boolean;
@@ -27,17 +35,22 @@ interface DemoCommandReply {
 
 export interface RedBottleDemoStatus {
   type: string;
+  mode: string;
   status: string;
   distance_m: number | null;
   threshold_m: number;
+  hysteresis_m: number;
   speed_mps: number;
   detection: boolean;
   alarm_active: boolean;
+  guard_active: boolean;
+  stop_latched: boolean;
+  event: string;
   message: string;
   updated_at: number;
 }
 
-type PatrolCmdPayload = StartPatrolPayload | SetModePayload | SimpleCmdPayload;
+type PatrolCmdPayload = StartPatrolPayload | SetModePayload | SimpleCmdPayload | StartRedBottleGuardPayload;
 
 /**
  * 向小车端发送 JSON 巡检控制命令
@@ -88,6 +101,32 @@ export class PatrolCommandUtils {
 
   static async emergencyStopRedBottleDemo(): Promise<boolean> {
     const payload: SimpleCmdPayload = { cmd: 'emergency_stop_red_bottle_demo' };
+    return PatrolCommandUtils.sendDemo(payload);
+  }
+
+  static async startRedBottleGuard(
+    thresholdM: number = 0.30,
+    alarmDurationS: number = 3.0,
+    hysteresisM: number = 0.10,
+    failSafeStop: boolean = true
+  ): Promise<boolean> {
+    const payload: StartRedBottleGuardPayload = {
+      cmd: 'start_red_bottle_guard',
+      threshold_m: thresholdM,
+      alarm_duration_s: alarmDurationS,
+      hysteresis_m: hysteresisM,
+      fail_safe_stop: failSafeStop
+    };
+    return PatrolCommandUtils.sendDemo(payload);
+  }
+
+  static async stopRedBottleGuard(): Promise<boolean> {
+    const payload: SimpleCmdPayload = { cmd: 'stop_red_bottle_guard' };
+    return PatrolCommandUtils.sendDemo(payload);
+  }
+
+  static async resetRedBottleLatch(): Promise<boolean> {
+    const payload: SimpleCmdPayload = { cmd: 'reset_red_bottle_latch' };
     return PatrolCommandUtils.sendDemo(payload);
   }
 
@@ -149,12 +188,17 @@ export class PatrolCommandUtils {
   private static defaultRedBottleStatus(message: string): RedBottleDemoStatus {
     return {
       type: 'red_bottle_status',
+      mode: 'idle',
       status: '未启动',
       distance_m: null,
       threshold_m: 0.30,
+      hysteresis_m: 0.10,
       speed_mps: 0.05,
       detection: false,
       alarm_active: false,
+      guard_active: false,
+      stop_latched: false,
+      event: '',
       message: message,
       updated_at: 0
     };
