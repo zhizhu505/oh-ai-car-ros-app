@@ -104,6 +104,10 @@ export interface LidarSnapshot {
   channelStatus: ChannelStatus;
   message: string;
   updateTime: string;
+  avoidanceEnabled: boolean;
+  trackingEnabled: boolean;
+  avoidanceStatus: 'idle' | 'scanning' | 'avoiding' | 'tracking';
+  targetDistance: number;
 }
 
 /** 视觉检测状态 */
@@ -212,7 +216,11 @@ export function createDefaultLidar(): LidarSnapshot {
     rightDistance: 0,
     channelStatus: ChannelStatus.Clear,
     message: '等待数据',
-    updateTime: '-'
+    updateTime: '-',
+    avoidanceEnabled: false,
+    trackingEnabled: false,
+    avoidanceStatus: 'idle',
+    targetDistance: 0
   };
 }
 
