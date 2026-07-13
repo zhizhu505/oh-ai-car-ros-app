@@ -4,7 +4,7 @@ import { PatrolMessageHandler } from '../tcp/PatrolMessageHandler';
 import { PatrolStore } from '../store/PatrolStore';
 import promptAction from '@ohos.promptAction';
 import router from '@ohos.router';
-import { PreferencesUtils } from '../utils/PreferencesUtils';
+import { DEFAULT_CAR_IP, DEFAULT_TCP_PORT, DEFAULT_VIDEO_PORT, PreferencesUtils } from '../utils/PreferencesUtils';
 import { VideoComponents } from '../components/VideoComponents';
 import { ButtonShadow, CardShadow, ElevatedShadow, CardPadding, ButtonRadius } from '../styles/styles';
 import { MyUtils } from '../utils/MyUtils';
@@ -194,9 +194,9 @@ struct LoginComponent {
   TextWidth: Length = '72vp';
   FontSize: Length = '15fp';
   BlankWidth: Length = '10vp';
-  @State ip: string = '172.20.10.2';
-  @State tcpPort: string = '6000';
-  @State videoPort: string = '6500';
+  @State ip: string = DEFAULT_CAR_IP;
+  @State tcpPort: string = DEFAULT_TCP_PORT;
+  @State videoPort: string = DEFAULT_VIDEO_PORT;
   @State connecting: boolean = false;
   connectSuccessRun: () => void = (): void => {
   };

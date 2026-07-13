@@ -50,6 +50,14 @@ export namespace CarEncode {
   }
 
   /**
+   * 关闭蜂鸣器
+   * @returns
+   */
+  export function StopBuzzerEncode(): string {
+    return BaseEncode('13', '00');
+  }
+
+  /**
    * 车辆控制编码
    * @param speed_x -100 ~ 100
    * @param speed_y -100 ~ 100

@@ -5,6 +5,8 @@ import { PatrolStore } from '../store/PatrolStore';
 import { levelColor } from '../utils/PatrolUiUtils';
 import { queryAlarmQuestion } from '../utils/DeepSeekUtil';
 import { CardShadow, ElevatedShadow } from '../styles/styles';
+import { carApi } from '../CarUtill/CarApi';
+import { CarEncode } from '../CarUtill/CarEncode';
 
 export class ChatItem {
   id: string = '';
@@ -194,6 +196,18 @@ struct AlertRecords {
       }
       .layoutWeight(1)
       .alignItems(HorizontalAlign.Start)
+
+      Button('停止蜂鸣')
+        .width('78vp')
+        .height('32vp')
+        .fontSize('11fp')
+        .fontColor($r('app.color.text_on_accent'))
+        .backgroundColor($r('app.color.alert_critical'))
+        .borderRadius('16vp')
+        .onClick((): void => {
+          carApi.send(CarEncode.StopBuzzerEncode());
+          promptAction.showToast({ message: '已发送停止蜂鸣指令' });
+        })
 
       Button('清空')
         .width('62vp')

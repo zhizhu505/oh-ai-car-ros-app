@@ -1,5 +1,9 @@
 import preferences from '@ohos.data.preferences';
 
+export const DEFAULT_CAR_IP = '192.168.43.5';
+export const DEFAULT_TCP_PORT = '6000';
+export const DEFAULT_VIDEO_PORT = '6500';
+
 /**首选项对象*/
 export class PreferencesUtils {
   /**私有静态实例，懒汉式单例*/
@@ -65,9 +69,9 @@ export class NetInfoPreferencesUtils {
 
   getIP(): Promise<preferences.ValueType> {
     if (!this.pref) {
-      return Promise.resolve('172.20.10.2')
+      return Promise.resolve(DEFAULT_CAR_IP)
     }
-    return this.pref.get(NetInfoPreferencesUtils.KEY_IP, '172.20.10.2')
+    return this.pref.get(NetInfoPreferencesUtils.KEY_IP, DEFAULT_CAR_IP)
   }
 
   setIp(v: string): void {
@@ -81,9 +85,9 @@ export class NetInfoPreferencesUtils {
 
   getTcpPort(): Promise<preferences.ValueType> {
     if (!this.pref) {
-      return Promise.resolve('6000')
+      return Promise.resolve(DEFAULT_TCP_PORT)
     }
-    return this.pref.get(NetInfoPreferencesUtils.KEY_TCP_PORT, '6000')
+    return this.pref.get(NetInfoPreferencesUtils.KEY_TCP_PORT, DEFAULT_TCP_PORT)
   }
 
   setTcpPort(v: string): void {
@@ -104,9 +108,9 @@ export class NetInfoPreferencesUtils {
 
   getVideoPort(): Promise<preferences.ValueType> {
     if (!this.pref) {
-      return Promise.resolve('6500')
+      return Promise.resolve(DEFAULT_VIDEO_PORT)
     }
-    return this.pref.get(NetInfoPreferencesUtils.KEY_VIDEO_PORT, '6500')
+    return this.pref.get(NetInfoPreferencesUtils.KEY_VIDEO_PORT, DEFAULT_VIDEO_PORT)
   }
 }
 

@@ -8,6 +8,7 @@ import { VideoComponents } from '../components/VideoComponents';
 import { AlertRecord, AlertLevel, PatrolStatus, patrolStatusText } from '../model/PatrolModels';
 import { CardShadow, CardShadowHover, ElevatedShadow } from '../styles/styles';
 import { onlineColor } from '../utils/PatrolUiUtils';
+import { DEFAULT_CAR_IP, DEFAULT_TCP_PORT, DEFAULT_VIDEO_PORT } from '../utils/PreferencesUtils';
 
 @Entry
 @Component
@@ -513,9 +514,9 @@ struct AlertPreviewCard {
 
 @Component
 struct ConnectCarOverlay {
-  @State ip: string = '172.20.10.2';
-  @State tcpPort: string = '6000';
-  @State videoPort: string = '6500';
+  @State ip: string = DEFAULT_CAR_IP;
+  @State tcpPort: string = DEFAULT_TCP_PORT;
+  @State videoPort: string = DEFAULT_VIDEO_PORT;
   @State connecting: boolean = false;
   onClose: () => void = (): void => {};
   onConnected: () => void = (): void => {};
