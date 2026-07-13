@@ -176,6 +176,32 @@ export class PatrolStore {
     this.notify();
   }
 
+  addVisionLog(message: string, point: string = '视觉AI', isAlert: boolean = false): void {
+    const now = new Date();
+    const hour = now.getHours().toString().padStart(2, '0');
+    const minute = now.getMinutes().toString().padStart(2, '0');
+    const second = now.getSeconds().toString().padStart(2, '0');
+    this.visionLogs.unshift({
+      time: `${hour}:${minute}:${second}`,
+      point: point,
+      message: message,
+      personDetected: false,
+      boxInChannel: isAlert
+    });
+    if (this.visionLogs.length > 80) {
+      this.visionLogs.pop();
+    }
+    this.vision = {
+      point: point,
+      personDetected: false,
+      boxInChannel: isAlert,
+      message: message,
+      imageUrl: this.vision.imageUrl,
+      updateTime: `${hour}:${minute}:${second}`
+    };
+    this.notify();
+  }
+
   addAlert(record: AlertRecord): void {
     this.alerts.unshift(record);
     if (this.alerts.length > 100) {

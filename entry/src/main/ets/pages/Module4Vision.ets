@@ -10,6 +10,7 @@ import { VideoComponents } from '../components/VideoComponents';
 import { CardShadow } from '../styles/styles';
 import { carApi } from '../CarUtill/CarApi';
 import { CarEncode } from '../CarUtill/CarEncode';
+import { PatrolCommandUtils, RedBottleDemoStatus } from '../tcp/PatrolCommandUtils';
 import promptAction from '@ohos.promptAction';
 
 @Entry
@@ -23,7 +24,18 @@ struct Module4Vision {
   @State imageUrl: string = '';
   @State updateTime: string = '-';
   @State visionLogs: VisionLogRecord[] = [];
+  @State demoStarting: boolean = false;
+  @State demoStopping: boolean = false;
+  @State demoEmergencyStopping: boolean = false;
+  @State redBottleStatus: string = '未启动';
+  @State redBottleDistance: string = '--';
+  @State redBottleThreshold: string = '0.30m';
+  @State redBottleSpeed: string = '0.05m/s';
+  @State redBottleAlarmActive: boolean = false;
+  @State redBottleDetected: boolean = false;
+  @State redBottleMessage: string = '等待状态同步';
   private tabs: string[] = ['实时数据', '阈值规则', '异常记录'];
+  private redBottleStatusTimer: number = -1;
   private refreshHandler: () => void = (): void => {
     this.refreshData();
   };
@@ -31,10 +43,12 @@ struct Module4Vision {
   aboutToAppear(): void {
     this.refreshData();
     PatrolStore.getInstance().subscribe(this.refreshHandler);
+    this.startRedBottleStatusPolling();
   }
 
   aboutToDisappear(): void {
     PatrolStore.getInstance().unsubscribe(this.refreshHandler);
+    this.stopRedBottleStatusPolling();
   }
 
   refreshData(): void {
@@ -153,9 +167,82 @@ struct Module4Vision {
               .borderRadius('17vp')
               .onClick((): void => {
                 carApi.send(CarEncode.StopBuzzerEncode());
+                PatrolCommandUtils.stopBuzzer();
+                PatrolStore.getInstance().addVisionLog('已发送停止蜂鸣指令');
                 promptAction.showToast({ message: '已发送停止蜂鸣指令' });
               })
+            Row({ space: '8vp' }) {
+              Button(this.demoStarting ? '启动中' : '启动红瓶停车演示')
+                .layoutWeight(1)
+                .height('36vp')
+                .fontSize('12fp')
+                .fontColor($r('app.color.text_on_accent'))
+                .backgroundColor(this.demoStarting ? $r('app.color.button_disabled') : $r('app.color.module4_accent'))
+                .borderRadius('18vp')
+                .enabled(!this.demoStarting)
+                .onClick((): void => {
+                  this.startRedBottleDemo();
+                })
+              Button(this.demoStopping ? '停止中' : '停止演示')
+                .layoutWeight(1)
+                .height('36vp')
+                .fontSize('12fp')
+                .fontColor($r('app.color.text'))
+                .backgroundColor($r('app.color.card_elevated'))
+                .borderRadius('18vp')
+                .enabled(!this.demoStopping)
+                .onClick((): void => {
+                  this.stopRedBottleDemo();
+                })
+            }
+            Button(this.demoEmergencyStopping ? '急停中' : '紧急停车 / 关蜂鸣')
+              .height('42vp')
+              .fontSize('14fp')
+              .fontWeight(FontWeight.Bold)
+              .fontColor($r('app.color.text_on_accent'))
+              .backgroundColor($r('app.color.alert_critical'))
+              .borderRadius('21vp')
+              .enabled(!this.demoEmergencyStopping)
+              .onClick((): void => {
+                this.emergencyStopRedBottleDemo();
+              })
           }
+        }
+      }
+      .padding({ left: '14vp', right: '14vp' })
+
+      Column() {
+        InfoCard({ title: '红瓶演示运行状态' }) {
+          Column({ space: '8vp' }) {
+            Row({ space: '8vp' }) {
+              Text(this.redBottleStatus)
+                .fontSize('16fp')
+                .fontWeight(FontWeight.Bold)
+                .fontColor(Color.White)
+                .backgroundColor(this.redBottleAlarmActive ? $r('app.color.alert_critical') : $r('app.color.module4_accent'))
+                .padding({ left: '12vp', right: '12vp', top: '7vp', bottom: '7vp' })
+                .borderRadius('14vp')
+              Text(this.redBottleDetected ? '已识别红瓶' : '未识别红瓶')
+                .fontSize('12fp')
+                .fontColor(this.redBottleDetected ? $r('app.color.status_active') : $r('app.color.text_secondary'))
+                .layoutWeight(1)
+                .textAlign(TextAlign.End)
+            }
+            Row({ space: '8vp' }) {
+              RedBottleMetricCard({ label: '当前距离', value: this.redBottleDistance })
+                .layoutWeight(1)
+              RedBottleMetricCard({ label: '停止阈值', value: this.redBottleThreshold })
+                .layoutWeight(1)
+              RedBottleMetricCard({ label: '演示速度', value: this.redBottleSpeed })
+                .layoutWeight(1)
+            }
+            Text(this.redBottleMessage)
+              .fontSize('12fp')
+              .fontColor($r('app.color.text_secondary'))
+              .maxLines(2)
+              .textOverflow({ overflow: TextOverflow.Ellipsis })
+          }
+          .width('100%')
         }
       }
       .padding({ left: '14vp', right: '14vp' })
@@ -237,6 +324,101 @@ struct Module4Vision {
     .padding({ left: '14vp', right: '14vp', top: '12vp' })
     .width('100%')
   }
+
+  private async startRedBottleDemo(): Promise<void> {
+    this.demoStarting = true;
+    this.redBottleStatus = '启动中';
+    PatrolStore.getInstance().addVisionLog('正在启动红瓶停车演示：0.05m/s，0.30m停车，蜂鸣3秒');
+    const ok = await PatrolCommandUtils.startRedBottleDemo();
+    this.demoStarting = false;
+    PatrolStore.getInstance().addVisionLog(ok ? '红瓶停车演示启动命令已发送' : '红瓶停车演示启动命令发送失败', '视觉AI', !ok);
+    promptAction.showToast({ message: ok ? '红瓶停车演示已启动' : '启动命令发送失败，请检查连接' });
+    this.pollRedBottleStatus();
+  }
+
+  private async stopRedBottleDemo(): Promise<void> {
+    this.demoStopping = true;
+    PatrolStore.getInstance().addVisionLog('正在停止红瓶停车演示');
+    const ok = await PatrolCommandUtils.stopRedBottleDemo();
+    await PatrolCommandUtils.stopBuzzer();
+    this.demoStopping = false;
+    PatrolStore.getInstance().addVisionLog(ok ? '红瓶停车演示已停止，已补发停车和关蜂鸣' : '红瓶停车演示停止命令发送失败', '视觉AI', !ok);
+    promptAction.showToast({ message: ok ? '红瓶停车演示已停止' : '停止命令发送失败，请检查连接' });
+    this.pollRedBottleStatus();
+  }
+
+  private async emergencyStopRedBottleDemo(): Promise<void> {
+    this.demoEmergencyStopping = true;
+    this.redBottleStatus = '已停止';
+    PatrolStore.getInstance().addVisionLog('紧急停车：连续发送停车和关蜂鸣指令', '视觉AI', true);
+    carApi.send(CarEncode.StopBuzzerEncode());
+    const ok = await PatrolCommandUtils.emergencyStopRedBottleDemo();
+    await PatrolCommandUtils.stopBuzzer();
+    this.demoEmergencyStopping = false;
+    PatrolStore.getInstance().addVisionLog(ok ? '紧急停车/关蜂鸣已执行' : '紧急停车命令发送失败，请检查连接', '视觉AI', !ok);
+    promptAction.showToast({ message: ok ? '已执行紧急停车/关蜂鸣' : '急停命令发送失败' });
+    this.pollRedBottleStatus();
+  }
+
+  private startRedBottleStatusPolling(): void {
+    this.pollRedBottleStatus();
+    if (this.redBottleStatusTimer !== -1) {
+      clearInterval(this.redBottleStatusTimer);
+    }
+    this.redBottleStatusTimer = setInterval((): void => {
+      this.pollRedBottleStatus();
+    }, 2000);
+  }
+
+  private stopRedBottleStatusPolling(): void {
+    if (this.redBottleStatusTimer !== -1) {
+      clearInterval(this.redBottleStatusTimer);
+      this.redBottleStatusTimer = -1;
+    }
+  }
+
+  private async pollRedBottleStatus(): Promise<void> {
+    const status: RedBottleDemoStatus = await PatrolCommandUtils.getRedBottleStatus();
+    this.redBottleStatus = status.status;
+    this.redBottleDistance = this.formatMeters(status.distance_m);
+    this.redBottleThreshold = this.formatMeters(status.threshold_m);
+    this.redBottleSpeed = `${status.speed_mps.toFixed(2)}m/s`;
+    this.redBottleAlarmActive = status.alarm_active;
+    this.redBottleDetected = status.detection;
+    this.redBottleMessage = status.message;
+  }
+
+  private formatMeters(value: number | null): string {
+    if (value === null || value < 0) {
+      return '--';
+    }
+    return `${value.toFixed(2)}m`;
+  }
+}
+
+@Component
+struct RedBottleMetricCard {
+  @Prop label: string = '';
+  @Prop value: string = '';
+
+  build() {
+    Column({ space: '4vp' }) {
+      Text(this.label)
+        .fontSize('11fp')
+        .fontColor($r('app.color.text_secondary'))
+        .maxLines(1)
+      Text(this.value)
+        .fontSize('14fp')
+        .fontColor($r('app.color.text'))
+        .fontWeight(FontWeight.Medium)
+        .maxLines(1)
+        .textOverflow({ overflow: TextOverflow.Ellipsis })
+    }
+    .width('100%')
+    .padding({ left: '8vp', right: '8vp', top: '8vp', bottom: '8vp' })
+    .backgroundColor($r('app.color.card_elevated'))
+    .borderRadius('10vp')
+  }
 }
 
 @Component
@@ -285,6 +467,7 @@ struct VisionLogItem {
     .backgroundColor($r('app.color.card_elevated'))
     .borderRadius('8vp')
   }
+
 }
 
 @Component
