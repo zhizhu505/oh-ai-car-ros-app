@@ -60,20 +60,13 @@ export class TCPClientManager {
    * @returns 是否连接成功
    */
   public async connect() {
-
-    // 异步函数，用来获取当前连接状态
-    let isConnect = await this.isConnect()
-
-    // 如果当前是连接成功的，那么先断开连接
-    if (isConnect == true) {
+    const wasConnected = await this.isConnect();
+    if (wasConnected) {
       this.socket.close();
-      // this.socket = undefined;
     }
 
     this.socket = socket.constructTCPSocketInstance();
     try {
-      // 绑定本机IP地址（在3.2R）
-      await this.socket.bind({ address: '0.0.0.0', family: 1 })
       // 绑定目标服务端IP地址
       await this.socket.connect(this.options)
       this.showInfo(`连接成功`)
@@ -131,9 +124,6 @@ export class TCPClientManager {
       console.error(TAG, 'getState failed', JSON.stringify(e))
       return false;
     }
-    console.log(TAG, `isConnect`,
-      `state = ${state == undefined} `)
-
     console.log(TAG, `isConnect`,
       `isClose = ${state.isClose} ` +
         `isConnected = ${state.isConnected}`)

@@ -30,6 +30,7 @@ export class PatrolStore {
   private static instance: PatrolStore;
   private listeners: StoreListener[] = [];
   private alertIdSeed: number = 1;
+  private lastLidarAlertSignature: string = '';
 
   env: EnvSnapshot = createDefaultEnv();
   envHistory: EnvHistoryRecord[] = [];
@@ -145,6 +146,7 @@ export class PatrolStore {
   updateLidar(data: LidarSnapshot): void {
     this.lidar = data;
     this.vehicle.lidarStatus = data.channelStatus;
+    this.syncLidarAlert(data);
     this.notify();
   }
 
@@ -263,7 +265,31 @@ export class PatrolStore {
   }
 
   getAlertsByCategory(category: string): AlertRecord[] {
-    return this.alerts.filter((item: AlertRecord): boolean => item.category === category);
+    return this.alerts.filter((item: AlertRecord): boolean => {
+      return item.category === category || item.category.startsWith(`${category}_`);
+    });
+  }
+
+  private syncLidarAlert(data: LidarSnapshot): void {
+    if (data.channelStatus === ChannelStatus.Clear) {
+      this.lastLidarAlertSignature = '';
+      return;
+    }
+    let category: string = 'lidar_dynamic';
+    let level: AlertLevel = AlertLevel.Warning;
+    if (data.channelStatus === ChannelStatus.Blocked) {
+      category = 'lidar_block';
+      level = AlertLevel.Critical;
+    } else if (data.channelStatus === ChannelStatus.Occupied) {
+      category = 'lidar_occupied';
+      level = AlertLevel.Critical;
+    }
+    const signature = `${data.point}|${data.channelStatus}|${data.message}`;
+    if (signature === this.lastLidarAlertSignature) {
+      return;
+    }
+    this.lastLidarAlertSignature = signature;
+    this.createAlert(data.updateTime, data.point, category, data.message, level);
   }
 
   private syncPatrolPoints(): void {
