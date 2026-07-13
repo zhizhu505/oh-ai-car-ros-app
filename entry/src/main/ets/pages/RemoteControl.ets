@@ -3,6 +3,7 @@ import { carApi } from '../CarUtill/CarApi';
 import { CarEncode } from '../CarUtill/CarEncode';
 import { CarDirection } from '../CarUtill/CarEnum';
 import { CarRockerComponents } from '../components/CarRockerComponents';
+import { CarBtnComponents } from '../components/CarBtnComponents';
 import { VideoComponents } from '../components/VideoComponents';
 import { ButtonShadow, CardShadow } from '../styles/styles';
 import promptAction from '@ohos.promptAction';
@@ -20,6 +21,8 @@ struct RemoteControl {
   @State R2Value: number = 0;
   @State scrollEnabled: boolean = true;
   @State advancedExpanded: boolean = false;
+  @State controlMode: string = 'rocker';
+  @State controlSpeed: number = 45;
 
   aboutToAppear(): void {
     ScreenUtils.setLandscape(getContext());
@@ -36,9 +39,11 @@ struct RemoteControl {
 
         Row({ space: '10vp' }) {
           Column() {
-            ControlPanel({ title: '摇杆控制' }) {
-              Column({ space: '8vp' }) {
+            ControlPanel({ title: '' }) {
+              Column({ space: '7vp' }) {
                 Row({ space: '10vp' }) {
+                  this.ControlModeSwitchButton()
+
                   Toggle({ type: ToggleType.Switch, isOn: this.autoTracking })
                     .selectedColor($r('app.color.button_primary'))
                     .switchPointColor(Color.White)
@@ -49,27 +54,47 @@ struct RemoteControl {
                   Text('自动循迹')
                     .fontSize('12fp')
                     .fontColor($r('app.color.text_secondary'))
-                  Blank()
+                    .maxLines(1)
+                    .textOverflow({ overflow: TextOverflow.Ellipsis })
+
                   Button('急停')
-                    .width('70vp')
-                    .height('34vp')
+                    .width('66vp')
+                    .height('32vp')
                     .fontSize('12fp')
                     .fontColor(Color.White)
                     .backgroundColor($r('app.color.alert_critical'))
-                    .borderRadius('17vp')
+                    .borderRadius('16vp')
                     .onClick((): void => {
                       carApi.send(CarEncode.ButtonCarEncode(CarDirection.Stop));
                       this.resetAll();
                     })
+
+                  Blank()
                 }
                 .width('100%')
                 .height('38vp')
                 .alignItems(VerticalAlign.Center)
 
+                Row({ space: '12vp' }) {
+                  this.SpeedButton('慢速', 25)
+                  this.SpeedButton('中速', 45)
+                  this.SpeedButton('快速', 70)
+                }
+                .width('100%')
+                .height('32vp')
+                .justifyContent(FlexAlign.Center)
+                .alignItems(VerticalAlign.Center)
+
                 Stack() {
-                  CarRockerComponents()
-                    .width('190vp')
-                    .height('190vp')
+                  if (this.controlMode === 'rocker') {
+                    CarRockerComponents({ speedValue: this.controlSpeed })
+                      .width('190vp')
+                      .height('190vp')
+                  } else {
+                    CarBtnComponents({ speedValue: this.controlSpeed })
+                      .width('250vp')
+                      .height('195vp')
+                  }
                 }
                 .width('100%')
                 .layoutWeight(1)
@@ -279,6 +304,41 @@ struct RemoteControl {
     this.R2Value = r2;
     this.sendSpeed();
   }
+
+  setControlSpeed(speed: number): void {
+    this.controlSpeed = speed;
+  }
+
+  @Builder
+  SpeedButton(title: string, speed: number) {
+    Button(title)
+      .width('64vp')
+      .height('30vp')
+      .fontSize('11fp')
+      .fontColor(this.controlSpeed === speed ? Color.White : $r('app.color.text'))
+      .backgroundColor(this.controlSpeed === speed ? $r('app.color.button_primary') : $r('app.color.button_secondary'))
+      .borderRadius('15vp')
+      .padding({ left: '4vp', right: '4vp' })
+      .onClick((): void => {
+        this.setControlSpeed(speed);
+      })
+  }
+
+  @Builder
+  ControlModeSwitchButton() {
+    Button(this.controlMode === 'rocker' ? '按键控制' : '摇杆控制')
+      .width('76vp')
+      .height('32vp')
+      .fontSize('11fp')
+      .fontColor(Color.White)
+      .backgroundColor($r('app.color.button_primary'))
+      .borderRadius('16vp')
+      .padding({ left: '4vp', right: '4vp' })
+      .onClick((): void => {
+        this.resetAll();
+        this.controlMode = this.controlMode === 'rocker' ? 'button' : 'rocker';
+      })
+  }
 }
 
 @Component
@@ -293,13 +353,15 @@ struct ControlPanel {
 
   build() {
     Column({ space: '6vp' }) {
-      Text(this.title)
-        .fontSize('14fp')
-        .fontColor($r('app.color.text'))
-        .fontWeight(FontWeight.Bold)
-        .width('100%')
-        .maxLines(1)
-        .textOverflow({ overflow: TextOverflow.Ellipsis })
+      if (this.title !== '') {
+        Text(this.title)
+          .fontSize('14fp')
+          .fontColor($r('app.color.text'))
+          .fontWeight(FontWeight.Bold)
+          .width('100%')
+          .maxLines(1)
+          .textOverflow({ overflow: TextOverflow.Ellipsis })
+      }
 
       Column() {
         this.content()
