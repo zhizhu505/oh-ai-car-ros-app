@@ -166,6 +166,84 @@ export class TCPClientManager {
 
   }
 
+  public async sendMessageToPort(port: number, message: string) {
+    const tempSocket = socket.constructTCPSocketInstance();
+    try {
+      await tempSocket.bind({ address: '0.0.0.0', family: 1 })
+      await tempSocket.connect({
+        address: {
+          address: this.options.address.address,
+          family: this.options.address.family,
+          port: port
+        },
+        timeout: 3000
+      })
+      await tempSocket.send({ data: message })
+      tempSocket.close();
+      return true;
+    } catch (e) {
+      console.error(TAG, 'sendMessageToPort failed', JSON.stringify(e))
+      tempSocket.close();
+      return false;
+    }
+  }
+
+  public async requestMessageFromPort(port: number, message: string): Promise<string> {
+    const tempSocket = socket.constructTCPSocketInstance();
+    let finished: boolean = false;
+    try {
+      await tempSocket.bind({ address: '0.0.0.0', family: 1 })
+      await tempSocket.connect({
+        address: {
+          address: this.options.address.address,
+          family: this.options.address.family,
+          port: port
+        },
+        timeout: 3000
+      })
+
+      const responsePromise: Promise<string> = new Promise((resolve, reject): void => {
+        const timer: number = setTimeout((): void => {
+          if (finished) {
+            return;
+          }
+          finished = true;
+          tempSocket.close();
+          reject(new Error('request timeout'));
+        }, 3000);
+
+        tempSocket.on('message', (value: SocketInfo): void => {
+          if (finished) {
+            return;
+          }
+          finished = true;
+          clearTimeout(timer);
+          const messageView = TCPClientManager.bufferToString(value.message);
+          tempSocket.close();
+          resolve(messageView);
+        })
+
+        tempSocket.on('close', (): void => {
+          if (finished) {
+            return;
+          }
+          finished = true;
+          clearTimeout(timer);
+          reject(new Error('socket closed'));
+        })
+      });
+
+      await tempSocket.send({ data: message })
+      return await responsePromise;
+    } catch (e) {
+      console.error(TAG, 'requestMessageFromPort failed', JSON.stringify(e))
+      if (!finished) {
+        tempSocket.close();
+      }
+      return '';
+    }
+  }
+
   /**关闭连接*/
   public closeConnection() {
     this.socket.close()
@@ -183,6 +261,15 @@ export class TCPClientManager {
   /**接收数据*/
   private static _receiveMessage = (message: string) => {
   };
+
+  private static bufferToString(buffer: ArrayBuffer): string {
+    let messageView = '';
+    const uint8Array = new Uint8Array(buffer);
+    for (let i: number = 0; i < buffer.byteLength; i++) {
+      messageView += String.fromCharCode(uint8Array[i]);
+    }
+    return messageView;
+  }
 
   /** 接收数据的setder */
   public static set receiveMessage(value: (message: string) => void) {
