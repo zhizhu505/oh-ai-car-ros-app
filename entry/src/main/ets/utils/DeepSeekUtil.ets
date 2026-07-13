@@ -97,7 +97,7 @@ export async function chat(sysPrompt: string, userInput: string): Promise<string
 }
 
 export async function analyzeAlarm(alarmJsonStr: string): Promise<AiAnalysisResult> {
-  const prompt = `你是仓储巡检告警专家，仅输出标准JSON，禁止多余文字。输出三个字段：summary：一句话概括异常；risk：仓储对应安全风险；solve：数组，3条分步处置操作。告警数据：${alarmJsonStr}`;
+  const prompt = `你是地下管廊巡检告警专家，仅输出标准JSON，禁止多余文字。输出三个字段：summary：一句话概括异常；risk：地下管廊对应安全风险；solve：数组，3条分步处置操作。告警数据：${alarmJsonStr}`;
   const result = await chat(prompt, alarmJsonStr);
   try {
     const cleanResult = cleanMarkdownCodeBlock(result);
@@ -114,7 +114,7 @@ export async function analyzeAlarm(alarmJsonStr: string): Promise<AiAnalysisResu
 }
 
 export async function queryAlarmQuestion(alarmJsonStr: string, question: string): Promise<string> {
-  const prompt = "结合下方仓储告警数据，简短专业回答用户巡检相关问题，适配手机展示";
+  const prompt = "结合下方地下管廊告警数据，简短专业回答用户巡检相关问题，适配手机展示";
   const input = `告警信息：${alarmJsonStr}\n用户问题：${question}`;
   const result = await chat(prompt, input);
   return cleanMarkdownCodeBlock(result);

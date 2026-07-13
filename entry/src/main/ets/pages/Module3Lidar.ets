@@ -53,7 +53,7 @@ struct Module3Lidar {
         tabs: this.tabs,
         accentColor: $r('app.color.module3_accent'),
         title: '激光雷达',
-        subtitle: '前方扇区、左右货架距离与通道占用检测'
+        subtitle: '距离检测与通道占用'
       })
 
       Scroll() {
@@ -142,15 +142,15 @@ struct Module3Lidar {
 
       Row({ space: '10vp' }) {
         DistanceCard({ title: '前方扇区', distance: this.frontDistance, threshold: 0.8, icon: '⬆️' })
-        DistanceCard({ title: '左侧货架', distance: this.leftDistance, threshold: 0.5, icon: '⬅️' })
-        DistanceCard({ title: '右侧货架', distance: this.rightDistance, threshold: 0.5, icon: '➡️' })
+        DistanceCard({ title: '左侧管线', distance: this.leftDistance, threshold: 0.5, icon: '⬅️' })
+        DistanceCard({ title: '右侧管线', distance: this.rightDistance, threshold: 0.5, icon: '➡️' })
       }
       .padding({ left: '14vp', right: '14vp' })
 
       InfoCard({ title: '占用状态分类' }) {
         Column({ space: '6vp' }) {
           StatusItem({ label: '短时障碍', desc: '人员经过，减速观察', icon: '👤' })
-          StatusItem({ label: '长时障碍', desc: '货物堆放异常，触发告警', icon: '📦' })
+          StatusItem({ label: '长时障碍', desc: '杂物堆放异常，触发告警', icon: '📦' })
           StatusItem({ label: '通道堵塞', desc: '无法通行，停车等待', icon: '🚧' })
         }
       }
@@ -165,10 +165,10 @@ struct Module3Lidar {
       RuleCard({ title: '前方 0.8m 内有障碍', action: '减速通行', level: 'warning' })
       RuleCard({ title: '前方 0.4m 内有障碍', action: '立即停车', level: 'critical' })
       RuleCard({ title: '持续 5 秒有障碍', action: '通道占用告警', level: 'critical' })
-      RuleCard({ title: '左右货架距离偏差', action: '调整居中行驶', level: 'normal' })
+      RuleCard({ title: '左右管线距离偏差', action: '调整居中行驶', level: 'normal' })
       RuleCard({ title: '危险品区域移动目标', action: '警戒区域报警', level: 'critical' })
       InfoCard({ title: '检测区域' }) {
-        Text('前方扇区 + 左侧货架距离 + 右侧货架距离')
+        Text('前方扇区 + 左侧管线距离 + 右侧管线距离')
           .fontSize('13fp')
           .fontColor($r('app.color.text'))
           .width('100%')

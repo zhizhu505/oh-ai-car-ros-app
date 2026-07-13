@@ -49,7 +49,7 @@ struct Module4Vision {
         tabs: this.tabs,
         accentColor: $r('app.color.module4_accent'),
         title: '视觉识别',
-        subtitle: '人员闯入、货物占道、异常截图与识别规则'
+        subtitle: '人员杂物识别与截图'
       })
 
       Scroll() {
@@ -110,7 +110,7 @@ struct Module4Vision {
                 title: '通道占道',
                 detected: this.boxInChannel,
                 normalText: '通道畅通',
-                alertText: '检测到箱子占道！'
+                alertText: '检测到杂物占道！'
               })
               .layoutWeight(1)
             }
@@ -153,22 +153,22 @@ struct Module4Vision {
     Column({ space: '12vp' }) {
       VisionRuleCard({
         title: '人员闯入检测',
-        rule: 'YOLOv5 检测 person 类，出现在禁入区或货架通道内即报警',
+        rule: 'YOLOv5 检测 person 类，出现在禁入区或管廊通道内即报警',
         icon: '👤'
       })
       VisionRuleCard({
-        title: '货物占道检测',
-        rule: '检测框进入通道区域判定为货物越界',
+        title: '杂物占道检测',
+        rule: '检测框进入通道区域判定为杂物越界',
         icon: '📦'
       })
       VisionRuleCard({
-        title: '货物摆放异常',
-        rule: '货箱偏移、倒下、越界到通道、货架空位',
+        title: '杂物堆放异常',
+        rule: '杂物偏移、倒下或越界到管廊通道',
         icon: '📥'
       })
       VisionRuleCard({
-        title: '目标货物识别',
-        rule: '识别指定标签、颜色、二维码、货箱类型',
+        title: '目标设备识别',
+        rule: '识别设备标签、颜色、二维码与巡检标识',
         icon: '🏷️'
       })
       VisionRuleCard({
@@ -177,7 +177,7 @@ struct Module4Vision {
         icon: '📐'
       })
       InfoCard({ title: '最小落地版本' }) {
-        Text('人员闯入 + 箱子占道检测')
+        Text('人员闯入 + 杂物占道检测')
           .fontSize('13fp')
           .fontColor($r('app.color.alert_warning'))
           .width('100%')

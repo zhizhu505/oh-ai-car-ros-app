@@ -115,7 +115,7 @@ export interface VehicleSnapshot {
   message: string;
 }
 
-/** 仓库环境阈值 */
+/** 地下管廊环境阈值 */
 export interface EnvThreshold {
   name: string;
   unit: string;
@@ -126,11 +126,11 @@ export interface EnvThreshold {
 }
 
 export const DEFAULT_PATROL_POINTS: PatrolPoint[] = [
-  { id: 'P1', name: '仓库入口', visited: false, abnormal: false },
-  { id: 'P2', name: 'A区货架左侧', visited: false, abnormal: false },
-  { id: 'P3', name: 'A区货架右侧', visited: false, abnormal: false },
-  { id: 'P4', name: 'B区货架', visited: false, abnormal: false },
-  { id: 'P5', name: '危险品区域', visited: false, abnormal: false },
+  { id: 'P1', name: '管廊入口', visited: false, abnormal: false },
+  { id: 'P2', name: 'A区管线左侧', visited: false, abnormal: false },
+  { id: 'P3', name: 'A区管线右侧', visited: false, abnormal: false },
+  { id: 'P4', name: 'B区设备段', visited: false, abnormal: false },
+  { id: 'P5', name: '高风险设备区', visited: false, abnormal: false },
   { id: 'P6', name: '返回起点', visited: false, abnormal: false }
 ];
 

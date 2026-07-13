@@ -58,7 +58,7 @@ struct Module2Navigation {
         tabs: this.tabs,
         accentColor: $r('app.color.module2_accent'),
         title: 'SLAM导航',
-        subtitle: '巡检路线、点位进度、导航策略与控制规则'
+        subtitle: '路线巡检与点位进度'
       })
 
       Scroll() {
@@ -182,7 +182,7 @@ struct Module2Navigation {
             .fontColor($r('app.color.text'))
             .maxLines(2)
             .textOverflow({ overflow: TextOverflow.Ellipsis })
-          Text(`当前路线：${this.route}`)
+          Text(`当前路线：${this.route === 'warehouse_B' ? '管廊支线' : '管廊主线'}`)
             .fontSize('13fp')
             .fontColor($r('app.color.text_secondary'))
             .maxLines(1)
@@ -193,7 +193,7 @@ struct Module2Navigation {
       InfoCard({ title: '导航策略' }) {
         Column({ space: '6vp' }) {
           StrategyItem({ icon: '📏', text: '窄通道自动降速' })
-          StrategyItem({ icon: '🛡️', text: '靠近货架保持安全距离' })
+          StrategyItem({ icon: '🛡️', text: '靠近管线保持安全距离' })
           StrategyItem({ icon: '🔄', text: '导航失败重新规划或跳过' })
           StrategyItem({ icon: '📸', text: '到点停留采集环境/视觉数据' })
         }

@@ -51,18 +51,19 @@ struct RemoteControl {
                     .fontColor($r('app.color.text_secondary'))
                   Blank()
                   Button('急停')
-                    .height('36vp')
+                    .width('70vp')
+                    .height('34vp')
                     .fontSize('12fp')
                     .fontColor(Color.White)
                     .backgroundColor($r('app.color.alert_critical'))
-                    .borderRadius('18vp')
+                    .borderRadius('17vp')
                     .onClick((): void => {
                       carApi.send(CarEncode.ButtonCarEncode(CarDirection.Stop));
                       this.resetAll();
                     })
                 }
                 .width('100%')
-                .height('30vp')
+                .height('38vp')
                 .alignItems(VerticalAlign.Center)
 
                 Stack() {
@@ -247,13 +248,13 @@ struct RemoteControl {
       .height('36vp')
     }
     .width('70%')
-    .height('216vp')
-    .padding({ left: '12vp', right: '12vp', top: '10vp', bottom: '12vp' })
+    .height('250vp')
+    .padding({ left: '14vp', right: '14vp', top: '12vp', bottom: '14vp' })
     .backgroundColor($r('app.color.card_background'))
-    .borderRadius('12vp')
+    .borderRadius('14vp')
     .border({ width: '1vp', color: $r('app.color.divider') })
     .shadow(CardShadow)
-    .position({ x: '28%', y: '62vp' })
+    .position({ x: '28%', y: '58vp' })
     .zIndex(10)
   }
 

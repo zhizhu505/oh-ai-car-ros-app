@@ -22,7 +22,7 @@ import { analyzeAlarm } from '../utils/DeepSeekUtil';
 type StoreListener = () => void;
 
 /**
- * 仓储巡检全局状态
+ * 地下管廊巡检全局状态
  */
 export class PatrolStore {
   private static instance: PatrolStore;

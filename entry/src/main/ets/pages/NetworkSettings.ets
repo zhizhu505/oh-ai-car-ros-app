@@ -42,7 +42,7 @@ struct NetworkSettings {
               FlowStep({ step: '01', text: '环境感知 · 温湿度/烟雾监测', icon: '🌡️' })
               FlowStep({ step: '02', text: 'SLAM导航 · 多点自动巡检', icon: '🗺️' })
               FlowStep({ step: '03', text: '激光雷达 · 通道占用检测', icon: '📡' })
-              FlowStep({ step: '04', text: '视觉识别 · 人员/货物异常', icon: '👁️' })
+              FlowStep({ step: '04', text: '视觉识别 · 人员/杂物异常', icon: '👁️' })
               FlowStep({ step: '05', text: 'APP监控 · 告警与远程控制', icon: '🎮' })
             }
             .width('100%')
@@ -120,7 +120,7 @@ struct NetworkSettings {
     .width('100%')
     .height('100%')
     .justifyContent(FlexAlign.Center)
-    .backgroundColor('rgba(0, 0, 0, 0.6)')
+    .backgroundColor('rgba(0, 0, 0, 0.52)')
   }
 }
 
@@ -208,10 +208,10 @@ struct LoginComponent {
   }
 
   build(): void {
-    Column({ space: '12vp' }) {
+    Column({ space: '14vp' }) {
       Column({ space: '6vp' }) {
         Text('连接小车')
-          .fontSize('20fp')
+          .fontSize('22fp')
           .fontColor($r('app.color.text'))
           .fontWeight(FontWeight.Bold)
           .maxLines(1)
@@ -230,12 +230,18 @@ struct LoginComponent {
       Row({ space: '10vp' }) {
         Button(this.connecting ? '连接中...' : '连接小车')
           .layoutWeight(1)
-          .height('40vp')
+          .height('42vp')
           .fontSize('14fp')
           .fontColor($r('app.color.text_on_accent'))
+          .fontWeight(FontWeight.Bold)
           .backgroundColor($r('app.color.button_primary'))
-          .borderRadius(ButtonRadius)
-          .shadow(ButtonShadow)
+          .borderRadius('14vp')
+          .shadow({
+            radius: 12,
+            offsetX: 0,
+            offsetY: 4,
+            color: '#6366F145'
+          })
           .enabled(!this.connecting)
           .onClick((): void => {
             this.connectCar();
@@ -243,12 +249,13 @@ struct LoginComponent {
 
         Button('跳过')
           .layoutWeight(1)
-          .height('40vp')
+          .height('42vp')
           .fontSize('14fp')
           .fontColor($r('app.color.text'))
+          .fontWeight(FontWeight.Bold)
           .backgroundColor($r('app.color.card_elevated'))
           .border({ width: '1vp', color: $r('app.color.divider') })
-          .borderRadius(ButtonRadius)
+          .borderRadius('14vp')
           .onClick((): void => {
             this.enterWithoutConnect();
           })
@@ -261,11 +268,17 @@ struct LoginComponent {
         .textAlign(TextAlign.Center)
         .maxLines(1)
     }
-    .width('min(88%, 340vp)')
-    .padding('18vp')
-    .backgroundColor($r('app.color.card_background'))
-    .borderRadius('18vp')
-    .shadow(ElevatedShadow)
+    .width('88%')
+    .padding({ left: '20vp', right: '20vp', top: '22vp', bottom: '18vp' })
+    .backgroundColor($r('app.color.header_background'))
+    .borderRadius('16vp')
+    .border({ width: '1vp', color: $r('app.color.divider') })
+    .shadow({
+      radius: 24,
+      offsetX: 0,
+      offsetY: 12,
+      color: '#00000055'
+    })
   }
 
   @Builder

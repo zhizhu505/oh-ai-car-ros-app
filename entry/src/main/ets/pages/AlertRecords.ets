@@ -4,8 +4,7 @@ import { AlertRecord, alertLevelText, categoryLabel, AlertLevel, AlarmData } fro
 import { PatrolStore } from '../store/PatrolStore';
 import { levelColor } from '../utils/PatrolUiUtils';
 import { queryAlarmQuestion } from '../utils/DeepSeekUtil';
-import { PageHeader, InfoCard } from '../components/PageHeader';
-import { CardShadow, ButtonShadow } from '../styles/styles';
+import { CardShadow } from '../styles/styles';
 
 export class ChatItem {
   id: string = '';
@@ -291,9 +290,10 @@ struct AlertRecords {
       Row({ space: '10vp' }) {
         Column({ space: '4vp' }) {
           Text('异常告警记录')
-            .fontSize('20fp')
+            .fontSize('21fp')
             .fontColor($r('app.color.text'))
             .fontWeight(FontWeight.Bold)
+            .maxLines(1)
           Text(`共 ${this.alerts.length} 条记录`)
             .fontSize('12fp')
             .fontColor($r('app.color.text_secondary'))
@@ -302,6 +302,7 @@ struct AlertRecords {
         .alignItems(HorizontalAlign.Start)
 
         Button('清空')
+          .width('62vp')
           .height('32vp')
           .fontSize('12fp')
           .fontColor($r('app.color.text'))
@@ -314,6 +315,7 @@ struct AlertRecords {
           })
 
         Button('返回')
+          .width('62vp')
           .height('32vp')
           .fontSize('12fp')
           .fontColor($r('app.color.text'))
@@ -325,9 +327,14 @@ struct AlertRecords {
       }
       .width('100%')
       .alignItems(VerticalAlign.Center)
-      .padding({ left: '14vp', right: '14vp', top: '12vp', bottom: '10vp' })
+      .padding({ left: '16vp', right: '16vp', top: '24vp', bottom: '12vp' })
       .backgroundColor($r('app.color.header_background'))
-      .shadow(CardShadow)
+      .shadow({
+        radius: 18,
+        offsetX: 0,
+        offsetY: 8,
+        color: '#00000042'
+      })
 
       if (this.alerts.length === 0) {
         Column() {

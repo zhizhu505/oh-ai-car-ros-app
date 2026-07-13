@@ -83,7 +83,7 @@ struct PatrolDashboard {
                     text: this.patrolStatusTextValue,
                     bgColor: patrolStatusColor(PatrolStore.getInstance().vehicle.patrolStatus)
                   })
-                  Text(`路线：${this.route}`)
+                  Text(`路线：${this.route === 'warehouse_B' ? '管廊支线' : '管廊主线'}`)
                     .fontSize('13fp')
                     .fontColor($r('app.color.text_secondary'))
                     .maxLines(1)

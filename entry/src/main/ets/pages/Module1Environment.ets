@@ -62,7 +62,7 @@ struct Module1Environment {
         tabs: this.tabs,
         accentColor: $r('app.color.module1_accent'),
         title: '环境感知',
-        subtitle: '温湿度、烟雾、气体、光照与空气质量监测'
+        subtitle: '环境数据与阈值监测'
       })
 
       Scroll() {
