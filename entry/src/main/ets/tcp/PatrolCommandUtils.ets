@@ -18,6 +18,13 @@ interface SimpleCmdPayload {
   cmd: string;
 }
 
+interface DemoCommandReply {
+  type: string;
+  online: boolean;
+  ok: boolean;
+  message: string;
+}
+
 export interface RedBottleDemoStatus {
   type: string;
   status: string;
@@ -121,7 +128,22 @@ export class PatrolCommandUtils {
   private static async sendDemo(payload: PatrolCmdPayload): Promise<boolean> {
     const message = `${JSON.stringify(payload)}\n`;
     console.info(TAG, 'sendDemo', message);
-    return TCPClientManager.getInstance().sendMessageToPort(6600, message);
+    const response = await TCPClientManager.getInstance().requestMessageFromPort(6600, message);
+    if (response.length === 0) {
+      console.error(TAG, 'sendDemo empty response');
+      return false;
+    }
+    try {
+      const line = response.split('\n')[0];
+      const reply = JSON.parse(line) as DemoCommandReply;
+      if (!reply.ok) {
+        console.error(TAG, `sendDemo rejected: ${reply.message}`);
+      }
+      return reply.ok === true;
+    } catch (e) {
+      console.error(TAG, 'sendDemo parse failed', JSON.stringify(e));
+      return false;
+    }
   }
 
   private static defaultRedBottleStatus(message: string): RedBottleDemoStatus {
