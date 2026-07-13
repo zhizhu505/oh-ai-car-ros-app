@@ -6,6 +6,7 @@ import {
   ChannelStatus,
   ControlMode,
   DEFAULT_PATROL_POINTS,
+  EnvHistoryRecord,
   EnvSnapshot,
   LidarSnapshot,
   PatrolPoint,
@@ -30,6 +31,7 @@ export class PatrolStore {
   private alertIdSeed: number = 1;
 
   env: EnvSnapshot = createDefaultEnv();
+  envHistory: EnvHistoryRecord[] = [];
   vehicle: VehicleSnapshot = createDefaultVehicle();
   lidar: LidarSnapshot = createDefaultLidar();
   vision: VisionSnapshot = createDefaultVision();
@@ -68,6 +70,38 @@ export class PatrolStore {
 
   updateEnv(data: EnvSnapshot): void {
     this.env = data;
+    const record: EnvHistoryRecord = {
+      time: data.updateTime,
+      temperature: data.temperature,
+      humidity: data.humidity,
+      gas: data.gas,
+      light: data.light,
+      pm25: data.pm25
+    };
+    this.envHistory.push(record);
+    if (this.envHistory.length > 48) {
+      this.envHistory.shift();
+    }
+    this.notify();
+  }
+
+  setEnvHistory(history: EnvHistoryRecord[]): void {
+    this.envHistory = history.slice(-48) as EnvHistoryRecord[];
+    if (this.envHistory.length > 0) {
+      const latest = this.envHistory[this.envHistory.length - 1];
+      this.env = {
+        point: '地下管廊',
+        temperature: latest.temperature,
+        humidity: latest.humidity,
+        smoke: 0,
+        gas: latest.gas,
+        light: latest.light,
+        pressure: 1012,
+        pm25: latest.pm25,
+        level: AlertLevel.Normal,
+        updateTime: latest.time
+      };
+    }
     this.notify();
   }
 

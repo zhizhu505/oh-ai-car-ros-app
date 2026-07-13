@@ -52,6 +52,21 @@ export interface EnvSnapshot {
   updateTime: string;
 }
 
+export interface EnvHistoryRecord {
+  time: string;
+  temperature: number;
+  humidity: number;
+  gas: number;
+  light: number;
+  pm25: number;
+}
+
+export interface EnvMetricMeta {
+  key: string;
+  name: string;
+  unit: string;
+}
+
 export interface AiAnalysisResult {
   summary: string;
   risk: string;
@@ -135,33 +150,31 @@ export const DEFAULT_PATROL_POINTS: PatrolPoint[] = [
 ];
 
 export const ENV_THRESHOLDS: EnvThreshold[] = [
-  { name: '温度', unit: '℃', min: 10, max: 35, warningMax: 30, criticalMax: 35 },
-  { name: '湿度', unit: '%', min: 30, max: 80, warningMax: 70, criticalMax: 80 },
-  { name: '烟雾', unit: 'ppm', min: 0, max: 100, warningMax: 50, criticalMax: 100 },
-  { name: '可燃气体', unit: 'ppm', min: 0, max: 100, warningMax: 40, criticalMax: 80 },
-  { name: '光照', unit: 'lux', min: 50, max: 500, warningMax: 80, criticalMax: 50 },
-  { name: 'PM2.5', unit: 'μg/m³', min: 0, max: 150, warningMax: 75, criticalMax: 150 }
+  { name: '温度', unit: '℃', min: 16, max: 32, warningMax: 32, criticalMax: 38 },
+  { name: '湿度', unit: '%', min: 35, max: 75, warningMax: 75, criticalMax: 85 },
+  { name: '可燃气体', unit: 'ppm', min: 0, max: 25, warningMax: 25, criticalMax: 50 },
+  { name: 'PM2.5', unit: 'μg/m³', min: 0, max: 75, warningMax: 75, criticalMax: 115 },
+  { name: '光照', unit: 'lux', min: 100, max: 500, warningMax: 100, criticalMax: 50 }
 ];
 
-export const PRESSURE_THRESHOLD: EnvThreshold = {
-  name: '气压',
-  unit: 'hPa',
-  min: 900,
-  max: 1100,
-  warningMax: 1080,
-  criticalMax: 1100
-};
+export const ENV_METRICS: EnvMetricMeta[] = [
+  { key: 'temperature', name: '温度', unit: '℃' },
+  { key: 'humidity', name: '湿度', unit: '%' },
+  { key: 'gas', name: '可燃气体', unit: 'ppm' },
+  { key: 'pm25', name: 'PM2.5', unit: 'μg/m³' },
+  { key: 'light', name: '光照', unit: 'lux' }
+];
 
 export function createDefaultEnv(): EnvSnapshot {
   return {
-    point: '-',
-    temperature: 0,
-    humidity: 0,
+    point: '地下管廊',
+    temperature: 24.8,
+    humidity: 58,
     smoke: 0,
-    gas: 0,
-    light: 0,
-    pressure: 0,
-    pm25: 0,
+    gas: 14,
+    light: 220,
+    pressure: 1012,
+    pm25: 36,
     level: AlertLevel.Normal,
     updateTime: '-'
   };

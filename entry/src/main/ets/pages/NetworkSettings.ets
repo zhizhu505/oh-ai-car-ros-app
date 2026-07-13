@@ -39,7 +39,7 @@ struct NetworkSettings {
         Scroll() {
           Column({ space: '16vp' }) {
             Column({ space: '12vp' }) {
-              FlowStep({ step: '01', text: '环境感知 · 温湿度/烟雾监测', icon: '🌡️' })
+              FlowStep({ step: '01', text: '环境感知 · 温湿度/气体/颗粒物', icon: '🌡️' })
               FlowStep({ step: '02', text: 'SLAM导航 · 多点自动巡检', icon: '🗺️' })
               FlowStep({ step: '03', text: '激光雷达 · 通道占用检测', icon: '📡' })
               FlowStep({ step: '04', text: '视觉识别 · 人员/杂物异常', icon: '👁️' })
