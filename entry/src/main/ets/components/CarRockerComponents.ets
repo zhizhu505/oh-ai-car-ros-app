@@ -4,6 +4,7 @@ import { RockerComponent, RockerOptions } from "rocker"
 
 @Component
 struct CarRockerComponents {
+  @Prop speedValue: number = 100;
   tiltStyle: ImageBitmap = new ImageBitmap("img/remote.svg");
   backgroundStyle: ImageBitmap = new ImageBitmap("img/remote_background.svg");
   private rockerOptions: RockerOptions = new RockerOptions()
@@ -43,8 +44,9 @@ struct CarRockerComponents {
     leftSpeed = leftSpeed / maxSpeed * 100;
     rightSpeed = rightSpeed / maxSpeed * 100;
 
-    const left = Math.round(this.clamp(leftSpeed, -100, 100));
-    const right = Math.round(this.clamp(rightSpeed, -100, 100));
+    const speedLimit = this.clamp(this.speedValue, 0, 100);
+    const left = Math.round(this.clamp(leftSpeed, -100, 100) * speedLimit / 100);
+    const right = Math.round(this.clamp(rightSpeed, -100, 100) * speedLimit / 100);
     const now = Date.now();
     const isStop = left === 0 && right === 0;
     if (!isStop && now - this.lastSendTime < 70) {
