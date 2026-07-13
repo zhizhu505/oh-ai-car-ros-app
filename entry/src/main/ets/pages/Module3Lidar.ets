@@ -1,3 +1,4 @@
+import promptAction from '@ohos.promptAction';
 import {
   ALERT_CATEGORY_LIDAR,
   ChannelStatus,
@@ -5,10 +6,11 @@ import {
   channelStatusText
 } from '../model/PatrolModels';
 import { PatrolStore } from '../store/PatrolStore';
+import { PatrolCommandUtils } from '../tcp/PatrolCommandUtils';
 import { ModuleTabBar, InfoCard } from '../components/PageHeader';
 import { ModuleAlertList } from '../components/ModuleAlertList';
 import { channelStatusColor } from '../utils/PatrolUiUtils';
-import { CardShadow, ElevatedShadow } from '../styles/styles';
+import { CardShadow, ElevatedShadow, ButtonShadow } from '../styles/styles';
 
 type OccupancyClass = 'clear' | 'short' | 'long' | 'blocked';
 
@@ -32,7 +34,10 @@ struct Module3Lidar {
   @State guardRegionEnabled: boolean = true;
   @State movingTargetDetected: boolean = false;
   @State obstacleDurationSec: number = 2;
-  private tabs: string[] = ['实时检测', '异常记录'];
+  @State avoidanceEnabled: boolean = false;
+  @State trackingEnabled: boolean = false;
+  @State avoidanceStatus: 'idle' | 'scanning' | 'avoiding' | 'tracking' = 'idle';
+  private tabs: string[] = ['实时检测', '避障控制', '异常记录'];
   private refreshHandler: () => void = (): void => {
     this.refreshData();
   };
@@ -55,6 +60,9 @@ struct Module3Lidar {
     this.channelStatus = lidar.channelStatus;
     this.message = lidar.message;
     this.updateTime = lidar.updateTime;
+    this.avoidanceEnabled = lidar.avoidanceEnabled;
+    this.trackingEnabled = lidar.trackingEnabled;
+    this.avoidanceStatus = lidar.avoidanceStatus;
   }
 
   private getCenterOffset(): number {
@@ -150,9 +158,80 @@ struct Module3Lidar {
       rightDistance: right,
       channelStatus: this.getDerivedStatus(),
       message: this.getActionText(),
-      updateTime: `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`
+      updateTime: `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`,
+      avoidanceEnabled: this.avoidanceEnabled,
+      trackingEnabled: this.trackingEnabled,
+      avoidanceStatus: this.avoidanceStatus,
+      targetDistance: 0
     };
     PatrolStore.getInstance().updateLidar(snapshot);
+  }
+
+  private async toggleAvoidance(enabled: boolean): Promise<void> {
+    console.info('Module3Lidar', `toggleAvoidance called, enabled=${enabled}, current avoidanceEnabled=${this.avoidanceEnabled}`);
+    const ok = await PatrolCommandUtils.enableLidarAvoidance(enabled);
+    console.info('Module3Lidar', `toggleAvoidance result: ok=${ok}`);
+    if (ok) {
+      this.avoidanceEnabled = enabled;
+      this.avoidanceStatus = enabled ? 'scanning' : 'idle';
+      PatrolStore.getInstance().setLidarAvoidanceEnabled(enabled);
+      promptAction.showToast({ message: enabled ? '雷达避障已开启' : '雷达避障已关闭' });
+      console.info('Module3Lidar', `toggleAvoidance success, status updated to ${this.avoidanceStatus}`);
+    } else {
+      promptAction.showToast({ message: '命令发送失败，请检查连接' });
+      console.error('Module3Lidar', 'toggleAvoidance failed, TCP connection may be disconnected');
+    }
+  }
+
+  private async toggleTracking(enabled: boolean): Promise<void> {
+    console.info('Module3Lidar', `toggleTracking called, enabled=${enabled}, current trackingEnabled=${this.trackingEnabled}, avoidanceEnabled=${this.avoidanceEnabled}`);
+    if (enabled && !this.avoidanceEnabled) {
+      promptAction.showToast({ message: '请先开启雷达避障' });
+      console.warn('Module3Lidar', 'toggleTracking blocked: avoidance not enabled');
+      return;
+    }
+    const ok = await PatrolCommandUtils.enableLidarTracking(enabled);
+    console.info('Module3Lidar', `toggleTracking result: ok=${ok}`);
+    if (ok) {
+      this.trackingEnabled = enabled;
+      if (enabled) {
+        this.avoidanceStatus = 'tracking';
+      } else if (!this.avoidanceEnabled) {
+        this.avoidanceStatus = 'idle';
+      }
+      PatrolStore.getInstance().setLidarTrackingEnabled(enabled);
+      promptAction.showToast({ message: enabled ? '目标跟踪已开启' : '目标跟踪已关闭' });
+      console.info('Module3Lidar', `toggleTracking success, status updated to ${this.avoidanceStatus}`);
+    } else {
+      promptAction.showToast({ message: '命令发送失败，请检查连接' });
+      console.error('Module3Lidar', 'toggleTracking failed, TCP connection may be disconnected');
+    }
+  }
+
+  private getAvoidanceStatusText(): string {
+    switch (this.avoidanceStatus) {
+      case 'scanning':
+        return '扫描中';
+      case 'avoiding':
+        return '避障中';
+      case 'tracking':
+        return '跟踪中';
+      default:
+        return '空闲';
+    }
+  }
+
+  private getAvoidanceStatusColor(): ResourceColor {
+    switch (this.avoidanceStatus) {
+      case 'scanning':
+        return $r('app.color.alert_warning');
+      case 'avoiding':
+        return $r('app.color.alert_critical');
+      case 'tracking':
+        return $r('app.color.module3_accent');
+      default:
+        return $r('app.color.text_secondary');
+    }
   }
 
   build() {
@@ -170,6 +249,8 @@ struct Module3Lidar {
           Column() {
             if (this.currentTabIndex === 0) {
               this.DetectView()
+            } else if (this.currentTabIndex === 1) {
+              this.AvoidanceControlView()
             } else {
               this.AlertView()
             }
@@ -307,6 +388,192 @@ struct Module3Lidar {
         }
         .width('100%')
         .alignItems(VerticalAlign.Center)
+      }
+    }
+    .width('100%')
+    .padding({ left: '14vp', right: '14vp', top: '10vp', bottom: '12vp' })
+  }
+
+  @Builder
+  AvoidanceControlView() {
+    Column({ space: '12vp' }) {
+      InfoCard({ title: '避障系统状态' }) {
+        Column({ space: '10vp' }) {
+          Row({ space: '12vp' }) {
+            Column({ space: '4vp' }) {
+              Text('避障状态')
+                .fontSize('12fp')
+                .fontColor($r('app.color.text_secondary'))
+              Text(this.getAvoidanceStatusText())
+                .fontSize('18fp')
+                .fontColor(this.getAvoidanceStatusColor())
+                .fontWeight(FontWeight.Bold)
+            }
+            .layoutWeight(1)
+            .alignItems(HorizontalAlign.Start)
+
+            Column({ space: '4vp' }) {
+              Text('前方距离')
+                .fontSize('12fp')
+                .fontColor($r('app.color.text_secondary'))
+              Text(`${this.frontDistance.toFixed(2)}m`)
+                .fontSize('18fp')
+                .fontColor(this.frontDistance < this.stopThreshold ? $r('app.color.alert_critical') : $r('app.color.text'))
+                .fontWeight(FontWeight.Bold)
+            }
+            .layoutWeight(1)
+            .alignItems(HorizontalAlign.End)
+          }
+
+          Row({ space: '12vp' }) {
+            Column({ space: '4vp' }) {
+              Text('左侧距离')
+                .fontSize('12fp')
+                .fontColor($r('app.color.text_secondary'))
+              Text(`${this.leftDistance.toFixed(2)}m`)
+                .fontSize('14fp')
+                .fontColor($r('app.color.text'))
+                .fontWeight(FontWeight.Medium)
+            }
+            .layoutWeight(1)
+            .alignItems(HorizontalAlign.Start)
+
+            Column({ space: '4vp' }) {
+              Text('右侧距离')
+                .fontSize('12fp')
+                .fontColor($r('app.color.text_secondary'))
+              Text(`${this.rightDistance.toFixed(2)}m`)
+                .fontSize('14fp')
+                .fontColor($r('app.color.text'))
+                .fontWeight(FontWeight.Medium)
+            }
+            .layoutWeight(1)
+            .alignItems(HorizontalAlign.End)
+          }
+        }
+      }
+
+      InfoCard({ title: '避障模式控制' }) {
+        Column({ space: '12vp' }) {
+          Row({ space: '12vp' }) {
+            Column({ space: '6vp' }) {
+              Button(this.avoidanceEnabled ? '关闭避障' : '开启避障')
+                .width('140vp')
+                .height('44vp')
+                .fontSize('15fp')
+                .fontColor($r('app.color.text_on_accent'))
+                .backgroundColor(this.avoidanceEnabled ? $r('app.color.alert_critical') : $r('app.color.module3_accent'))
+                .borderRadius('22vp')
+                .shadow(ButtonShadow)
+                .onClick((): void => {
+                  this.toggleAvoidance(!this.avoidanceEnabled);
+                })
+
+              Text(this.avoidanceEnabled ? '雷达持续扫描障碍物，自动减速或停车' : '点击开启雷达自动避障功能')
+                .fontSize('12fp')
+                .fontColor($r('app.color.text_secondary'))
+                .maxLines(2)
+                .textOverflow({ overflow: TextOverflow.Ellipsis })
+            }
+            .layoutWeight(1)
+            .alignItems(HorizontalAlign.Center)
+
+            Column({ space: '6vp' }) {
+              Button(this.trackingEnabled ? '关闭跟踪' : '开启跟踪')
+                .width('140vp')
+                .height('44vp')
+                .fontSize('15fp')
+                .fontColor($r('app.color.text_on_accent'))
+                .backgroundColor(this.trackingEnabled ? $r('app.color.alert_warning') : $r('app.color.button_primary'))
+                .borderRadius('22vp')
+                .shadow(ButtonShadow)
+                .enabled(this.avoidanceEnabled)
+                .onClick((): void => {
+                  this.toggleTracking(!this.trackingEnabled);
+                })
+
+              Text(this.trackingEnabled ? '持续跟踪目标并保持安全距离' : '需先开启避障，自动跟踪移动目标')
+                .fontSize('12fp')
+                .fontColor($r('app.color.text_secondary'))
+                .maxLines(2)
+                .textOverflow({ overflow: TextOverflow.Ellipsis })
+            }
+            .layoutWeight(1)
+            .alignItems(HorizontalAlign.Center)
+          }
+        }
+      }
+
+      InfoCard({ title: '避障策略参数' }) {
+        Column({ space: '10vp' }) {
+          ThresholdSlider({ title: '减速阈值', unit: 'm', value: $slowDownThreshold, min: 0.3, max: 1.5, step: 0.05 })
+          ThresholdSlider({ title: '停车阈值', unit: 'm', value: $stopThreshold, min: 0.2, max: 1.0, step: 0.05 })
+          ThresholdSlider({ title: '避障保持时长', unit: 's', value: $alertDurationSec, min: 2, max: 15, step: 1 })
+
+          Row({ space: '10vp' }) {
+            Text('警戒区域检测')
+              .layoutWeight(1)
+              .fontSize('14fp')
+              .fontColor($r('app.color.text'))
+            Toggle({ type: ToggleType.Switch, isOn: this.guardRegionEnabled })
+              .onChange((value: boolean): void => {
+                this.guardRegionEnabled = value;
+              })
+          }
+          .width('100%')
+        }
+      }
+
+      InfoCard({ title: '避障工作原理' }) {
+        Column({ space: '8vp' }) {
+          StatusItem({
+            label: '障碍物检测',
+            desc: '雷达持续扫描前方和两侧区域，检测距离小于阈值的障碍物',
+            active: this.avoidanceEnabled
+          })
+          StatusItem({
+            label: '自动减速',
+            desc: '检测到前方障碍物距离小于减速阈值时，自动降低行驶速度',
+            active: this.avoidanceEnabled && this.frontDistance <= this.slowDownThreshold
+          })
+          StatusItem({
+            label: '紧急停车',
+            desc: '前方距离小于停车阈值时，立即停车并保持安全距离',
+            active: this.avoidanceEnabled && this.frontDistance <= this.stopThreshold
+          })
+          StatusItem({
+            label: '目标跟踪',
+            desc: '开启跟踪模式后，持续追踪最近障碍物并保持安全距离跟随',
+            active: this.trackingEnabled
+          })
+        }
+      }
+
+      InfoCard({ title: '模拟测试' }) {
+        Column({ space: '10vp' }) {
+          Text('点击下方按钮模拟不同的障碍物场景，测试避障系统响应')
+            .fontSize('12fp')
+            .fontColor($r('app.color.text_secondary'))
+            .maxLines(2)
+            .textOverflow({ overflow: TextOverflow.Ellipsis })
+
+          Row({ space: '8vp' }) {
+            ActionChip({ label: '前方障碍(0.7m)', accent: $r('app.color.alert_warning'), onTap: (): void => {
+              this.simulateScenario(0.70, 0.60, 0.62, 3, false);
+            } })
+            ActionChip({ label: '通道堵塞(0.3m)', accent: $r('app.color.alert_critical'), onTap: (): void => {
+              this.simulateScenario(0.30, 0.58, 0.61, 5, false);
+            } })
+          }
+          Row({ space: '8vp' }) {
+            ActionChip({ label: '左侧靠近', accent: $r('app.color.module3_accent'), onTap: (): void => {
+              this.simulateScenario(1.20, 0.35, 0.65, 2, false);
+            } })
+            ActionChip({ label: '右侧靠近', accent: $r('app.color.module3_accent'), onTap: (): void => {
+              this.simulateScenario(1.20, 0.65, 0.35, 2, false);
+            } })
+          }
+        }
       }
     }
     .width('100%')

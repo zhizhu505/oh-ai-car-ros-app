@@ -138,28 +138,46 @@ export class TCPClientManager {
    * @returns 是否连接成功
    */
   public async sendMessage(message: string) {
-    console.log(TAG, `sendMessage`, `message=${message}`)
-    // 如果正常那么发送数据
-    if (await this.isConnect() == true) {
-      console.log(TAG, `sendMessage-------------------------`, `message=${message}`)
-      await this.socket.send({ data: message })
-      return true
+    console.log(TAG, `sendMessage called, target=${this.options.address.address}:${this.options.address.port}, message=${message}`)
+    const isConnected = await this.isConnect();
+    console.log(TAG, `sendMessage connection status: ${isConnected}`)
+    
+    if (isConnected == true) {
+      console.log(TAG, `sendMessage sending data: ${message}`)
+      try {
+        await this.socket.send({ data: message })
+        console.log(TAG, `sendMessage success: ${message}`)
+        return true
+      } catch (e) {
+        console.error(TAG, `sendMessage failed with error: ${JSON.stringify(e)}`)
+        return false
+      }
     }
 
-    // 如果断线了需要重连
-    console.log(TAG, '正在重连')
+    console.log(TAG, 'sendMessage connection lost, reconnecting...')
     if (await this.connect()) {
-      await this.socket.send({ data: message })
-      return true;
+      console.log(TAG, `sendMessage reconnected, sending data: ${message}`)
+      try {
+        await this.socket.send({ data: message })
+        console.log(TAG, `sendMessage success after reconnect: ${message}`)
+        return true;
+      } catch (e) {
+        console.error(TAG, `sendMessage failed after reconnect: ${JSON.stringify(e)}`)
+        return false
+      }
     }
+    console.error(TAG, `sendMessage failed: could not reconnect`)
     return false;
 
   }
 
-  public async sendMessageToPort(port: number, message: string) {
+  public async sendMessageToPort(port: number, message: string): Promise<boolean> {
+    console.log(TAG, `sendMessageToPort called, port=${port}, address=${this.options.address.address}, message=${message}`);
     const tempSocket = socket.constructTCPSocketInstance();
     try {
-      await tempSocket.bind({ address: '0.0.0.0', family: 1 })
+      console.log(TAG, `sendMessageToPort binding to 0.0.0.0`);
+      await tempSocket.bind({ address: '0.0.0.0', family: 1 });
+      console.log(TAG, `sendMessageToPort connecting to ${this.options.address.address}:${port}`);
       await tempSocket.connect({
         address: {
           address: this.options.address.address,
@@ -167,13 +185,20 @@ export class TCPClientManager {
           port: port
         },
         timeout: 3000
-      })
-      await tempSocket.send({ data: message })
+      });
+      console.log(TAG, `sendMessageToPort connected successfully`);
+      console.log(TAG, `sendMessageToPort sending: ${message}`);
+      await tempSocket.send({ data: message });
+      console.log(TAG, `sendMessageToPort send success`);
       tempSocket.close();
       return true;
     } catch (e) {
-      console.error(TAG, 'sendMessageToPort failed', JSON.stringify(e))
-      tempSocket.close();
+      console.error(TAG, `sendMessageToPort failed, port=${port}, address=${this.options.address.address}, error=${JSON.stringify(e)}, message=${message}`);
+      try {
+        tempSocket.close();
+      } catch (closeErr) {
+        console.error(TAG, `sendMessageToPort close failed: ${JSON.stringify(closeErr)}`);
+      }
       return false;
     }
   }

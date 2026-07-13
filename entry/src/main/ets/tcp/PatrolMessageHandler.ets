@@ -134,7 +134,11 @@ export class PatrolMessageHandler {
       rightDistance: PatrolMessageHandler.readNumber(payload, 'rightDistance', store.lidar.rightDistance),
       channelStatus: PatrolMessageHandler.readChannelStatus(payload, 'channelStatus'),
       message: PatrolMessageHandler.readString(payload, 'message', '雷达状态更新'),
-      updateTime: PatrolMessageHandler.readString(payload, 'time', PatrolMessageHandler.nowTime())
+      updateTime: PatrolMessageHandler.readString(payload, 'time', PatrolMessageHandler.nowTime()),
+      avoidanceEnabled: store.lidar.avoidanceEnabled,
+      trackingEnabled: store.lidar.trackingEnabled,
+      avoidanceStatus: store.lidar.avoidanceStatus,
+      targetDistance: store.lidar.targetDistance
     };
     store.updateLidar(lidar);
     if (lidar.channelStatus === ChannelStatus.Blocked || lidar.channelStatus === ChannelStatus.Occupied) {

@@ -10,6 +10,8 @@ import { ButtonShadow, CardShadow, ElevatedShadow, CardPadding, ButtonRadius } f
 import { MyUtils } from '../utils/MyUtils';
 import preferences from '@ohos.data.preferences';
 
+const LEGACY_LIDAR_TCP_PORT = '6000';
+
 @Entry
 @Component
 struct NetworkSettings {
@@ -314,6 +316,9 @@ struct LoginComponent {
 
   private async connectCar(): Promise<void> {
     this.connecting = true;
+    if (this.tcpPort === LEGACY_LIDAR_TCP_PORT) {
+      this.tcpPort = DEFAULT_TCP_PORT;
+    }
     this.saveNetConfig();
     VideoComponents.ip = this.ip;
     VideoComponents.port = Number.parseInt(this.videoPort);
@@ -350,7 +355,11 @@ struct LoginComponent {
       return;
     }
     netUtils.getIP().then((v: preferences.ValueType): string => this.ip = String(v));
-    netUtils.getTcpPort().then((v: preferences.ValueType): string => this.tcpPort = String(v));
+    netUtils.getTcpPort().then((v: preferences.ValueType): string => {
+      const port = String(v);
+      this.tcpPort = port === LEGACY_LIDAR_TCP_PORT ? DEFAULT_TCP_PORT : port;
+      return this.tcpPort;
+    });
     netUtils.getVideoPort().then((v: preferences.ValueType): string => this.videoPort = String(v));
   }
 
