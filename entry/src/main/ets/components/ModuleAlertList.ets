@@ -23,8 +23,7 @@ export struct ModuleAlertList {
 
   refreshData(): void {
     const store = PatrolStore.getInstance();
-    const source = this.category.length > 0 ?
-      store.getAlertsByCategory(this.category) : store.alerts;
+    const source = this.category.length > 0 ? store.getAlertsByCategory(this.category) : store.alerts;
     this.alerts = source.map((item: AlertRecord): AlertRecord => {
       return {
         id: item.id,
@@ -38,10 +37,45 @@ export struct ModuleAlertList {
     });
   }
 
+  private formatCategoryLabel(category: string): string {
+    if (this.category.length > 0 && category.startsWith(`${this.category}_`)) {
+      return categoryLabel(this.category);
+    }
+    return categoryLabel(category);
+  }
+
+  private getCleanMessage(item: AlertRecord): string {
+    let text = item.message;
+    text = text.replace('地下管廊环境监测，', '');
+    text = text.replace('历史测试，', '');
+    text = text.replace('地下管廊环境监测:', '');
+    text = text.replace('历史测试:', '');
+    return text;
+  }
+
+  private getIssueText(item: AlertRecord): string {
+    const text = this.getCleanMessage(item);
+    const index = text.indexOf('，当前');
+    return index >= 0 ? text.substring(0, index) : text;
+  }
+
+  private getReadingText(item: AlertRecord): string {
+    const text = this.getCleanMessage(item);
+    const index = text.indexOf('，当前');
+    return index >= 0 ? text.substring(index + 1) : '待复核';
+  }
+
+  private getSourceText(item: AlertRecord): string {
+    if (item.point.includes('环境监测')) {
+      return '管廊环境';
+    }
+    return item.point;
+  }
+
   build() {
     if (this.alerts.length === 0) {
       Column({ space: '12vp' }) {
-        Text('📋')
+        Text('🔍')
           .fontSize('48fp')
         Text(this.emptyHint)
           .fontSize('15fp')
@@ -60,8 +94,8 @@ export struct ModuleAlertList {
                 Text(item.time)
                   .fontSize('12fp')
                   .fontColor($r('app.color.text_secondary'))
-                Text(categoryLabel(item.category))
-                  .fontSize('11fp')
+                Text(this.formatCategoryLabel(item.category))
+                  .fontSize('12fp')
                   .fontColor($r('app.color.text_on_accent'))
                   .backgroundColor($r('app.color.status_active'))
                   .padding({ left: '9vp', right: '9vp', top: '3vp', bottom: '3vp' })
@@ -93,7 +127,7 @@ export struct ModuleAlertList {
               .width('100%')
 
               if (item.imageUrl.length > 0) {
-                Text(`截图已保存`)
+                Text('截图已保存')
                   .fontSize('12fp')
                   .fontColor($r('app.color.status_active'))
                   .maxLines(1)
@@ -112,34 +146,6 @@ export struct ModuleAlertList {
       .width('100%')
       .layoutWeight(1)
     }
-  }
-
-  private getCleanMessage(item: AlertRecord): string {
-    let text = item.message;
-    text = text.replace('地下管廊环境监测：', '');
-    text = text.replace('历史测试：', '');
-    text = text.replace('地下管廊环境监测:', '');
-    text = text.replace('历史测试:', '');
-    return text;
-  }
-
-  private getIssueText(item: AlertRecord): string {
-    const text = this.getCleanMessage(item);
-    const index = text.indexOf('，当前');
-    return index >= 0 ? text.substring(0, index) : text;
-  }
-
-  private getReadingText(item: AlertRecord): string {
-    const text = this.getCleanMessage(item);
-    const index = text.indexOf('，当前');
-    return index >= 0 ? text.substring(index + 1) : '待复核';
-  }
-
-  private getSourceText(item: AlertRecord): string {
-    if (item.point.includes('环境监测')) {
-      return '管廊环境';
-    }
-    return item.point;
   }
 }
 
