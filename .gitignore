@@ -10,3 +10,11 @@
 /.clang-format
 /.clang-tidy
 **/.test
+.env
+*.hap
+*.p12
+*.p7b
+*.cer
+compile_output.txt
+entry/src/main/resources/rawfile/config.env
+*.log
