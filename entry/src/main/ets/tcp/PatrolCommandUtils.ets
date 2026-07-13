@@ -18,6 +18,18 @@ interface SimpleCmdPayload {
   cmd: string;
 }
 
+export interface RedBottleDemoStatus {
+  type: string;
+  status: string;
+  distance_m: number | null;
+  threshold_m: number;
+  speed_mps: number;
+  detection: boolean;
+  alarm_active: boolean;
+  message: string;
+  updated_at: number;
+}
+
 type PatrolCmdPayload = StartPatrolPayload | SetModePayload | SimpleCmdPayload;
 
 /**
@@ -52,6 +64,46 @@ export class PatrolCommandUtils {
     return PatrolCommandUtils.send(payload);
   }
 
+  static async startRedBottleDemo(): Promise<boolean> {
+    const payload: SimpleCmdPayload = { cmd: 'start_red_bottle_demo' };
+    return PatrolCommandUtils.sendDemo(payload);
+  }
+
+  static async stopRedBottleDemo(): Promise<boolean> {
+    const payload: SimpleCmdPayload = { cmd: 'stop_red_bottle_demo' };
+    return PatrolCommandUtils.sendDemo(payload);
+  }
+
+  static async stopBuzzer(): Promise<boolean> {
+    const payload: SimpleCmdPayload = { cmd: 'stop_buzzer' };
+    return PatrolCommandUtils.sendDemo(payload);
+  }
+
+  static async emergencyStopRedBottleDemo(): Promise<boolean> {
+    const payload: SimpleCmdPayload = { cmd: 'emergency_stop_red_bottle_demo' };
+    return PatrolCommandUtils.sendDemo(payload);
+  }
+
+  static async getRedBottleStatus(): Promise<RedBottleDemoStatus> {
+    const payload: SimpleCmdPayload = { cmd: 'get_red_bottle_status' };
+    const message = `${JSON.stringify(payload)}\n`;
+    const response = await TCPClientManager.getInstance().requestMessageFromPort(6600, message);
+    if (response.length === 0) {
+      return PatrolCommandUtils.defaultRedBottleStatus('状态服务无响应');
+    }
+    try {
+      const line = response.split('\n')[0];
+      const status = JSON.parse(line) as RedBottleDemoStatus;
+      if (!status.status) {
+        return PatrolCommandUtils.defaultRedBottleStatus('状态数据异常');
+      }
+      return status;
+    } catch (e) {
+      console.error(TAG, 'getRedBottleStatus parse failed', JSON.stringify(e));
+      return PatrolCommandUtils.defaultRedBottleStatus('状态解析失败');
+    }
+  }
+
   static async setControlMode(mode: 'manual' | 'auto'): Promise<boolean> {
     const payload: SetModePayload = {
       cmd: 'set_mode',
@@ -64,5 +116,25 @@ export class PatrolCommandUtils {
     const message = `${JSON.stringify(payload)}\n`;
     console.info(TAG, 'send', message);
     return TCPClientManager.getInstance().sendMessage(message);
+  }
+
+  private static async sendDemo(payload: PatrolCmdPayload): Promise<boolean> {
+    const message = `${JSON.stringify(payload)}\n`;
+    console.info(TAG, 'sendDemo', message);
+    return TCPClientManager.getInstance().sendMessageToPort(6600, message);
+  }
+
+  private static defaultRedBottleStatus(message: string): RedBottleDemoStatus {
+    return {
+      type: 'red_bottle_status',
+      status: '未启动',
+      distance_m: null,
+      threshold_m: 0.30,
+      speed_mps: 0.05,
+      detection: false,
+      alarm_active: false,
+      message: message,
+      updated_at: 0
+    };
   }
 }
