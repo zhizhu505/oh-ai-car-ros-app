@@ -11,6 +11,8 @@ import { ModuleTabBar, InfoCard } from '../components/PageHeader';
 import { ModuleAlertList } from '../components/ModuleAlertList';
 import { channelStatusColor } from '../utils/PatrolUiUtils';
 import { CardShadow, ElevatedShadow, ButtonShadow } from '../styles/styles';
+import { DEFAULT_CAR_IP, DEFAULT_TCP_PORT, PreferencesUtils } from '../utils/PreferencesUtils';
+import preferences from '@ohos.data.preferences';
 
 type OccupancyClass = 'clear' | 'short' | 'long' | 'blocked';
 
@@ -37,20 +39,89 @@ struct Module3Lidar {
   @State avoidanceEnabled: boolean = false;
   @State trackingEnabled: boolean = false;
   @State avoidanceStatus: 'idle' | 'scanning' | 'avoiding' | 'tracking' = 'idle';
+  @State rosbridgeConnected: boolean = false;
+  @State rosbridgeStatusText: string = '未连接 Jetson';
+  @State rosbridgeHost: string = DEFAULT_CAR_IP;
+  @State rosbridgePort: string = DEFAULT_TCP_PORT;
+  @State rosbridgeBusy: boolean = false;
+  @State rosFrontWarnM: number = 0.7;
+  @State rosNarrowMode: boolean = false;
   private tabs: string[] = ['实时检测', '避障控制', '异常记录'];
   private refreshHandler: () => void = (): void => {
     this.refreshData();
   };
 
-  aboutToAppear(): void {
+  async aboutToAppear(): Promise<void> {
     this.refreshData();
     PatrolStore.getInstance().subscribe(this.refreshHandler);
+    await this.readRosbridgeConfig();
   }
 
   aboutToDisappear(): void {
     PatrolStore.getInstance().unsubscribe(this.refreshHandler);
   }
 
+  private async readRosbridgeConfig(): Promise<void> {
+    const netUtils = PreferencesUtils.getInstance().netUtils;
+    if (!netUtils) {
+      return;
+    }
+    netUtils.getIP().then((v: preferences.ValueType): void => {
+      this.rosbridgeHost = String(v);
+    });
+    netUtils.getTcpPort().then((v: preferences.ValueType): void => {
+      this.rosbridgePort = String(v);
+    });
+  }
+
+  private async saveRosbridgeConfig(): Promise<void> {
+    const netUtils = PreferencesUtils.getInstance().netUtils;
+    if (!netUtils) {
+      return;
+    }
+    await Promise.all([
+      netUtils.setIp(this.rosbridgeHost.trim()),
+      netUtils.setTcpPort(this.rosbridgePort.trim())
+    ]);
+  }
+
+  private async connectRosbridge(): Promise<void> {
+    this.rosbridgeBusy = true;
+    try {
+      await this.saveRosbridgeConfig();
+      this.rosbridgeConnected = true;
+      this.rosbridgeStatusText = `已保存 Jetson 地址 ${this.rosbridgeHost.trim()}:${this.rosbridgePort.trim()}`;
+      promptAction.showToast({ message: 'ROS 连接配置已保存' });
+    } finally {
+      this.rosbridgeBusy = false;
+    }
+  }
+
+  private async sendRosCommand(cmd: string): Promise<void> {
+    if (!this.rosbridgeConnected) {
+      promptAction.showToast({ message: '请先连接 Jetson' });
+      return;
+    }
+    let ok = false;
+    if (cmd === 'start_auto') {
+      ok = await PatrolCommandUtils.startAutoAvoidance();
+    } else if (cmd === 'stop_auto') {
+      ok = await PatrolCommandUtils.stopAutoAvoidance();
+    } else if (cmd === 'narrow_mode') {
+      this.rosNarrowMode = true;
+      ok = await PatrolCommandUtils.setNarrowMode(true);
+    } else if (cmd === 'normal_mode') {
+      this.rosNarrowMode = false;
+      ok = await PatrolCommandUtils.setNarrowMode(false);
+    } else if (cmd.startsWith('set_front:')) {
+      const value = Number(cmd.split(':')[1]);
+      if (!Number.isNaN(value) && value > 0) {
+        this.rosFrontWarnM = value;
+        ok = await PatrolCommandUtils.setFrontWarnThreshold(value);
+      }
+    }
+    promptAction.showToast({ message: ok ? `已发送: ${cmd}` : `发送失败: ${cmd}` });
+  }
   refreshData(): void {
     const lidar: LidarSnapshot = PatrolStore.getInstance().lidar;
     this.point = lidar.point;
@@ -72,9 +143,9 @@ struct Module3Lidar {
   private getShelfBiasText(): string {
     const delta = this.leftDistance - this.rightDistance;
     if (Math.abs(delta) <= this.shelfTolerance) {
-      return '车体居中，可保持当前通道姿态';
+      return '左右货架距离稳定，小车处于通道居中状态';
     }
-    return delta > 0 ? '车体偏右，建议向左微调保持居中' : '车体偏左，建议向右微调保持居中';
+    return delta > 0 ? '右侧货架距离偏近，建议向左微调' : '左侧货架距离偏近，建议向右微调';
   }
 
   private getOccupancyClass(): OccupancyClass {
@@ -92,14 +163,14 @@ struct Module3Lidar {
 
   private getScenarioTitle(): string {
     if (this.guardRegionEnabled && this.movingTargetDetected) {
-      return '警戒区域触发';
+      return '警戒区移动目标';
     }
     const occupancy = this.getOccupancyClass();
     if (occupancy === 'blocked') {
       return '通道堵塞';
     }
     if (occupancy === 'long') {
-      return '长时障碍';
+      return '长时占用';
     }
     if (occupancy === 'short') {
       return '短时障碍';
@@ -108,23 +179,24 @@ struct Module3Lidar {
   }
 
   private getActionText(): string {
+    const point = this.point === '-' ? 'B区通道' : this.point;
     if (this.guardRegionEnabled && this.movingTargetDetected) {
-      return '危险品区域检测到移动目标，按固定规则触发告警并等待人工确认';
+      return `${point}警戒区域检测到移动目标，触发禁入区雷达告警`;
     }
     const occupancy = this.getOccupancyClass();
     if (occupancy === 'blocked') {
-      return '前方距离进入停车阈值，立即停车并等待通道恢复';
+      return `${point}前方 ${this.frontDistance.toFixed(2)}m 检测到障碍，已进入停车阈值，疑似通道堵塞`;
     }
     if (occupancy === 'long') {
-      return '持续障碍超过固定阈值，自动判定为通道占用告警';
+      return `${point}前方 ${this.frontDistance.toFixed(2)}m 障碍持续 ${this.obstacleDurationSec}s，疑似货物堆放异常`;
     }
     if (occupancy === 'short') {
-      return '检测到短时障碍，减速通行并持续追踪障碍物变化';
+      return `${point}前方 ${this.frontDistance.toFixed(2)}m 检测到障碍，执行减速避障`;
     }
     if (this.getCenterOffset() > this.shelfTolerance) {
-      return '左右货架距离不均衡，建议进行居中修正';
+      return `${point}左右货架距离不均衡，建议进行居中修正`;
     }
-    return '通道状态稳定，可保持巡检速度继续行驶';
+    return `${point}前方通道畅通，左右货架距离稳定`;
   }
 
   private getDerivedStatus(): ChannelStatus {
@@ -152,7 +224,7 @@ struct Module3Lidar {
     this.movingTargetDetected = movingTarget;
     const now = new Date();
     const snapshot: LidarSnapshot = {
-      point: this.point === '-' ? 'B区货架通道' : this.point,
+      point: this.point === '-' ? 'B区通道' : this.point,
       frontDistance: front,
       leftDistance: left,
       rightDistance: right,
@@ -246,7 +318,10 @@ struct Module3Lidar {
         })
 
         Scroll() {
-          Column() {
+          Column({ space: '12vp' }) {
+            if (this.currentTabIndex === 1) {
+              this.RosbridgeCard()
+            }
             if (this.currentTabIndex === 0) {
               this.DetectView()
             } else if (this.currentTabIndex === 1) {
@@ -272,6 +347,62 @@ struct Module3Lidar {
     .height('100%')
   }
 
+  @Builder
+  RosbridgeCard() {
+    Column({ space: '10vp' }) {
+      InfoCard({ title: 'ROS 连接' }) {
+        Column({ space: '8vp' }) {
+          Text(this.rosbridgeStatusText)
+            .fontSize('13fp')
+            .fontColor(this.rosbridgeConnected ? $r('app.color.status_success') : $r('app.color.alert_warning'))
+            .fontWeight(FontWeight.Medium)
+            .maxLines(2)
+          Row({ space: '8vp' }) {
+            TextInput({ text: this.rosbridgeHost, placeholder: 'Jetson IP' })
+              .layoutWeight(1)
+              .height('36vp')
+              .fontSize('12fp')
+              .onChange((value: string): void => {
+                this.rosbridgeHost = value;
+              })
+            TextInput({ text: this.rosbridgePort, placeholder: '9090' })
+              .width('86vp')
+              .height('36vp')
+              .fontSize('12fp')
+              .onChange((value: string): void => {
+                this.rosbridgePort = value;
+              })
+          }
+          Row({ space: '8vp' }) {
+            Button(this.rosbridgeBusy ? '连接中...' : (this.rosbridgeConnected ? '重新保存' : '保存连接'))
+              .layoutWeight(1)
+              .height('36vp')
+              .fontSize('12fp')
+              .fontColor($r('app.color.text_on_accent'))
+              .backgroundColor($r('app.color.button_primary'))
+              .borderRadius('18vp')
+              .enabled(!this.rosbridgeBusy)
+              .onClick((): void => {
+                this.connectRosbridge();
+              })
+            Button(this.rosbridgeConnected ? '连接已就绪' : '等待连接')
+              .layoutWeight(1)
+              .height('36vp')
+              .fontSize('12fp')
+              .fontColor($r('app.color.text'))
+              .backgroundColor($r('app.color.card_elevated'))
+              .borderRadius('18vp')
+              .enabled(false)
+          }
+          Text(`控制指令在下方真实控制区统一下发，当前 ROS 减速阈值 ${this.rosFrontWarnM.toFixed(2)}m`)
+            .fontSize('11fp')
+            .fontColor($r('app.color.text_secondary'))
+        }
+      }
+    }
+    .width('100%')
+    .padding({ left: '14vp', right: '14vp', top: '10vp', bottom: '0vp' })
+  }
   @Builder
   DetectView() {
     Column({ space: '10vp' }) {
@@ -337,27 +468,6 @@ struct Module3Lidar {
             desc: this.getShelfBiasText(),
             active: this.getCenterOffset() <= this.shelfTolerance
           })
-        }
-      }
-
-      InfoCard({ title: '模拟场景' }) {
-        Column({ space: '10vp' }) {
-          Row({ space: '8vp' }) {
-            ActionChip({ label: '人员经过', accent: $r('app.color.alert_warning'), onTap: (): void => {
-              this.simulateScenario(0.62, 0.54, 0.66, 2, false);
-            } })
-            ActionChip({ label: '货物堆放', accent: $r('app.color.alert_critical'), onTap: (): void => {
-              this.simulateScenario(0.56, 0.50, 0.72, 7, false);
-            } })
-          }
-          Row({ space: '8vp' }) {
-            ActionChip({ label: '通道堵塞', accent: $r('app.color.alert_critical'), onTap: (): void => {
-              this.simulateScenario(0.32, 0.58, 0.61, 9, false);
-            } })
-            ActionChip({ label: '禁区闯入', accent: $r('app.color.module3_accent'), onTap: (): void => {
-              this.simulateScenario(1.20, 0.60, 0.58, 1, true);
-            } })
-          }
         }
       }
 
@@ -453,7 +563,7 @@ struct Module3Lidar {
         }
       }
 
-      InfoCard({ title: '避障模式控制' }) {
+      InfoCard({ title: '真实控制' }) {
         Column({ space: '12vp' }) {
           Row({ space: '12vp' }) {
             Column({ space: '6vp' }) {
@@ -501,14 +611,62 @@ struct Module3Lidar {
             .layoutWeight(1)
             .alignItems(HorizontalAlign.Center)
           }
+
+          Row({ space: '8vp' }) {
+            Button('启动自动通道避障')
+              .layoutWeight(1)
+              .height('38vp')
+              .fontSize('12fp')
+              .fontColor($r('app.color.text_on_accent'))
+              .backgroundColor($r('app.color.module3_accent'))
+              .borderRadius('19vp')
+              .onClick((): void => {
+                this.sendRosCommand('start_auto');
+              })
+            Button('停止自动避障')
+              .layoutWeight(1)
+              .height('38vp')
+              .fontSize('12fp')
+              .fontColor($r('app.color.text_on_accent'))
+              .backgroundColor($r('app.color.alert_critical'))
+              .borderRadius('19vp')
+              .onClick((): void => {
+                this.sendRosCommand('stop_auto');
+              })
+          }
+
+          Row({ space: '8vp' }) {
+            Button(this.rosNarrowMode ? '恢复正常速度' : '狭窄通道低速')
+              .layoutWeight(1)
+              .height('38vp')
+              .fontSize('12fp')
+              .fontColor($r('app.color.text'))
+              .backgroundColor($r('app.color.card_elevated'))
+              .borderRadius('19vp')
+              .border({ width: '1vp', color: $r('app.color.divider') })
+              .onClick((): void => {
+                this.sendRosCommand(this.rosNarrowMode ? 'normal_mode' : 'narrow_mode');
+              })
+            Button(`下发减速阈值 ${this.rosFrontWarnM.toFixed(1)}m`)
+              .layoutWeight(1)
+              .height('38vp')
+              .fontSize('12fp')
+              .fontColor($r('app.color.text'))
+              .backgroundColor($r('app.color.card_elevated'))
+              .borderRadius('19vp')
+              .border({ width: '1vp', color: $r('app.color.divider') })
+              .onClick((): void => {
+                this.sendRosCommand(`set_front:${this.rosFrontWarnM}`);
+              })
+          }
         }
       }
 
-      InfoCard({ title: '避障策略参数' }) {
+      InfoCard({ title: '通道安全阈值' }) {
         Column({ space: '10vp' }) {
-          ThresholdSlider({ title: '减速阈值', unit: 'm', value: $slowDownThreshold, min: 0.3, max: 1.5, step: 0.05 })
-          ThresholdSlider({ title: '停车阈值', unit: 'm', value: $stopThreshold, min: 0.2, max: 1.0, step: 0.05 })
-          ThresholdSlider({ title: '避障保持时长', unit: 's', value: $alertDurationSec, min: 2, max: 15, step: 1 })
+          ThresholdSlider({ title: '前方减速阈值', unit: 'm', value: $slowDownThreshold, min: 0.3, max: 1.5, step: 0.05 })
+          ThresholdSlider({ title: '前方停车阈值', unit: 'm', value: $stopThreshold, min: 0.2, max: 1.0, step: 0.05 })
+          ThresholdSlider({ title: '占用告警时长', unit: 's', value: $alertDurationSec, min: 2, max: 15, step: 1 })
 
           Row({ space: '10vp' }) {
             Text('警戒区域检测')
@@ -524,44 +682,44 @@ struct Module3Lidar {
         }
       }
 
-      InfoCard({ title: '避障工作原理' }) {
+      InfoCard({ title: '检测规则' }) {
         Column({ space: '8vp' }) {
           StatusItem({
-            label: '障碍物检测',
-            desc: '雷达持续扫描前方和两侧区域，检测距离小于阈值的障碍物',
+            label: '前方扇区',
+            desc: '前方小于减速阈值时进入动态避障，小于停车阈值时判定为通道堵塞',
             active: this.avoidanceEnabled
           })
           StatusItem({
-            label: '自动减速',
-            desc: '检测到前方障碍物距离小于减速阈值时，自动降低行驶速度',
+            label: '左右货架距离',
+            desc: '对比左侧与右侧平均距离，判断小车是否偏离通道中心',
             active: this.avoidanceEnabled && this.frontDistance <= this.slowDownThreshold
           })
           StatusItem({
-            label: '紧急停车',
-            desc: '前方距离小于停车阈值时，立即停车并保持安全距离',
+            label: '占用分类',
+            desc: '短时障碍按人员经过处理，持续超过阈值按货物堆放或通道占用告警处理',
             active: this.avoidanceEnabled && this.frontDistance <= this.stopThreshold
           })
           StatusItem({
-            label: '目标跟踪',
-            desc: '开启跟踪模式后，持续追踪最近障碍物并保持安全距离跟随',
+            label: '警戒区域',
+            desc: '危险品区域或禁入区检测到移动目标时，直接生成雷达安全告警',
             active: this.trackingEnabled
           })
         }
       }
 
-      InfoCard({ title: '模拟测试' }) {
+      InfoCard({ title: '场景预设' }) {
         Column({ space: '10vp' }) {
-          Text('点击下方按钮模拟不同的障碍物场景，测试避障系统响应')
+          Text('场景按钮会生成雷达快照；非正常状态会同步到告警模块。')
             .fontSize('12fp')
             .fontColor($r('app.color.text_secondary'))
             .maxLines(2)
             .textOverflow({ overflow: TextOverflow.Ellipsis })
 
           Row({ space: '8vp' }) {
-            ActionChip({ label: '前方障碍(0.7m)', accent: $r('app.color.alert_warning'), onTap: (): void => {
+            ActionChip({ label: '前方0.7m减速', accent: $r('app.color.alert_warning'), onTap: (): void => {
               this.simulateScenario(0.70, 0.60, 0.62, 3, false);
             } })
-            ActionChip({ label: '通道堵塞(0.3m)', accent: $r('app.color.alert_critical'), onTap: (): void => {
+            ActionChip({ label: '前方0.3m停车', accent: $r('app.color.alert_critical'), onTap: (): void => {
               this.simulateScenario(0.30, 0.58, 0.61, 5, false);
             } })
           }
@@ -571,6 +729,14 @@ struct Module3Lidar {
             } })
             ActionChip({ label: '右侧靠近', accent: $r('app.color.module3_accent'), onTap: (): void => {
               this.simulateScenario(1.20, 0.65, 0.35, 2, false);
+            } })
+          }
+          Row({ space: '8vp' }) {
+            ActionChip({ label: '货物堆放5秒', accent: $r('app.color.alert_critical'), onTap: (): void => {
+              this.simulateScenario(0.42, 0.58, 0.60, 6, false);
+            } })
+            ActionChip({ label: '禁区移动目标', accent: $r('app.color.alert_critical'), onTap: (): void => {
+              this.simulateScenario(1.20, 0.60, 0.58, 1, true);
             } })
           }
         }

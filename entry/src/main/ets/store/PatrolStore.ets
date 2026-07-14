@@ -234,16 +234,14 @@ export class PatrolStore {
   }
 
   addAlert(record: AlertRecord): void {
-    if (!record.aiAnalysis) {
-      record.aiAnalysis = this.createLocalAiAnalysis(record);
-      record.aiAnalyzing = false;
-    }
+    record.aiAnalyzing = false;
     this.alerts.unshift(record);
     if (this.alerts.length > 100) {
       this.alerts.pop();
     }
     this.markPointAbnormal(record.point);
     this.notify();
+    this.triggerAiAnalysis(record);
   }
 
   private createLocalAiAnalysis(record: AlertRecord): AiAnalysisResult {

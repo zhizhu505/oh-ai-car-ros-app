@@ -6,20 +6,20 @@
   <title>狭域巡航 aiPotRol</title>
   <style>
     :root {
-      --bg: #08111f;
-      --panel: #101b2b;
-      --panel-2: #162338;
-      --ink: #f8fbff;
-      --text: #d8e4f2;
-      --muted: #8fa2b8;
-      --line: rgba(154, 177, 205, .24);
-      --blue: #6574ff;
-      --cyan: #17c7d8;
-      --green: #20c987;
-      --amber: #ffad1f;
-      --pink: #eb3d98;
-      --red: #ff474f;
-      --shadow: 0 30px 90px rgba(0, 0, 0, .42);
+      --bg: #f6f9ff;
+      --panel: #ffffff;
+      --panel-2: #eef5ff;
+      --ink: #132238;
+      --text: #344863;
+      --muted: #6b7d94;
+      --line: rgba(91, 114, 143, .22);
+      --blue: #2f63d6;
+      --cyan: #0aa7bd;
+      --green: #10a36f;
+      --amber: #e89216;
+      --pink: #cf3b87;
+      --red: #df3d45;
+      --shadow: 0 28px 80px rgba(51, 83, 122, .18);
       --radius: 14px;
     }
 
@@ -32,9 +32,9 @@
       overflow: hidden;
       color: var(--ink);
       background:
-        radial-gradient(circle at 18% 18%, rgba(23, 199, 216, .24), transparent 34%),
-        radial-gradient(circle at 84% 16%, rgba(101, 116, 255, .24), transparent 30%),
-        linear-gradient(135deg, #07101e 0%, #0e1728 52%, #08111f 100%);
+        radial-gradient(circle at 16% 18%, rgba(10, 167, 189, .15), transparent 32%),
+        radial-gradient(circle at 88% 12%, rgba(47, 99, 214, .13), transparent 30%),
+        linear-gradient(135deg, #f7fbff 0%, #edf5ff 48%, #fff9ed 100%);
       font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans SC", Arial, sans-serif;
     }
 
@@ -48,8 +48,8 @@
       height: min(94vh, calc(96vw * 9 / 16));
       transform: translate(-50%, -50%);
       overflow: hidden;
-      background: #0b1423;
-      border: 1px solid rgba(154, 177, 205, .32);
+      background: #ffffff;
+      border: 1px solid rgba(91, 114, 143, .18);
       border-radius: 22px;
       box-shadow: var(--shadow);
     }
@@ -62,10 +62,10 @@
       gap: 18px;
       padding: 56px 58px 48px;
       background:
-        linear-gradient(180deg, rgba(255,255,255,.035), transparent 24%),
-        linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px),
-        linear-gradient(0deg, rgba(255,255,255,.026) 1px, transparent 1px),
-        #0b1423;
+        linear-gradient(180deg, rgba(47,99,214,.055), transparent 24%),
+        linear-gradient(90deg, rgba(91,114,143,.10) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(91,114,143,.08) 1px, transparent 1px),
+        #ffffff;
       background-size: auto, 52px 52px, 52px 52px;
     }
 
@@ -82,9 +82,9 @@
     .cover {
       padding: 0;
       background:
-        linear-gradient(90deg, rgba(8,17,31,.98) 0%, rgba(8,17,31,.90) 42%, rgba(8,17,31,.38) 70%, rgba(8,17,31,.12) 100%),
+        linear-gradient(90deg, rgba(255,255,255,.97) 0%, rgba(255,255,255,.90) 44%, rgba(255,255,255,.48) 74%, rgba(255,255,255,.18) 100%),
         url("assets/app_dashboard.png") right center / auto 105% no-repeat,
-        linear-gradient(135deg, #07101e, #0b1f32 48%, #06363b);
+        linear-gradient(135deg, #f8fbff, #eaf4ff 48%, #eefcf8);
     }
 
     .cover::before {
@@ -92,8 +92,8 @@
       position: absolute;
       inset: 0;
       background:
-        radial-gradient(circle at 24% 28%, rgba(23,199,216,.28), transparent 28%),
-        radial-gradient(circle at 52% 74%, rgba(101,116,255,.25), transparent 32%);
+        radial-gradient(circle at 24% 28%, rgba(10,167,189,.14), transparent 28%),
+        radial-gradient(circle at 52% 74%, rgba(47,99,214,.12), transparent 32%);
       pointer-events: none;
     }
 
@@ -121,9 +121,9 @@
       height: 76px;
       border-radius: 50%;
       object-fit: cover;
-      border: 1px solid rgba(255,255,255,.28);
+      border: 1px solid rgba(91,114,143,.22);
       background: #fff;
-      box-shadow: 0 12px 40px rgba(23,199,216,.20);
+      box-shadow: 0 12px 34px rgba(10,167,189,.18);
     }
 
     .brand-name {
@@ -162,10 +162,10 @@
     .cover-points span {
       min-height: 62px;
       padding: 13px 14px;
-      border: 1px solid rgba(154,177,205,.26);
+      border: 1px solid rgba(91,114,143,.18);
       border-radius: 12px;
-      background: rgba(16, 27, 43, .72);
-      color: #dbeafe;
+      background: rgba(255,255,255,.84);
+      color: var(--text);
       font-weight: 800;
       line-height: 1.35;
     }
@@ -181,13 +181,13 @@
       align-items: center;
       gap: 18px;
       padding: 0 28px;
-      border-bottom: 1px solid rgba(154,177,205,.18);
-      background: rgba(9, 18, 33, .82);
+      border-bottom: 1px solid rgba(91,114,143,.18);
+      background: rgba(255, 255, 255, .86);
       backdrop-filter: blur(12px);
     }
 
     .brand {
-      color: #c7f9ff;
+      color: #0b6372;
       font-weight: 900;
       font-size: 13px;
       white-space: nowrap;
@@ -211,8 +211,8 @@
     }
 
     .nav span.on {
-      color: #07111f;
-      background: linear-gradient(135deg, var(--cyan), #8ef7ff);
+      color: #ffffff;
+      background: linear-gradient(135deg, var(--cyan), var(--blue));
     }
 
     .slide-no {
@@ -262,14 +262,14 @@
     .card, .panel, .metric, .demo-card, .shot, .person, .module {
       border: 1px solid var(--line);
       border-radius: var(--radius);
-      background: linear-gradient(180deg, rgba(255,255,255,.055), rgba(255,255,255,.025));
-      box-shadow: 0 16px 36px rgba(0,0,0,.18);
+      background: linear-gradient(180deg, #ffffff, #f7fbff);
+      box-shadow: 0 16px 34px rgba(54, 82, 116, .10);
     }
 
     .card, .panel, .person, .module { padding: 20px; }
 
     .card h3, .panel h3, .person h3, .module h3, .demo-card h3 {
-      color: #ffffff;
+      color: var(--ink);
       font-size: 18px;
       margin-bottom: 12px;
     }
@@ -285,16 +285,16 @@
     li + li { margin-top: 5px; }
 
     .metric {
-      padding: 18px;
-      min-height: 112px;
+      padding: 14px;
+      min-height: 102px;
       display: grid;
       align-content: start;
-      gap: 10px;
+      gap: 8px;
     }
 
     .metric b {
-      color: #ffffff;
-      font-size: 30px;
+      color: var(--blue);
+      font-size: 28px;
       line-height: 1;
     }
 
@@ -312,14 +312,14 @@
       min-height: 30px;
       padding: 5px 12px;
       border-radius: 999px;
-      background: rgba(23,199,216,.16);
-      color: #a7f3ff;
-      border: 1px solid rgba(23,199,216,.32);
+      background: rgba(10,167,189,.10);
+      color: #0b6372;
+      border: 1px solid rgba(10,167,189,.22);
       font-weight: 900;
       font-size: 12px;
     }
 
-    .highlight { color: #a7f3ff; font-weight: 900; }
+    .highlight { color: var(--blue); font-weight: 900; }
     .green { color: var(--green); font-weight: 900; }
     .amber { color: var(--amber); font-weight: 900; }
     .red { color: var(--red); font-weight: 900; }
@@ -340,7 +340,7 @@
       min-height: 0;
       border: 1px solid var(--line);
       border-radius: var(--radius);
-      background: #0f1827;
+      background: #f5f9ff;
     }
 
     .image-frame img {
@@ -359,8 +359,9 @@
       z-index: 2;
       padding: 6px 10px;
       border-radius: 999px;
-      background: rgba(8,17,31,.82);
-      color: #dffbff;
+      background: rgba(255,255,255,.88);
+      color: #0b6372;
+      border: 1px solid rgba(91,114,143,.18);
       font-size: 12px;
       font-weight: 900;
     }
@@ -378,7 +379,7 @@
       padding: 16px;
       border-radius: 14px;
       border: 1px solid var(--line);
-      background: rgba(16,27,43,.78);
+      background: rgba(255,255,255,.86);
       overflow: hidden;
     }
 
@@ -394,14 +395,14 @@
 
     .step b {
       display: block;
-      color: #ffffff;
+      color: var(--blue);
       font-size: 22px;
       margin-bottom: 8px;
     }
 
     .step strong {
       display: block;
-      color: #ffffff;
+      color: var(--ink);
       font-size: 15px;
       margin-bottom: 8px;
     }
@@ -423,14 +424,14 @@
     .day {
       padding: 13px;
       border-radius: 12px;
-      border: 1px solid rgba(154,177,205,.22);
-      background: rgba(16,27,43,.72);
+      border: 1px solid rgba(91,114,143,.18);
+      background: rgba(255,255,255,.84);
       min-height: 118px;
     }
 
     .day b {
       display: block;
-      color: #fff;
+      color: var(--ink);
       font-size: 14px;
       margin-bottom: 7px;
     }
@@ -452,12 +453,12 @@
     .issue {
       padding: 20px;
       border-radius: var(--radius);
-      border: 1px solid rgba(255, 173, 31, .28);
-      background: linear-gradient(180deg, rgba(255,173,31,.08), rgba(255,255,255,.025));
+      border: 1px solid rgba(232, 146, 22, .24);
+      background: linear-gradient(180deg, rgba(255,248,230,.92), #ffffff);
     }
 
     .issue h3 {
-      color: #fff;
+      color: var(--ink);
       font-size: 18px;
       margin-bottom: 10px;
     }
@@ -484,8 +485,8 @@
 
     .person .share {
       margin-top: auto;
-      color: #07111f;
-      background: linear-gradient(135deg, var(--cyan), #a7f3ff);
+      color: #ffffff;
+      background: linear-gradient(135deg, var(--cyan), var(--blue));
       border-radius: 999px;
       padding: 6px 10px;
       text-align: center;
@@ -515,7 +516,7 @@
       min-height: 0;
       border: 1px solid var(--line);
       border-radius: 14px;
-      background: #0c1320;
+      background: #f5f9ff;
     }
 
     .phone-shot img {
@@ -524,6 +525,79 @@
       object-fit: cover;
       object-position: top center;
       display: block;
+    }
+
+    .feature-split {
+      display: grid;
+      grid-template-columns: 1.05fr .95fr;
+      gap: 14px;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .logic-stack {
+      display: grid;
+      gap: 8px;
+    }
+
+    .logic-step {
+      padding: 9px 12px;
+      border: 1px solid var(--line);
+      border-left: 5px solid var(--cyan);
+      border-radius: 8px;
+      background: rgba(255,255,255,.88);
+    }
+
+    .logic-step strong {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--ink);
+      font-size: 14px;
+    }
+
+    .logic-step span {
+      color: var(--muted);
+      font-size: 12.2px;
+      line-height: 1.42;
+    }
+
+    .media-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      min-height: 0;
+    }
+
+    .media-tile {
+      position: relative;
+      min-height: 0;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #f5f9ff;
+    }
+
+    .media-tile img,
+    .media-tile video {
+      width: 100%;
+      height: 100%;
+      min-height: 160px;
+      display: block;
+      object-fit: contain;
+      background: #f5f9ff;
+    }
+
+    .media-tile span {
+      position: absolute;
+      left: 10px;
+      top: 10px;
+      padding: 5px 9px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.88);
+      border: 1px solid rgba(91,114,143,.20);
+      color: #0b6372;
+      font-size: 12px;
+      font-weight: 800;
     }
 
     .module-grid {
@@ -551,7 +625,7 @@
     .shot {
       position: relative;
       overflow: hidden;
-      background: #0f1827;
+      background: #f5f9ff;
     }
 
     .shot.wide { grid-row: span 2; }
@@ -567,14 +641,14 @@
     .shot.wide img { object-fit: contain; padding: 10px; }
 
     .quote {
-      margin-top: 14px;
-      padding: 15px 18px;
+      margin-top: 10px;
+      padding: 11px 15px;
       border-left: 4px solid var(--cyan);
       border-radius: 12px;
       color: var(--text);
-      background: rgba(23, 199, 216, .08);
+      background: rgba(10, 167, 189, .08);
       line-height: 1.55;
-      font-size: 14px;
+      font-size: 13px;
     }
 
     .controls {
@@ -592,8 +666,8 @@
       height: 36px;
       border: 1px solid var(--line);
       border-radius: 50%;
-      color: #dffbff;
-      background: rgba(16,27,43,.92);
+      color: var(--blue);
+      background: rgba(255,255,255,.94);
       cursor: pointer;
       font-size: 20px;
       font-weight: 900;
@@ -613,7 +687,7 @@
       right: 0;
       bottom: 0;
       height: 5px;
-      background: rgba(154,177,205,.18);
+      background: rgba(91,114,143,.16);
       z-index: 9;
     }
 
@@ -633,7 +707,7 @@
       h1 { font-size: 36px; }
       .subtitle { font-size: 16px; }
       .nav { display: none; }
-      .cover-points, .cols-2, .cols-3, .cols-4, .split, .timeline, .day-grid, .issue-grid, .people, .app-layout, .phone-stack, .module-grid, .shots {
+      .cover-points, .cols-2, .cols-3, .cols-4, .split, .timeline, .day-grid, .issue-grid, .people, .app-layout, .phone-stack, .module-grid, .shots, .feature-split, .media-grid {
         grid-template-columns: 1fr;
       }
       .shots { grid-template-rows: none; }
@@ -642,7 +716,7 @@
 </head>
 <body>
   <main class="deck" aria-label="狭域巡航 aiPotRol 项目展示">
-    <section class="slide cover" data-section="cover">
+    <section class="slide cover" data-section="cover" data-order="0">
       <div class="cover-inner">
         <div class="brand-row">
           <img class="logo" src="assets/project_logo.png" alt="狭域巡航项目标识">
@@ -658,7 +732,7 @@
       </div>
     </section>
 
-    <section class="slide" data-section="project">
+    <section class="slide" data-section="project" data-order="1">
       <div class="topbar"></div>
       <div>
         <div class="kicker">01 · 项目立项</div>
@@ -680,7 +754,7 @@
       </div>
     </section>
 
-    <section class="slide" data-section="project">
+    <section class="slide" data-section="project" data-order="2">
       <div class="topbar"></div>
       <div>
         <div class="kicker">01 · 需求分析</div>
@@ -714,7 +788,7 @@
       </div>
     </section>
 
-    <section class="slide" data-section="project">
+    <section class="slide" data-section="project" data-order="3">
       <div class="topbar"></div>
       <div>
         <div class="kicker">01 · 概要设计</div>
@@ -732,7 +806,7 @@
       </div>
     </section>
 
-    <section class="slide" data-section="manage">
+    <section class="slide" data-section="manage" data-order="4">
       <div class="topbar"></div>
       <div>
         <div class="kicker">02 · 项目管理</div>
@@ -757,7 +831,7 @@
       </div>
     </section>
 
-    <section class="slide" data-section="manage">
+    <section class="slide" data-section="manage" data-order="5">
       <div class="topbar"></div>
       <div>
         <div class="kicker">02 · 项目管理</div>
@@ -774,7 +848,7 @@
       </div>
     </section>
 
-    <section class="slide" data-section="team">
+    <section class="slide" data-section="team" data-order="6">
       <div class="topbar"></div>
       <div>
         <div class="kicker">02 · 成员分工</div>
@@ -791,7 +865,59 @@
       </div>
     </section>
 
-    <section class="slide" data-section="impl">
+    <section class="slide" data-section="impl" data-order="10">
+      <div class="topbar"></div>
+      <div>
+        <div class="kicker">03 · 周诗晴模块：小车端</div>
+        <h2>激光雷达避障与跟踪：把小车从“能移动”提升为“能判断通道安全”</h2>
+        <p class="lead">小车端围绕仓储狭窄通道设计雷达检测逻辑，重点处理前方通道、左右货架距离、动态障碍和警戒区域四类问题。</p>
+      </div>
+      <div class="body">
+        <div class="feature-split">
+          <div class="logic-stack">
+            <div class="logic-step"><strong>三扇区测距</strong><span>将雷达数据划分为前方通道、左侧货架、右侧货架，分别计算最小距离或平均距离，为通道安全判断提供输入。</span></div>
+            <div class="logic-step"><strong>通道占用分类</strong><span>前方 0.8m 内进入减速，0.4m 内进入停车；障碍持续超过 5 秒时判定为通道占用或货物堆放异常。</span></div>
+            <div class="logic-step"><strong>货架居中保持</strong><span>对比左右两侧货架距离，判断小车是否偏左或偏右，支持在狭窄货架通道中保持稳定巡检姿态。</span></div>
+            <div class="logic-step"><strong>动态避障与跟踪</strong><span>短时障碍按人员经过处理，长时障碍按占用处理；跟踪模式用于持续观察移动目标并保持安全距离。</span></div>
+            <div class="logic-step"><strong>警戒区域检测</strong><span>危险品区或禁入区附近检测到移动目标时，直接触发雷达安全告警，提示人工确认和接管。</span></div>
+          </div>
+          <div class="grid cols-2">
+            <div class="metric"><b>0.8m</b><span>前方减速阈值，通道出现障碍时降低速度</span></div>
+            <div class="metric"><b>0.4m</b><span>前方停车阈值，距离过近时强制停车</span></div>
+            <div class="metric"><b>5s</b><span>占用持续阈值，区分人员经过和货物堆放</span></div>
+            <div class="metric"><b>3区</b><span>前方扇区、左侧货架、右侧货架独立判断</span></div>
+          </div>
+        </div>
+        <div class="quote">讲述重点：这一部分不是单纯展示雷达数值，而是把数值转成“减速、停车、占用、告警”这些可解释的安全策略。</div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="impl" data-order="11">
+      <div class="topbar"></div>
+      <div>
+        <div class="kicker">03 · 周诗晴模块：APP 与告警 AI</div>
+        <h2>APP 场景应用与告警闭环：雷达事件进入告警中心，再由 AI 给出处置建议</h2>
+        <p class="lead">APP 端把雷达场景预设、通道安全阈值、告警记录和 AI 分析放到同一条演示链路中，形成可展示、可追溯、可解释的异常处理流程。</p>
+      </div>
+      <div class="body">
+        <div class="feature-split">
+          <div class="logic-stack">
+            <div class="logic-step"><strong>雷达场景预设</strong><span>提供前方 0.7m 减速、0.3m 停车、货物堆放 5 秒、禁区移动目标等按钮，便于答辩现场快速触发场景。</span></div>
+            <div class="logic-step"><strong>告警同步</strong><span>雷达快照更新后进入 PatrolStore，非正常通道状态会自动写入告警列表，告警模块可以直接查看。</span></div>
+            <div class="logic-step"><strong>告警中心展示</strong><span>告警记录包含时间、点位、类型、等级和消息，支持按模块复盘通道堵塞、占用和警戒区异常。</span></div>
+            <div class="logic-step"><strong>AI 分析与咨询</strong><span>支持对单条或多条告警做总结分析，也可以围绕告警内容进行问答，输出风险判断和处理建议。</span></div>
+          </div>
+          <div class="media-grid">
+            <div class="media-tile"><span>告警中心</span><img src="assets/zsq/告警中心/告警中心一览.jpg" alt="告警中心一览"></div>
+            <div class="media-tile"><span>AI 分析</span><img src="assets/zsq/告警中心/ai分析.jpg" alt="AI 分析"></div>
+            <div class="media-tile"><span>AI 咨询</span><img src="assets/zsq/告警中心/ai咨询.jpg" alt="AI 咨询"></div>
+            <div class="media-tile"><span>演示视频</span><video src="assets/zsq/告警中心/告警+ai.mp4" controls muted></video></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="impl" data-order="7">
       <div class="topbar"></div>
       <div>
         <div class="kicker">03 · 项目设计与实现</div>
@@ -811,7 +937,7 @@
       </div>
     </section>
 
-    <section class="slide" data-section="impl">
+    <section class="slide" data-section="impl" data-order="8">
       <div class="topbar"></div>
       <div>
         <div class="kicker">03 · 胡雅欣负责模块</div>
@@ -833,7 +959,7 @@
       </div>
     </section>
 
-    <section class="slide" data-section="impl">
+    <section class="slide" data-section="impl" data-order="9">
       <div class="topbar"></div>
       <div>
         <div class="kicker">03 · 胡雅欣负责模块</div>
@@ -852,7 +978,7 @@
       </div>
     </section>
 
-    <section class="slide" data-section="impl">
+    <section class="slide" data-section="impl" data-order="12">
       <div class="topbar"></div>
       <div>
         <div class="kicker">03 · 其他模块框架</div>
@@ -870,7 +996,7 @@
       </div>
     </section>
 
-    <section class="slide" data-section="result">
+    <section class="slide" data-section="result" data-order="13">
       <div class="topbar"></div>
       <div>
         <div class="kicker">04 · 成果展示</div>
@@ -887,7 +1013,7 @@
       </div>
     </section>
 
-    <section class="slide" data-section="result">
+    <section class="slide" data-section="result" data-order="14">
       <div class="topbar"></div>
       <div>
         <div class="kicker">04 · 测试与演示</div>
@@ -919,7 +1045,7 @@
       </div>
     </section>
 
-    <section class="slide" data-section="summary">
+    <section class="slide" data-section="summary" data-order="15">
       <div class="topbar"></div>
       <div>
         <div class="kicker">05 · 总结</div>
@@ -952,7 +1078,8 @@
       { label: "总结", sections: ["summary"] }
     ];
 
-    const slides = [...document.querySelectorAll(".slide")];
+    const slides = [...document.querySelectorAll(".slide")]
+      .sort((a, b) => Number(a.dataset.order) - Number(b.dataset.order));
     const pager = document.querySelector("#pager");
     const progress = document.querySelector("#progress");
     let current = 0;

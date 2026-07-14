@@ -66,6 +66,14 @@ interface LidarTrackPayload {
   enabled: boolean;
 }
 
+interface LidarScenePayload {
+  cmd: string;
+  scene: string;
+  front_warn_m?: number;
+  front_stop_m?: number;
+  narrow_mode?: boolean;
+}
+
 export interface RedBottleDemoStatus {
   type: string;
   mode: string;
@@ -115,7 +123,7 @@ export interface VisionGuardStatus {
 
 type PatrolCmdPayload = StartPatrolPayload | SetModePayload | SimpleCmdPayload |
   StartRedBottleGuardPayload | StartAlertAreaGuardPayload |
-  LidarStrategyPayload | LidarAvoidPayload | LidarTrackPayload;
+  LidarStrategyPayload | LidarAvoidPayload | LidarTrackPayload | LidarScenePayload;
 
 /**
  * 向小车端发送 JSON 巡检控制命令
@@ -254,6 +262,40 @@ export class PatrolCommandUtils {
     return result;
   }
 
+  static async startAutoAvoidance(): Promise<boolean> {
+    const payload: LidarScenePayload = {
+      cmd: 'lidar_scene',
+      scene: 'start_auto'
+    };
+    return PatrolCommandUtils.sendScene(payload);
+  }
+
+  static async stopAutoAvoidance(): Promise<boolean> {
+    const payload: LidarScenePayload = {
+      cmd: 'lidar_scene',
+      scene: 'stop_auto'
+    };
+    return PatrolCommandUtils.sendScene(payload);
+  }
+
+  static async setNarrowMode(enabled: boolean): Promise<boolean> {
+    const payload: LidarScenePayload = {
+      cmd: 'lidar_scene',
+      scene: enabled ? 'narrow_mode' : 'normal_mode',
+      narrow_mode: enabled
+    };
+    return PatrolCommandUtils.sendScene(payload);
+  }
+
+  static async setFrontWarnThreshold(frontWarnM: number): Promise<boolean> {
+    const payload: LidarScenePayload = {
+      cmd: 'lidar_scene',
+      scene: 'set_front_warn',
+      front_warn_m: frontWarnM
+    };
+    return PatrolCommandUtils.sendScene(payload);
+  }
+
   static async requestLidarSnapshot(): Promise<string> {
     const payload: SimpleCmdPayload = { cmd: 'get_lidar_snapshot' };
     const message = `${JSON.stringify(payload)}\n`;
@@ -370,6 +412,12 @@ export class PatrolCommandUtils {
   private static async sendTrack(payload: LidarTrackPayload): Promise<boolean> {
     const message = `${JSON.stringify(payload)}\n`;
     console.info(TAG, 'sendTrack', `message=${message}`);
+    return TCPClientManager.getInstance().sendMessage(message);
+  }
+
+  private static async sendScene(payload: LidarScenePayload): Promise<boolean> {
+    const message = `${JSON.stringify(payload)}\n`;
+    console.info(TAG, 'sendScene', `message=${message}`);
     return TCPClientManager.getInstance().sendMessage(message);
   }
 
