@@ -1,4 +1,5 @@
 import { TCPClientManager } from './TCPClientManager';
+import { LIDAR_SNAPSHOT_PORT } from '../utils/PreferencesUtils';
 
 const TAG = 'PatrolCommandUtils';
 
@@ -16,6 +17,13 @@ interface SetModePayload {
 
 interface SimpleCmdPayload {
   cmd: string;
+}
+
+interface DemoCommandReply {
+  type: string;
+  online: boolean;
+  ok: boolean;
+  message: string;
 }
 
 interface StartRedBottleGuardPayload {
@@ -38,11 +46,24 @@ interface StartAlertAreaGuardPayload {
   fail_safe_stop: boolean;
 }
 
-interface DemoCommandReply {
-  type: string;
-  online: boolean;
-  ok: boolean;
-  message: string;
+interface LidarStrategyPayload {
+  cmd: string;
+  frontWarnM: number;
+  frontStopM: number;
+  channelHoldSec: number;
+  shelfIdealM: number;
+  shelfToleranceM: number;
+  guardRegionEnabled: boolean;
+}
+
+interface LidarAvoidPayload {
+  cmd: string;
+  enabled: boolean;
+}
+
+interface LidarTrackPayload {
+  cmd: string;
+  enabled: boolean;
 }
 
 export interface RedBottleDemoStatus {
@@ -93,7 +114,8 @@ export interface VisionGuardStatus {
 }
 
 type PatrolCmdPayload = StartPatrolPayload | SetModePayload | SimpleCmdPayload |
-  StartRedBottleGuardPayload | StartAlertAreaGuardPayload;
+  StartRedBottleGuardPayload | StartAlertAreaGuardPayload |
+  LidarStrategyPayload | LidarAvoidPayload | LidarTrackPayload;
 
 /**
  * 向小车端发送 JSON 巡检控制命令
@@ -202,6 +224,42 @@ export class PatrolCommandUtils {
     return PatrolCommandUtils.sendDemo(payload);
   }
 
+  static async pushLidarStrategy(strategy: LidarStrategyPayload): Promise<boolean> {
+    strategy.cmd = 'set_lidar_strategy';
+    console.info(TAG, `pushLidarStrategy called, strategy=${JSON.stringify(strategy)}`);
+    const result = await PatrolCommandUtils.sendStrategy(strategy);
+    console.info(TAG, `pushLidarStrategy result: ${result}`);
+    return result;
+  }
+
+  static async enableLidarAvoidance(enabled: boolean): Promise<boolean> {
+    const payload: LidarAvoidPayload = {
+      cmd: 'lidar_avoid',
+      enabled: enabled
+    };
+    console.info(TAG, `enableLidarAvoidance called, enabled=${enabled}, payload=${JSON.stringify(payload)}`);
+    const result = await PatrolCommandUtils.sendAvoid(payload);
+    console.info(TAG, `enableLidarAvoidance result: ${result}`);
+    return result;
+  }
+
+  static async enableLidarTracking(enabled: boolean): Promise<boolean> {
+    const payload: LidarTrackPayload = {
+      cmd: 'lidar_track',
+      enabled: enabled
+    };
+    console.info(TAG, `enableLidarTracking called, enabled=${enabled}, payload=${JSON.stringify(payload)}`);
+    const result = await PatrolCommandUtils.sendTrack(payload);
+    console.info(TAG, `enableLidarTracking result: ${result}`);
+    return result;
+  }
+
+  static async requestLidarSnapshot(): Promise<string> {
+    const payload: SimpleCmdPayload = { cmd: 'get_lidar_snapshot' };
+    const message = `${JSON.stringify(payload)}\n`;
+    return TCPClientManager.getInstance().requestMessageFromPort(LIDAR_SNAPSHOT_PORT, message);
+  }
+
   static async getRedBottleStatus(): Promise<RedBottleDemoStatus> {
     const payload: SimpleCmdPayload = { cmd: 'get_red_bottle_status' };
     const message = `${JSON.stringify(payload)}\n`;
@@ -295,6 +353,24 @@ export class PatrolCommandUtils {
       console.error(TAG, 'sendDemo parse failed', JSON.stringify(e));
       return false;
     }
+  }
+
+  private static async sendStrategy(payload: LidarStrategyPayload): Promise<boolean> {
+    const message = `${JSON.stringify(payload)}\n`;
+    console.info(TAG, 'sendStrategy', `message=${message}`);
+    return TCPClientManager.getInstance().sendMessage(message);
+  }
+
+  private static async sendAvoid(payload: LidarAvoidPayload): Promise<boolean> {
+    const message = `${JSON.stringify(payload)}\n`;
+    console.info(TAG, 'sendAvoid', `message=${message}`);
+    return TCPClientManager.getInstance().sendMessage(message);
+  }
+
+  private static async sendTrack(payload: LidarTrackPayload): Promise<boolean> {
+    const message = `${JSON.stringify(payload)}\n`;
+    console.info(TAG, 'sendTrack', `message=${message}`);
+    return TCPClientManager.getInstance().sendMessage(message);
   }
 
   private static defaultRedBottleStatus(message: string): RedBottleDemoStatus {

@@ -150,6 +150,27 @@ export class PatrolStore {
     this.notify();
   }
 
+  setLidarAvoidanceEnabled(enabled: boolean): void {
+    this.lidar.avoidanceEnabled = enabled;
+    this.lidar.avoidanceStatus = enabled ? 'scanning' : 'idle';
+    this.notify();
+  }
+
+  setLidarTrackingEnabled(enabled: boolean): void {
+    this.lidar.trackingEnabled = enabled;
+    if (enabled) {
+      this.lidar.avoidanceStatus = 'tracking';
+    } else if (!this.lidar.avoidanceEnabled) {
+      this.lidar.avoidanceStatus = 'idle';
+    }
+    this.notify();
+  }
+
+  updateLidarAvoidanceStatus(status: 'idle' | 'scanning' | 'avoiding' | 'tracking'): void {
+    this.lidar.avoidanceStatus = status;
+    this.notify();
+  }
+
   updateVision(data: VisionSnapshot): void {
     this.vision = data;
     this.vehicle.visionStatus = data.personDetected || data.boxInChannel ||
