@@ -38,12 +38,30 @@ interface StartAlertAreaGuardPayload {
   cmd: string;
   confidence: number;
   min_box_area: number;
+  min_bottom_ratio: number;
   confirm_frames: number;
+  forward_percent: number;
   turn_percent: number;
   turn_seconds: number;
   cooldown_seconds: number;
+  control_enabled: boolean;
   publish_forward: boolean;
   fail_safe_stop: boolean;
+}
+
+export interface VoiceStatus {
+  type: string;
+  enabled: boolean;
+  backend: string;
+  message: string;
+  alert_area_message: string;
+  wav: string;
+  updated_at: number;
+}
+
+interface SpeakVoicePayload {
+  cmd: string;
+  message: string;
 }
 
 interface LidarStrategyPayload {
@@ -87,6 +105,11 @@ export interface RedBottleDemoStatus {
   guard_active: boolean;
   stop_latched: boolean;
   event: string;
+  rgb_fresh?: boolean;
+  depth_fresh?: boolean;
+  inference_fresh?: boolean;
+  vision_ready?: boolean;
+  readiness_elapsed_s?: number;
   message: string;
   updated_at: number;
 }
@@ -103,6 +126,9 @@ export interface AlertAreaStatus {
   recommended_action: string;
   guard_active: boolean;
   event: string;
+  rgb_fresh?: boolean;
+  inference_fresh?: boolean;
+  vision_ready?: boolean;
   message: string;
   updated_at: number;
 }
@@ -123,7 +149,7 @@ export interface VisionGuardStatus {
 
 type PatrolCmdPayload = StartPatrolPayload | SetModePayload | SimpleCmdPayload |
   StartRedBottleGuardPayload | StartAlertAreaGuardPayload |
-  LidarStrategyPayload | LidarAvoidPayload | LidarTrackPayload | LidarScenePayload;
+  SpeakVoicePayload | LidarStrategyPayload | LidarAvoidPayload | LidarTrackPayload | LidarScenePayload;
 
 /**
  * 向小车端发送 JSON 巡检控制命令
@@ -206,25 +232,67 @@ export class PatrolCommandUtils {
   static async startAlertAreaGuard(
     confidence: number = 0.45,
     minBoxArea: number = 12000.0,
+    minBottomRatio: number = 0.48,
     confirmFrames: number = 2,
+    forwardPercent: number = 5,
     turnPercent: number = 18,
     turnSeconds: number = 1.0,
     cooldownSeconds: number = 1.5,
-    publishForward: boolean = false,
-    failSafeStop: boolean = false
+    controlEnabled: boolean = true,
+    publishForward: boolean = true,
+    failSafeStop: boolean = true
   ): Promise<boolean> {
     const payload: StartAlertAreaGuardPayload = {
       cmd: 'start_alert_area_guard',
       confidence: confidence,
       min_box_area: minBoxArea,
+      min_bottom_ratio: minBottomRatio,
       confirm_frames: confirmFrames,
+      forward_percent: forwardPercent,
       turn_percent: turnPercent,
       turn_seconds: turnSeconds,
       cooldown_seconds: cooldownSeconds,
+      control_enabled: controlEnabled,
       publish_forward: publishForward,
       fail_safe_stop: failSafeStop
     };
     return PatrolCommandUtils.sendDemo(payload);
+  }
+
+  static async testVisionVoice(message: string = '视觉语音播报测试'): Promise<boolean> {
+    const payload: SpeakVoicePayload = {
+      cmd: 'test_vision_voice',
+      message: message
+    };
+    return PatrolCommandUtils.sendDemo(payload);
+  }
+
+  static async speakVoice(message: string): Promise<boolean> {
+    const payload: SpeakVoicePayload = {
+      cmd: 'speak_voice',
+      message: message
+    };
+    return PatrolCommandUtils.sendDemo(payload);
+  }
+
+  static async getVoiceStatus(): Promise<VoiceStatus> {
+    const payload: SimpleCmdPayload = { cmd: 'get_voice_status' };
+    const message = `${JSON.stringify(payload)}\n`;
+    const response = await TCPClientManager.getInstance().requestMessageFromPort(6600, message);
+    if (response.length === 0) {
+      return PatrolCommandUtils.defaultVoiceStatus('状态服务无响应');
+    }
+    try {
+      const line = response.split('\n')[0];
+      const status = JSON.parse(line) as VoiceStatus;
+      if (!status.type) {
+        return PatrolCommandUtils.defaultVoiceStatus('状态数据异常');
+      }
+      return status;
+    } catch (e) {
+      console.error(TAG, 'getVoiceStatus parse failed', JSON.stringify(e));
+      return PatrolCommandUtils.defaultVoiceStatus('状态解析失败');
+    }
   }
 
   static async stopAlertAreaGuard(): Promise<boolean> {
@@ -427,7 +495,7 @@ export class PatrolCommandUtils {
       mode: 'idle',
       status: '未启动',
       distance_m: null,
-      threshold_m: 0.30,
+      threshold_m: 0.60,
       hysteresis_m: 0.10,
       speed_mps: 0.05,
       detection: false,
@@ -435,6 +503,11 @@ export class PatrolCommandUtils {
       guard_active: false,
       stop_latched: false,
       event: '',
+      rgb_fresh: false,
+      depth_fresh: false,
+      inference_fresh: false,
+      vision_ready: false,
+      readiness_elapsed_s: 0,
       message: message,
       updated_at: 0
     };
@@ -453,6 +526,9 @@ export class PatrolCommandUtils {
       recommended_action: 'forward',
       guard_active: false,
       event: '',
+      rgb_fresh: false,
+      inference_fresh: false,
+      vision_ready: false,
       message: message,
       updated_at: 0
     };
@@ -470,6 +546,18 @@ export class PatrolCommandUtils {
       should_stop: false,
       should_turn: false,
       message: message,
+      updated_at: 0
+    };
+  }
+
+  private static defaultVoiceStatus(message: string): VoiceStatus {
+    return {
+      type: 'voice_status',
+      enabled: false,
+      backend: '',
+      message: message,
+      alert_area_message: '',
+      wav: '',
       updated_at: 0
     };
   }
