@@ -1,11 +1,9 @@
 import {
-  ALERT_CATEGORY_VISION,
   VisionLogRecord,
   VisionSnapshot
 } from '../model/PatrolModels';
 import { PatrolStore } from '../store/PatrolStore';
 import { ModuleTabBar, InfoCard } from '../components/PageHeader';
-import { ModuleAlertList } from '../components/ModuleAlertList';
 import { VideoComponents } from '../components/VideoComponents';
 import { CardShadow } from '../styles/styles';
 import { carApi } from '../CarUtill/CarApi';
@@ -43,7 +41,7 @@ struct Module4Vision {
   @State alertAreaAction: string = 'forward';
   @State alertAreaConfidence: string = '--';
   @State alertAreaMessage: string = '等待状态同步';
-  private tabs: string[] = ['实时数据', '阈值规则', '异常记录'];
+  private tabs: string[] = ['实时数据', '阈值规则', '视觉日志'];
   private redBottleStatusTimer: number = -1;
   private lastAlertAreaLogSignature: string = '';
   private refreshHandler: () => void = (): void => {
@@ -92,7 +90,7 @@ struct Module4Vision {
           } else if (this.currentTabIndex === 1) {
             this.RuleView()
           } else {
-            this.AlertView()
+            this.LogView()
           }
         }
         .width('100%')
@@ -109,7 +107,11 @@ struct Module4Vision {
     Column({ space: '10vp' }) {
       Column() {
         InfoCard({ title: '视频预览' }) {
-          VideoComponents()
+          VideoComponents({
+            previewWidth: '330vp',
+            previewHeight: '205vp',
+            showActions: true
+          })
         }
       }
       .padding({ left: '14vp', right: '14vp' })
@@ -311,27 +313,6 @@ struct Module4Vision {
         }
       }
       .padding({ left: '14vp', right: '14vp' })
-
-      Column() {
-        InfoCard({ title: '实时视觉日志' }) {
-          Column({ space: '8vp' }) {
-            if (this.visionLogs.length === 0) {
-              Text('等待小车视觉日志')
-                .fontSize('13fp')
-                .fontColor($r('app.color.text_secondary'))
-                .width('100%')
-                .textAlign(TextAlign.Center)
-                .padding({ top: '10vp', bottom: '10vp' })
-            } else {
-              ForEach(this.visionLogs.slice(0, 8), (item: VisionLogRecord) => {
-                VisionLogItem({ item: item })
-              }, (item: VisionLogRecord): string => `${item.time}_${item.point}_${item.message}`)
-            }
-          }
-          .width('100%')
-        }
-      }
-      .padding({ left: '14vp', right: '14vp' })
     }
     .width('100%')
     .padding({ top: '12vp', bottom: '16vp' })
@@ -340,33 +321,23 @@ struct Module4Vision {
   @Builder
   RuleView() {
     Column({ space: '12vp' }) {
-      VisionRuleCard({
-        title: '人员闯入检测',
-        rule: 'YOLOv5 检测 person 类，出现在禁入区或管廊通道内即报警',
-        icon: '👤'
-      })
-      VisionRuleCard({
-        title: '杂物占道检测',
-        rule: '检测框进入通道区域判定为杂物越界',
-        icon: '📦'
-      })
-      VisionRuleCard({
-        title: '杂物堆放异常',
-        rule: '杂物偏移、倒下或越界到管廊通道',
-        icon: '📥'
-      })
-      VisionRuleCard({
-        title: '目标设备识别',
-        rule: '识别设备标签、颜色、二维码与巡检标识',
-        icon: '🏷️'
-      })
-      VisionRuleCard({
-        title: '深度相机辅助',
-        rule: '结合深度判断目标距离，确认是否阻挡通道',
-        icon: '📐'
-      })
+      InfoCard({ title: '当前已接入规则' }) {
+        Column({ space: '10vp' }) {
+          VisionRuleCard({
+            title: '红瓶识别停车报警',
+            rule: '识别到红瓶并接近至 0.30m 停车阈值内时，触发停车锁存、蜂鸣与视觉告警日志',
+            icon: '红'
+          })
+          VisionRuleCard({
+            title: '警戒区识别',
+            rule: '识别红色胶带等警戒区域，达到置信度与连续帧确认条件后返回避让建议动作',
+            icon: '区'
+          })
+        }
+        .width('100%')
+      }
       InfoCard({ title: '最小落地版本' }) {
-        Text('人员闯入 + 杂物占道检测')
+        Text('红瓶识别停车报警 + 警戒区识别')
           .fontSize('13fp')
           .fontColor($r('app.color.alert_warning'))
           .width('100%')
@@ -379,14 +350,27 @@ struct Module4Vision {
   }
 
   @Builder
-  AlertView() {
-    Column() {
-      ModuleAlertList({
-        category: ALERT_CATEGORY_VISION,
-        emptyHint: '暂无视觉异常记录'
-      })
+  LogView() {
+    Column({ space: '12vp' }) {
+      InfoCard({ title: '实时视觉日志' }) {
+        Column({ space: '8vp' }) {
+          if (this.visionLogs.length === 0) {
+            Text('等待小车视觉日志')
+              .fontSize('13fp')
+              .fontColor($r('app.color.text_secondary'))
+              .width('100%')
+              .textAlign(TextAlign.Center)
+              .padding({ top: '12vp', bottom: '12vp' })
+          } else {
+            ForEach(this.visionLogs.slice(0, 20), (item: VisionLogRecord) => {
+              VisionLogItem({ item: item })
+            }, (item: VisionLogRecord): string => `${item.time}_${item.point}_${item.message}`)
+          }
+        }
+        .width('100%')
+      }
     }
-    .padding({ left: '14vp', right: '14vp', top: '12vp' })
+    .padding({ left: '14vp', right: '14vp', top: '12vp', bottom: '16vp' })
     .width('100%')
   }
 
@@ -614,7 +598,14 @@ struct VisionRuleCard {
   build() {
     Row({ space: '10vp' }) {
       Text(this.icon)
-        .fontSize('18fp')
+        .fontSize('12fp')
+        .fontColor($r('app.color.text_on_accent'))
+        .fontWeight(FontWeight.Bold)
+        .textAlign(TextAlign.Center)
+        .width('28vp')
+        .height('28vp')
+        .backgroundColor($r('app.color.module4_accent'))
+        .borderRadius('14vp')
       Column({ space: '4vp' }) {
         Text(this.title)
           .fontSize('14fp')
