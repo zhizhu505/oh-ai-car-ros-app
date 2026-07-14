@@ -26,21 +26,22 @@ export interface ChatResponse {
   choices: ChatMessage[];
 }
 
-const URL = "https://api.deepseek.com/v1/chat/completions";
+const URL = 'https://api.deepseek.com/v1/chat/completions';
+const MODEL = 'deepseek-chat';
+const REQUEST_THROTTLE_MS = 150;
+const REQUEST_TIMEOUT_MS = 30000;
 let lastRequestTime: number = 0;
-const requestThrottleMs: number = 150;
-const requestTimeoutMs: number = 6000;
 
 function getApiKey(): string {
-  return EnvUtil.getInstance().get('DEEPSEEK_API_KEY', '');
+  return EnvUtil.getInstance().get('DEEPSEEK_API_KEY', '').trim();
 }
 
 async function waitThrottle(): Promise<void> {
   const now = Date.now();
   const diff = now - lastRequestTime;
-  if (diff < requestThrottleMs) {
+  if (diff < REQUEST_THROTTLE_MS) {
     await new Promise<void>((resolve: (value?: void) => void): void => {
-      setTimeout(resolve, requestThrottleMs - diff);
+      setTimeout(resolve, REQUEST_THROTTLE_MS - diff);
     });
   }
   lastRequestTime = Date.now();
@@ -63,67 +64,67 @@ export async function chat(sysPrompt: string, userInput: string): Promise<string
   await waitThrottle();
   const apiKey = getApiKey();
   if (!apiKey) {
-    throw new Error('DEEPSEEK_API_KEY is not configured. Please create entry/src/main/resources/rawfile/config.env.');
+    throw new Error('DEEPSEEK_API_KEY 未配置，请检查 entry/src/main/resources/rawfile/config.env。');
   }
-  let httpClient = http.createHttp();
-  const message1: AiMessage = { role: "system", content: sysPrompt };
-  const message2: AiMessage = { role: "user", content: userInput };
+
+  const httpClient = http.createHttp();
   const body: ChatRequestBody = {
-    model: "deepseek-chat",
+    model: MODEL,
     temperature: 0.1,
     stream: false,
-    messages: [message1, message2]
+    messages: [
+      { role: 'system', content: sysPrompt },
+      { role: 'user', content: userInput }
+    ]
   };
-  const bodyStr = JSON.stringify(body);
+
   try {
-    let res = await httpClient.request(URL, {
+    const res = await httpClient.request(URL, {
       method: http.RequestMethod.POST,
       header: {
-        "Authorization": `Bearer ${apiKey}`,
-        "Content-Type": "application/json"
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
       },
-      extraData: bodyStr,
-      connectTimeout: requestTimeoutMs,
-      readTimeout: requestTimeoutMs
+      extraData: JSON.stringify(body),
+      connectTimeout: REQUEST_TIMEOUT_MS,
+      readTimeout: REQUEST_TIMEOUT_MS
     });
-    let resultStr = res.result.toString();
-    let resObj: ChatResponse = JSON.parse(resultStr);
-    if (resObj.choices && resObj.choices.length > 0) {
+    const resultStr = res.result.toString();
+    if (res.responseCode < 200 || res.responseCode >= 300) {
+      throw new Error(`HTTP ${res.responseCode}: ${resultStr}`);
+    }
+    const resObj = JSON.parse(resultStr) as ChatResponse;
+    if (resObj.choices && resObj.choices.length > 0 && resObj.choices[0].message &&
+      resObj.choices[0].message.content) {
       return resObj.choices[0].message.content.trim();
     }
-    throw new Error("API返回格式错误");
+    throw new Error(`API 返回格式错误: ${resultStr}`);
   } catch (err) {
-    const errMsg = typeof err === 'object' ? JSON.stringify(err) : String(err);
-    console.error(`DeepSeek调用失败详情: ${errMsg}`);
-    return JSON.stringify({
-      "summary": "AI分析失败",
-      "risk": `请求异常: ${errMsg}`,
-      "solve": ["切换手机流量、检查密钥、延长请求超时时间"]
-    });
+    const message = JSON.stringify(err);
+    console.error(`DeepSeek 调用失败: ${message}`);
+    throw new Error(message);
   } finally {
     httpClient.destroy();
   }
 }
 
 export async function analyzeAlarm(alarmJsonStr: string): Promise<AiAnalysisResult> {
-  const prompt = `你是地下管廊巡检告警专家，仅输出标准JSON，禁止多余文字。输出三个字段：summary：一句话概括异常；risk：地下管廊对应安全风险；solve：数组，3条分步处置操作。告警数据：${alarmJsonStr}`;
-  const result = await chat(prompt, alarmJsonStr);
+  const prompt = `你是仓储巡检告警分析专家。只输出标准 JSON，不要输出 Markdown 和多余说明。
+输出字段：
+summary：一句话概括异常；
+risk：说明对仓储通道、安全巡检或设备运行的风险；
+solve：字符串数组，给出 3 条现场处置步骤。`;
+  const result = await chat(prompt, `告警数据：${alarmJsonStr}`);
+  const cleanResult = cleanMarkdownCodeBlock(result);
   try {
-    const cleanResult = cleanMarkdownCodeBlock(result);
     return JSON.parse(cleanResult) as AiAnalysisResult;
   } catch (err) {
-    console.error(`AI分析JSON解析失败: ${err}, 原始内容: ${result}`);
-    const defaultResult: AiAnalysisResult = {
-      summary: "AI分析失败",
-      risk: "模型返回格式异常",
-      solve: ["请稍后重试"]
-    };
-    return defaultResult;
+    throw new Error(`模型返回不是合法 JSON: ${cleanResult}`);
   }
 }
 
 export async function queryAlarmQuestion(alarmJsonStr: string, question: string): Promise<string> {
-  const prompt = "结合下方地下管廊告警数据，简短专业回答用户巡检相关问题，适配手机展示";
+  const prompt = '结合仓储巡检告警数据，用中文简短、专业地回答用户问题。不要编造不存在的告警，适配手机展示。';
   const input = `告警信息：${alarmJsonStr}\n用户问题：${question}`;
   const result = await chat(prompt, input);
   return cleanMarkdownCodeBlock(result);

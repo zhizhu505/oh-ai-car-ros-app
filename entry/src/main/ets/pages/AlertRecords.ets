@@ -281,7 +281,7 @@ struct AlertRecords {
     }
     this.summaryExpanded = true;
     this.reportGeneratedAt = this.formatCurrentTime();
-    this.summaryText = this.buildFallbackReport();
+    this.summaryText = '';
     this.summaryLoading = true;
     const question = this.buildReportPrompt();
     try {
@@ -290,7 +290,8 @@ struct AlertRecords {
         this.summaryText = aiReport;
       }
     } catch (err) {
-      promptAction.showToast({ message: '已先生成本地汇报，AI优化失败' });
+      this.summaryText = this.buildFallbackReport();
+      promptAction.showToast({ message: `AI汇总失败，已生成本地汇报：${err}` });
     } finally {
       this.summaryLoading = false;
     }
@@ -362,8 +363,7 @@ struct AlertRecords {
     }
     this.chatItems = [...this.chatItems, new ChatItem(Date.now().toString(), true, question)];
     const loadingId = (Date.now() + 1).toString();
-    const localAnswer = this.buildLocalChatAnswer(question, selectedAlerts);
-    this.chatItems = [...this.chatItems, new ChatItem(loadingId, false, localAnswer, false)];
+    this.chatItems = [...this.chatItems, new ChatItem(loadingId, false, 'AI正在分析告警，请稍候...', true)];
     this.chatInputText = '';
     try {
       const answer = await queryAlarmQuestion(this.buildSelectedPayload(), question);
@@ -374,9 +374,10 @@ struct AlertRecords {
         return item;
       });
     } catch (err) {
+      const localAnswer = this.buildLocalChatAnswer(question, selectedAlerts);
       this.chatItems = this.chatItems.map((item: ChatItem): ChatItem => {
         if (item.id === loadingId) {
-          return new ChatItem(item.id, false, 'AI咨询失败，请检查网络和 DeepSeek API Key 配置。', false);
+          return new ChatItem(item.id, false, `AI咨询失败，已使用本地规则兜底。\n${localAnswer}`, false);
         }
         return item;
       });
