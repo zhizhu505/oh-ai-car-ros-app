@@ -15,14 +15,17 @@ import { EnvMockService } from '../mock/EnvMockService';
 export default class EntryAbility extends UIAbility {
   onCreate(want: Want, launchParam: AbilityConstant.LaunchParam): void {
     hilog.info(0x0000, 'testTag', '%{public}s', 'Ability onCreate');
+    this.initApp();
+  }
 
-    // 初始化环境变量
-    EnvUtil.getInstance().init(this.context.resourceManager);
+  private async initApp(): Promise<void> {
+    // Load runtime config before anything can call AI services.
+    await EnvUtil.getInstance().init(this.context.resourceManager);
 
-    // 初始化首选项单例
+    // Initialize preferences singleton.
     PreferencesUtils.getInstance().init(this.context)
 
-    // 初始化测试告警数据，用于验证AI分析功能
+    // Seed demo alerts for validating the AI analysis flow.
     this.initTestAlerts();
     EnvMockService.getInstance().start();
   }

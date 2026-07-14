@@ -107,6 +107,19 @@ struct AlertRecords {
     this.selectedAlertIds = [];
   }
 
+  seedDemoAlerts(): void {
+    const store = PatrolStore.getInstance();
+    const now = new Date();
+    const hour = now.getHours().toString().padStart(2, '0');
+    const minute = now.getMinutes().toString().padStart(2, '0');
+    const second = now.getSeconds().toString().padStart(2, '0');
+    const time = `${hour}:${minute}:${second}`;
+    store.createAlert(time, 'B区P4设备区', 'lidar_block', '雷达检测到管廊通道堵塞，前方距离0.42m', AlertLevel.Critical);
+    store.createAlert(time, 'A区P2通道', 'vision_person', '视觉检测到人员闯入禁区', AlertLevel.Warning);
+    store.createAlert(time, '地下管廊环境监测', 'env', '可燃气体短时升高，当前42ppm', AlertLevel.Warning);
+    promptAction.showToast({ message: '已生成测试告警，可进行 AI 分析' });
+  }
+
   isAlertSelected(alertId: string): boolean {
     return this.selectedAlertIds.includes(alertId);
   }
@@ -243,7 +256,7 @@ struct AlertRecords {
       .alignItems(HorizontalAlign.Start)
 
       Row({ space: '10vp' }) {
-        Button('???')
+        Button('清空记录')
           .layoutWeight(1)
           .height('34vp')
           .fontSize('12fp')
@@ -253,10 +266,10 @@ struct AlertRecords {
           .border({ width: '1vp', color: $r('app.color.divider') })
           .onClick((): void => {
             PatrolStore.getInstance().clearAlerts();
-            promptAction.showToast({ message: '???????????' });
+            promptAction.showToast({ message: '已清空告警记录' });
           })
 
-        Button('???')
+        Button('返回')
           .layoutWeight(1)
           .height('34vp')
           .fontSize('12fp')
@@ -324,10 +337,22 @@ struct AlertRecords {
             this.summaryExpanded = !this.summaryExpanded;
           })
       } else {
-        Text('点击汇总分析，快速定位最优先处理的告警点位。')
+        Text(this.alerts.length === 0 ? '暂无告警数据，AI 需要至少一条告警记录才能研判。' : '点击汇总分析，快速定位最优先处理的告警点位。')
           .fontSize('12fp')
           .fontColor($r('app.color.text_secondary'))
           .width('100%')
+
+        if (this.alerts.length === 0) {
+          Button('生成测试告警')
+            .height('32vp')
+            .fontSize('11fp')
+            .fontColor($r('app.color.text_on_accent'))
+            .backgroundColor($r('app.color.button_primary'))
+            .borderRadius('16vp')
+            .onClick((): void => {
+              this.seedDemoAlerts();
+            })
+        }
       }
     }
     .width('100%')
@@ -471,6 +496,15 @@ struct AlertRecords {
         .fontColor($r('app.color.text_secondary'))
         .textAlign(TextAlign.Center)
         .maxLines(2)
+      Button('生成测试告警')
+        .height('34vp')
+        .fontSize('12fp')
+        .fontColor($r('app.color.text_on_accent'))
+        .backgroundColor($r('app.color.button_primary'))
+        .borderRadius('17vp')
+        .onClick((): void => {
+          this.seedDemoAlerts();
+        })
     }
     .width('100%')
     .justifyContent(FlexAlign.Center)
