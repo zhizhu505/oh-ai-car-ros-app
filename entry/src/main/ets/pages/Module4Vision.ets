@@ -8,7 +8,7 @@ import { VideoComponents } from '../components/VideoComponents';
 import { CardShadow } from '../styles/styles';
 import { carApi } from '../CarUtill/CarApi';
 import { CarEncode } from '../CarUtill/CarEncode';
-import { AlertAreaStatus, PatrolCommandUtils, RedBottleDemoStatus } from '../tcp/PatrolCommandUtils';
+import { AlertAreaStatus, PatrolCommandUtils, RedBottleDemoStatus, VoiceStatus } from '../tcp/PatrolCommandUtils';
 import promptAction from '@ohos.promptAction';
 
 @Entry
@@ -30,17 +30,32 @@ struct Module4Vision {
   @State demoEmergencyStopping: boolean = false;
   @State redBottleStatus: string = '未启动';
   @State redBottleDistance: string = '--';
-  @State redBottleThreshold: string = '0.30m';
+  @State redBottleThreshold: string = '0.60m';
   @State redBottleSpeed: string = '0.05m/s';
   @State redBottleAlarmActive: boolean = false;
   @State redBottleDetected: boolean = false;
+  @State redBottleStopLatched: boolean = false;
+  @State redBottleEvent: string = '';
+  @State redBottleVisionReady: boolean = false;
+  @State redBottleRgbFresh: boolean = false;
+  @State redBottleDepthFresh: boolean = false;
+  @State redBottleInferenceFresh: boolean = false;
   @State redBottleMessage: string = '等待状态同步';
   @State alertAreaStatus: string = '未启动';
   @State alertAreaDetected: boolean = false;
   @State alertAreaConfirmed: boolean = false;
   @State alertAreaAction: string = 'forward';
   @State alertAreaConfidence: string = '--';
+  @State alertAreaEvent: string = '';
+  @State alertAreaVisionReady: boolean = false;
+  @State alertAreaRgbFresh: boolean = false;
+  @State alertAreaInferenceFresh: boolean = false;
   @State alertAreaMessage: string = '等待状态同步';
+  @State voiceBackend: string = '--';
+  @State voiceEnabled: boolean = false;
+  @State alertAreaStarting: boolean = false;
+  @State alertAreaStopping: boolean = false;
+  @State voiceTesting: boolean = false;
   private tabs: string[] = ['实时数据', '阈值规则', '视觉日志'];
   private redBottleStatusTimer: number = -1;
   private lastAlertAreaLogSignature: string = '';
@@ -202,6 +217,16 @@ struct Module4Vision {
                 PatrolStore.getInstance().addVisionLog('已发送停止蜂鸣指令');
                 promptAction.showToast({ message: '已发送停止蜂鸣指令' });
               })
+            Button(this.voiceTesting ? '语音测试中' : '测试语音播报')
+              .height('34vp')
+              .fontSize('12fp')
+              .fontColor($r('app.color.text_on_accent'))
+              .backgroundColor(this.voiceTesting ? $r('app.color.button_disabled') : $r('app.color.module4_accent'))
+              .borderRadius('17vp')
+              .enabled(!this.voiceTesting)
+              .onClick((): void => {
+                this.testVisionVoice();
+              })
             Row({ space: '8vp' }) {
               Button(this.demoStarting ? '启动中' : '启动红瓶停车演示')
                 .layoutWeight(1)
@@ -267,6 +292,30 @@ struct Module4Vision {
               RedBottleMetricCard({ label: '演示速度', value: this.redBottleSpeed })
                 .layoutWeight(1)
             }
+            Row({ space: '8vp' }) {
+              RedBottleMetricCard({ label: '事件', value: this.redBottleEvent.length > 0 ? this.redBottleEvent : '--' })
+                .layoutWeight(1)
+              RedBottleMetricCard({ label: '停车锁存', value: this.redBottleStopLatched ? '已锁存' : '未锁存' })
+                .layoutWeight(1)
+              RedBottleMetricCard({ label: '蜂鸣', value: this.redBottleAlarmActive ? '开启' : '关闭' })
+                .layoutWeight(1)
+            }
+            Row({ space: '8vp' }) {
+              RedBottleMetricCard({ label: 'RGB', value: this.redBottleRgbFresh ? '正常' : '未就绪' })
+                .layoutWeight(1)
+              RedBottleMetricCard({ label: '深度', value: this.redBottleDepthFresh ? '正常' : '未就绪' })
+                .layoutWeight(1)
+              RedBottleMetricCard({ label: '推理', value: this.redBottleInferenceFresh ? '正常' : '未就绪' })
+                .layoutWeight(1)
+            }
+            Row({ space: '8vp' }) {
+              RedBottleMetricCard({ label: '视觉就绪', value: this.redBottleVisionReady ? '已就绪' : '等待中' })
+                .layoutWeight(1)
+              RedBottleMetricCard({ label: '语音后端', value: this.voiceBackend.length > 0 ? this.voiceBackend : '不可用' })
+                .layoutWeight(1)
+              RedBottleMetricCard({ label: '语音开关', value: this.voiceEnabled ? '开启' : '关闭' })
+                .layoutWeight(1)
+            }
             Text(this.redBottleMessage)
               .fontSize('12fp')
               .fontColor($r('app.color.text_secondary'))
@@ -303,11 +352,51 @@ struct Module4Vision {
               RedBottleMetricCard({ label: '确认状态', value: this.alertAreaConfirmed ? '已确认' : '观察中' })
                 .layoutWeight(1)
             }
+            Row({ space: '8vp' }) {
+              RedBottleMetricCard({ label: '事件', value: this.alertAreaEvent.length > 0 ? this.alertAreaEvent : '--' })
+                .layoutWeight(1)
+              RedBottleMetricCard({ label: '控制', value: this.alertAreaConfirmed ? '已停车' : '待触发' })
+                .layoutWeight(1)
+              RedBottleMetricCard({ label: '语音', value: this.alertAreaConfirmed ? '禁止通过' : '待播报' })
+                .layoutWeight(1)
+            }
+            Row({ space: '8vp' }) {
+              RedBottleMetricCard({ label: 'RGB', value: this.alertAreaRgbFresh ? '正常' : '未就绪' })
+                .layoutWeight(1)
+              RedBottleMetricCard({ label: '推理', value: this.alertAreaInferenceFresh ? '正常' : '未就绪' })
+                .layoutWeight(1)
+              RedBottleMetricCard({ label: '视觉就绪', value: this.alertAreaVisionReady ? '已就绪' : '等待中' })
+                .layoutWeight(1)
+            }
             Text(this.alertAreaMessage)
               .fontSize('12fp')
               .fontColor($r('app.color.text_secondary'))
               .maxLines(2)
               .textOverflow({ overflow: TextOverflow.Ellipsis })
+            Row({ space: '8vp' }) {
+              Button(this.alertAreaStarting ? '启动中' : '启动警戒区停车演示')
+                .layoutWeight(1)
+                .height('36vp')
+                .fontSize('12fp')
+                .fontColor($r('app.color.text_on_accent'))
+                .backgroundColor(this.alertAreaStarting ? $r('app.color.button_disabled') : $r('app.color.alert_warning'))
+                .borderRadius('18vp')
+                .enabled(!this.alertAreaStarting)
+                .onClick((): void => {
+                  this.startAlertAreaGuard();
+                })
+              Button(this.alertAreaStopping ? '停止中' : '停止警戒区')
+                .layoutWeight(1)
+                .height('36vp')
+                .fontSize('12fp')
+                .fontColor($r('app.color.text'))
+                .backgroundColor($r('app.color.card_elevated'))
+                .borderRadius('18vp')
+                .enabled(!this.alertAreaStopping)
+                .onClick((): void => {
+                  this.stopAlertAreaGuard();
+                })
+            }
           }
           .width('100%')
         }
@@ -325,7 +414,7 @@ struct Module4Vision {
         Column({ space: '10vp' }) {
           VisionRuleCard({
             title: '红瓶识别停车报警',
-            rule: '识别到红瓶并接近至 0.30m 停车阈值内时，触发停车锁存、蜂鸣与视觉告警日志',
+            rule: '识别到红瓶并接近至 0.60m 停车阈值内时，触发停车锁存、蜂鸣与视觉告警日志',
             icon: '红'
           })
           VisionRuleCard({
@@ -377,8 +466,11 @@ struct Module4Vision {
   private async startRedBottleDemo(): Promise<void> {
     this.demoStarting = true;
     this.redBottleStatus = '启动中';
-    PatrolStore.getInstance().addVisionLog('正在启动红瓶停车演示：0.05m/s，0.30m停车，蜂鸣3秒');
+    PatrolStore.getInstance().addVisionLog('正在启动红瓶停车演示：0.05m/s，0.60m停车，蜂鸣3秒');
     const ok = await PatrolCommandUtils.startRedBottleDemo();
+    if (ok) {
+      PatrolCommandUtils.speakVoice('红瓶停车演示开始');
+    }
     this.demoStarting = false;
     PatrolStore.getInstance().addVisionLog(ok ? '红瓶停车演示启动命令已发送' : '红瓶停车演示启动命令发送失败', '视觉AI', !ok);
     promptAction.showToast({ message: ok ? '红瓶停车演示已启动' : '启动命令发送失败，请检查连接' });
@@ -390,6 +482,9 @@ struct Module4Vision {
     PatrolStore.getInstance().addVisionLog('正在停止红瓶停车演示');
     const ok = await PatrolCommandUtils.stopRedBottleDemo();
     await PatrolCommandUtils.stopBuzzer();
+    if (ok) {
+      PatrolCommandUtils.speakVoice('红瓶停车演示已停止');
+    }
     this.demoStopping = false;
     PatrolStore.getInstance().addVisionLog(ok ? '红瓶停车演示已停止，已补发停车和关蜂鸣' : '红瓶停车演示停止命令发送失败', '视觉AI', !ok);
     promptAction.showToast({ message: ok ? '红瓶停车演示已停止' : '停止命令发送失败，请检查连接' });
@@ -403,6 +498,9 @@ struct Module4Vision {
     carApi.send(CarEncode.StopBuzzerEncode());
     const ok = await PatrolCommandUtils.emergencyStopRedBottleDemo();
     await PatrolCommandUtils.stopBuzzer();
+    if (ok) {
+      PatrolCommandUtils.speakVoice('已执行紧急停车');
+    }
     this.demoEmergencyStopping = false;
     PatrolStore.getInstance().addVisionLog(ok ? '紧急停车/关蜂鸣已执行' : '紧急停车命令发送失败，请检查连接', '视觉AI', !ok);
     promptAction.showToast({ message: ok ? '已执行紧急停车/关蜂鸣' : '急停命令发送失败' });
@@ -434,6 +532,12 @@ struct Module4Vision {
     this.redBottleSpeed = `${status.speed_mps.toFixed(2)}m/s`;
     this.redBottleAlarmActive = status.alarm_active;
     this.redBottleDetected = status.detection;
+    this.redBottleStopLatched = status.stop_latched;
+    this.redBottleEvent = status.event;
+    this.redBottleRgbFresh = status.rgb_fresh === true;
+    this.redBottleDepthFresh = status.depth_fresh === true;
+    this.redBottleInferenceFresh = status.inference_fresh === true;
+    this.redBottleVisionReady = status.vision_ready === true;
     this.redBottleMessage = status.message;
     const alertStatus: AlertAreaStatus = await PatrolCommandUtils.getAlertAreaStatus();
     this.alertAreaStatus = alertStatus.status;
@@ -441,8 +545,50 @@ struct Module4Vision {
     this.alertAreaConfirmed = alertStatus.confirmed;
     this.alertAreaAction = alertStatus.recommended_action;
     this.alertAreaConfidence = alertStatus.confidence > 0 ? alertStatus.confidence.toFixed(2) : '--';
+    this.alertAreaEvent = alertStatus.event;
+    this.alertAreaRgbFresh = alertStatus.rgb_fresh === true;
+    this.alertAreaInferenceFresh = alertStatus.inference_fresh === true;
+    this.alertAreaVisionReady = alertStatus.vision_ready === true;
     this.alertAreaMessage = alertStatus.message;
+    const voiceStatus: VoiceStatus = await PatrolCommandUtils.getVoiceStatus();
+    this.voiceBackend = voiceStatus.backend.length > 0 ? voiceStatus.backend : '不可用';
+    this.voiceEnabled = voiceStatus.enabled;
     this.syncAlertAreaLog(alertStatus);
+  }
+
+  private async testVisionVoice(): Promise<void> {
+    this.voiceTesting = true;
+    const ok = await PatrolCommandUtils.speakVoice('视觉语音播报测试');
+    this.voiceTesting = false;
+    PatrolStore.getInstance().addVisionLog(ok ? '语音播报测试命令已发送' : '语音播报测试失败', '视觉AI', !ok);
+    promptAction.showToast({ message: ok ? '语音测试已发送' : '语音测试失败' });
+  }
+
+  private async startAlertAreaGuard(): Promise<void> {
+    this.alertAreaStarting = true;
+    PatrolStore.getInstance().addVisionLog('正在启动警戒区停车演示：识别靠近后停车并播报禁止通过');
+    const ok = await PatrolCommandUtils.startAlertAreaGuard();
+    if (ok) {
+      PatrolCommandUtils.speakVoice('警戒区停车演示开始');
+    }
+    this.alertAreaStarting = false;
+    PatrolStore.getInstance().addVisionLog(ok ? '警戒区停车演示启动命令已发送' : '警戒区停车演示启动失败', '视觉AI', !ok);
+    promptAction.showToast({ message: ok ? '警戒区停车演示已启动' : '警戒区启动失败' });
+    this.pollRedBottleStatus();
+  }
+
+  private async stopAlertAreaGuard(): Promise<void> {
+    this.alertAreaStopping = true;
+    PatrolStore.getInstance().addVisionLog('正在停止警戒区停车演示');
+    const ok = await PatrolCommandUtils.stopAlertAreaGuard();
+    await PatrolCommandUtils.stopBuzzer();
+    if (ok) {
+      PatrolCommandUtils.speakVoice('警戒区停车演示已停止');
+    }
+    this.alertAreaStopping = false;
+    PatrolStore.getInstance().addVisionLog(ok ? '警戒区停车演示已停止' : '警戒区停止失败', '视觉AI', !ok);
+    promptAction.showToast({ message: ok ? '警戒区停车演示已停止' : '警戒区停止失败' });
+    this.pollRedBottleStatus();
   }
 
   private syncAlertAreaLog(status: AlertAreaStatus): void {

@@ -12,8 +12,8 @@ class CarApi {
     this.send(CarEncode.ButtonCarEncode(d))
   }
 
-  send(message: string) {
-    TCPClientManager.getInstance().sendMessage(message)
+  send(message: string): Promise<boolean> {
+    return TCPClientManager.getInstance().sendMessage(message)
   }
 }
 
