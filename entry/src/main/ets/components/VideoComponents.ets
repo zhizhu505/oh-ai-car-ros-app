@@ -163,7 +163,9 @@ export struct VideoComponents {
       }
     }
     .width('100%')
+    .height(this.showActions ? '260vp' : this.previewHeight)
     .alignItems(HorizontalAlign.Center)
+    .justifyContent(FlexAlign.Start)
   }
 
   getWebSrc() {

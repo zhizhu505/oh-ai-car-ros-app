@@ -80,7 +80,7 @@ struct Module4Vision {
         tabs: this.tabs,
         accentColor: $r('app.color.module4_accent'),
         title: '视觉识别',
-        subtitle: '人员杂物识别与截图'
+        subtitle: '红瓶停车与警戒区识别'
       })
 
       Scroll() {
@@ -109,7 +109,7 @@ struct Module4Vision {
         InfoCard({ title: '视频预览' }) {
           VideoComponents({
             previewWidth: '330vp',
-            previewHeight: '205vp',
+            previewHeight: '190vp',
             showActions: true
           })
         }
@@ -315,7 +315,7 @@ struct Module4Vision {
       .padding({ left: '14vp', right: '14vp' })
     }
     .width('100%')
-    .padding({ top: '12vp', bottom: '16vp' })
+    .padding({ top: '8vp', bottom: '16vp' })
   }
 
   @Builder
