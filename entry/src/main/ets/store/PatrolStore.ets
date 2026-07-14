@@ -234,13 +234,34 @@ export class PatrolStore {
   }
 
   addAlert(record: AlertRecord): void {
+    if (!record.aiAnalysis) {
+      record.aiAnalysis = this.createLocalAiAnalysis(record);
+      record.aiAnalyzing = false;
+    }
     this.alerts.unshift(record);
     if (this.alerts.length > 100) {
       this.alerts.pop();
     }
     this.markPointAbnormal(record.point);
     this.notify();
-    this.triggerAiAnalysis(record);
+  }
+
+  private createLocalAiAnalysis(record: AlertRecord): AiAnalysisResult {
+    let risk = '需现场复核异常来源，确认是否影响巡检安全。';
+    if (record.level === AlertLevel.Critical) {
+      risk = '严重告警可能影响通道通行、人员安全或设备运行，需要优先处理。';
+    } else if (record.level === AlertLevel.Warning) {
+      risk = '预警告警可能代表现场状态开始偏离正常范围，需要及时复核。';
+    }
+    return {
+      summary: `${record.point}出现${record.message}`,
+      risk: risk,
+      solve: [
+        '到告警点位进行现场复核，确认异常是否真实存在。',
+        '根据告警类型处理障碍物、人员闯入、环境异常或设备检测异常。',
+        '处置后复测并记录结果，确认告警状态恢复。'
+      ]
+    };
   }
 
   private async triggerAiAnalysis(record: AlertRecord): Promise<void> {

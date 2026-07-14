@@ -1,5 +1,6 @@
 import router from '@ohos.router';
 import promptAction from '@ohos.promptAction';
+import pasteboard from '@ohos.pasteboard';
 import { AlertRecord, alertLevelText, categoryLabel, AlertLevel, AlarmData } from '../model/PatrolModels';
 import { PatrolStore } from '../store/PatrolStore';
 import { levelColor } from '../utils/PatrolUiUtils';
@@ -34,6 +35,10 @@ struct AlertRecords {
   @State summaryText: string = '';
   @State summaryLoading: boolean = false;
   @State summaryExpanded: boolean = true;
+  @State reportGeneratedAt: string = '';
+  @State showReportDialog: boolean = false;
+  @State showEmailFallbackDialog: boolean = false;
+  private readonly leaderEmail: string = '1123844859@qq.com';
   private readonly questionTemplates: string[] = [
     '这几条告警的共同风险是什么？',
     '优先处理顺序应该怎么排？',
@@ -182,6 +187,89 @@ struct AlertRecords {
     return JSON.stringify(payload);
   }
 
+  formatCurrentTime(): string {
+    const now = new Date();
+    const year = now.getFullYear().toString();
+    const month = (now.getMonth() + 1).toString().padStart(2, '0');
+    const day = now.getDate().toString().padStart(2, '0');
+    const hour = now.getHours().toString().padStart(2, '0');
+    const minute = now.getMinutes().toString().padStart(2, '0');
+    return `${year}-${month}-${day} ${hour}:${minute}`;
+  }
+
+  buildReportPrompt(): string {
+    return '请基于全部告警生成一份可直接发给领导的巡检异常总结汇报。要求：1. 使用中文；2. 不要输出JSON；3. 不要使用Markdown语法，不要使用**、#、```；4. 按固定结构输出：一、总体结论；二、重点告警清单；三、原因分析；四、处置建议；五、需领导关注事项；5. 每个重点告警必须包含点位、级别、现象、可能原因、影响风险；6. 内容务实简洁，适合手机阅读和邮件正文。';
+  }
+
+  buildFallbackReport(): string {
+    const lines: string[] = [];
+    lines.push('地下管廊巡检异常告警汇报');
+    lines.push(`生成时间：${this.reportGeneratedAt || this.formatCurrentTime()}`);
+    lines.push('');
+    lines.push('一、总体结论');
+    lines.push(`本次共记录 ${this.alerts.length} 条告警，其中严重 ${this.getCriticalCount()} 条、预警 ${this.getWarningCount()} 条、正常 ${this.getNormalCount()} 条。建议优先核查严重告警点位，并对重复出现的环境、雷达、视觉异常进行现场复核。`);
+    lines.push('');
+    lines.push('二、重点告警清单');
+    this.alerts.forEach((alert: AlertRecord, index: number): void => {
+      lines.push(`${index + 1}. ${alert.point}`);
+      lines.push(`   级别：${this.getLevelText(alert.level)}`);
+      lines.push(`   类型：${categoryLabel(alert.category)}`);
+      lines.push(`   现象：${alert.message}`);
+      lines.push(`   可能原因：现场通道占用、人员误入、环境参数波动或传感器检测异常，请结合现场复核。`);
+      lines.push(`   影响风险：可能影响巡检通行、安全预警准确性和现场处置效率。`);
+    });
+    lines.push('');
+    lines.push('三、原因分析');
+    lines.push('异常主要集中在通道占用、人员闯入、环境指标异常或设备感知异常几类问题，可能与现场施工、杂物堆放、人员管理、环境波动及设备传感器状态有关。');
+    lines.push('');
+    lines.push('四、处置建议');
+    lines.push('1. 优先安排人员核查严重告警点位。');
+    lines.push('2. 对通道堵塞、人员闯入等安全风险立即处置并记录闭环。');
+    lines.push('3. 对环境和传感器异常进行复测，确认是否需要维护设备或调整阈值。');
+    lines.push('');
+    lines.push('五、需领导关注事项');
+    lines.push('建议关注严重告警点位的现场处置进度，以及是否存在连续异常或重复异常点位。');
+    return lines.join('\n');
+  }
+
+  getReportSubject(): string {
+    return `地下管廊巡检异常总结汇报（${this.reportGeneratedAt || this.formatCurrentTime()}）`;
+  }
+
+  getReportBody(): string {
+    if (this.summaryText.length > 0) {
+      return `${this.getReportSubject()}\n\n${this.summaryText}`;
+    }
+    return this.buildFallbackReport();
+  }
+
+  normalizeReportText(text: string): string {
+    return text
+      .split('**').join('')
+      .split('###').join('')
+      .split('##').join('')
+      .split('#').join('')
+      .split('```').join('')
+      .trim();
+  }
+
+  getReportPreviewLines(): string[] {
+    const text = this.summaryLoading && this.summaryText.length === 0 ? 'AI 正在整理告警原因、风险影响、处置建议和领导关注事项...' :
+      this.normalizeReportText(this.summaryText.length > 0 ? this.summaryText : this.buildFallbackReport());
+    return text.split('\n').filter((line: string): boolean => line.trim().length > 0).slice(0, 8);
+  }
+
+  getReportLines(): string[] {
+    const text = this.summaryLoading && this.summaryText.length === 0 ? 'AI 正在整理告警原因、风险影响、处置建议和领导关注事项...' :
+      this.normalizeReportText(this.summaryText.length > 0 ? this.summaryText : this.buildFallbackReport());
+    return text.split('\n').filter((line: string): boolean => line.trim().length > 0);
+  }
+
+  isReportHeading(line: string): boolean {
+    return line.startsWith('一、') || line.startsWith('二、') || line.startsWith('三、') ||
+      line.startsWith('四、') || line.startsWith('五、');
+  }
+
   applyTemplate(template: string): void {
     this.chatInputText = template;
   }
@@ -191,17 +279,75 @@ struct AlertRecords {
       promptAction.showToast({ message: '暂无告警数据' });
       return;
     }
-    this.summaryLoading = true;
     this.summaryExpanded = true;
-    this.summaryText = '';
-    const question = '请汇总全部告警，输出总体风险等级、最需要优先处理的点位、可能原因和3条处置建议，语言简洁，适合手机界面阅读。';
+    this.reportGeneratedAt = this.formatCurrentTime();
+    this.summaryText = this.buildFallbackReport();
+    this.summaryLoading = true;
+    const question = this.buildReportPrompt();
     try {
-      this.summaryText = await queryAlarmQuestion(this.buildSummaryPayload(), question);
+      const aiReport = await queryAlarmQuestion(this.buildSummaryPayload(), question);
+      if (aiReport.length > 0) {
+        this.summaryText = aiReport;
+      }
     } catch (err) {
-      this.summaryText = 'AI汇总失败，请检查网络和 DeepSeek API Key 配置。';
+      promptAction.showToast({ message: '已先生成本地汇报，AI优化失败' });
     } finally {
       this.summaryLoading = false;
     }
+  }
+
+  buildLocalChatAnswer(question: string, selectedAlerts: AlertRecord[]): string {
+    const criticalCount = selectedAlerts.filter((item: AlertRecord): boolean => item.level === AlertLevel.Critical).length;
+    const warningCount = selectedAlerts.filter((item: AlertRecord): boolean => item.level === AlertLevel.Warning).length;
+    const points = selectedAlerts.map((item: AlertRecord): string => item.point).join('、');
+    if (question.includes('共同风险')) {
+      return `这 ${selectedAlerts.length} 条告警的共同风险是：现场通行和巡检安全受到影响。涉及点位：${points}。其中严重 ${criticalCount} 条、预警 ${warningCount} 条，建议优先核查严重点位，并确认是否存在通道堵塞、人员误入、环境异常或传感器误报。`;
+    }
+    if (question.includes('优先')) {
+      return `优先处理顺序建议：1. 先处理严重告警点位；2. 再处理影响通行或人员安全的告警；3. 最后复核预警类环境和视觉异常。当前严重 ${criticalCount} 条，建议先核查：${points}。`;
+    }
+    if (question.includes('处置') || question.includes('步骤')) {
+      return `现场处置建议：1. 派人到告警点位复核；2. 清理障碍物或确认人员撤离；3. 复测环境和传感器状态；4. 记录处理结果并确认告警是否恢复。涉及点位：${points}。`;
+    }
+    if (question.includes('继续巡检') || question.includes('关注')) {
+      return `继续巡检时需要重点关注：严重告警点位是否已解除、通道是否畅通、人员是否进入禁区、环境指标是否持续升高。建议巡检前先确认：${points}。`;
+    }
+    return `基于当前 ${selectedAlerts.length} 条引用告警，建议先关注严重 ${criticalCount} 条和预警 ${warningCount} 条。涉及点位：${points}。请优先现场复核异常原因，再决定是否继续巡检或启动人工处置。`;
+  }
+
+  async copyText(text: string, successMessage: string): Promise<void> {
+    try {
+      const pasteboardData = pasteboard.createData(pasteboard.MIMETYPE_TEXT_PLAIN, text);
+      await pasteboard.getSystemPasteboard().setData(pasteboardData);
+      promptAction.showToast({ message: successMessage });
+    } catch (err) {
+      promptAction.showToast({ message: '复制失败，请手动选择文本' });
+    }
+  }
+
+  async copyReport(): Promise<void> {
+    if (this.alerts.length === 0) {
+      promptAction.showToast({ message: '暂无告警数据' });
+      return;
+    }
+    await this.copyText(this.getReportBody(), '汇报内容已复制');
+  }
+
+  async copyLeaderEmail(): Promise<void> {
+    await this.copyText(this.leaderEmail, '领导邮箱已复制');
+  }
+
+  async shareReportByEmail(): Promise<void> {
+    if (this.alerts.length === 0) {
+      promptAction.showToast({ message: '暂无告警数据' });
+      return;
+    }
+    if (this.summaryText.length === 0) {
+      this.summaryText = this.buildFallbackReport();
+      this.reportGeneratedAt = this.reportGeneratedAt || this.formatCurrentTime();
+    }
+    await this.copyReport();
+    this.showEmailFallbackDialog = true;
   }
 
   async sendChat(): Promise<void> {
@@ -216,7 +362,8 @@ struct AlertRecords {
     }
     this.chatItems = [...this.chatItems, new ChatItem(Date.now().toString(), true, question)];
     const loadingId = (Date.now() + 1).toString();
-    this.chatItems = [...this.chatItems, new ChatItem(loadingId, false, `AI正在分析 ${selectedAlerts.length} 条引用告警...`, true)];
+    const localAnswer = this.buildLocalChatAnswer(question, selectedAlerts);
+    this.chatItems = [...this.chatItems, new ChatItem(loadingId, false, localAnswer, false)];
     this.chatInputText = '';
     try {
       const answer = await queryAlarmQuestion(this.buildSelectedPayload(), question);
@@ -291,15 +438,25 @@ struct AlertRecords {
 
   @Builder
   SummaryPanel() {
-    Column({ space: '10vp' }) {
+    Column({ space: '12vp' }) {
       Row({ space: '10vp' }) {
-        Text('AI总体研判')
+        Column({ space: '3vp' }) {
+          Text('总结汇报')
+            .fontSize('15fp')
+            .fontWeight(FontWeight.Bold)
+            .fontColor($r('app.color.text'))
+            .maxLines(1)
+          Text(this.summaryLoading ? '已先生成本地汇报，AI 正在后台优化' :
+            (this.reportGeneratedAt.length > 0 ? `生成时间 ${this.reportGeneratedAt}` : 'AI 整理告警原因、影响风险和处置建议'))
+            .fontSize('10fp')
+            .fontColor($r('app.color.text_secondary'))
+            .maxLines(1)
+            .textOverflow({ overflow: TextOverflow.Ellipsis })
+        }
           .layoutWeight(1)
-          .fontSize('15fp')
-          .fontWeight(FontWeight.Bold)
-          .fontColor($r('app.color.text'))
-          .maxLines(1)
-        Button(this.summaryLoading ? '分析中' : '汇总分析')
+          .alignItems(HorizontalAlign.Start)
+
+        Button(this.summaryLoading ? 'AI优化中' : '生成汇报')
           .constraintSize({ minWidth: '88vp' })
           .height('32vp')
           .fontSize('11fp')
@@ -316,26 +473,16 @@ struct AlertRecords {
       Row({ space: '8vp' }) {
         this.StatBadge('全部', `${this.alerts.length}`, $r('app.color.button_primary'))
         this.StatBadge('严重', `${this.getCriticalCount()}`, $r('app.color.alert_critical'))
-      }
-      .width('100%')
-
-      Row({ space: '8vp' }) {
         this.StatBadge('预警', `${this.getWarningCount()}`, $r('app.color.alert_warning'))
         this.StatBadge('正常', `${this.getNormalCount()}`, $r('app.color.alert_normal'))
       }
       .width('100%')
 
       if (this.summaryLoading || this.summaryText.length > 0) {
-        Text(this.summaryLoading ? 'AI正在汇总告警趋势、风险点位和处置顺序...' : this.summaryText)
-          .fontSize('12fp')
-          .fontColor($r('app.color.text_secondary'))
-          .lineHeight('19fp')
-          .width('100%')
-          .maxLines(this.summaryExpanded ? 8 : 2)
-          .textOverflow({ overflow: TextOverflow.Ellipsis })
-          .onClick((): void => {
-            this.summaryExpanded = !this.summaryExpanded;
-          })
+        this.ReportContent()
+        if (!this.summaryLoading) {
+          this.ReportActions()
+        }
       } else {
         Text(this.alerts.length === 0 ? '暂无告警数据，AI 需要至少一条告警记录才能研判。' : '点击汇总分析，快速定位最优先处理的告警点位。')
           .fontSize('12fp')
@@ -361,6 +508,285 @@ struct AlertRecords {
     .borderRadius('14vp')
     .border({ width: '1vp', color: $r('app.color.divider') })
     .shadow(CardShadow)
+  }
+
+  @Builder
+  ReportContent() {
+    Column({ space: '8vp' }) {
+      Row({ space: '8vp' }) {
+        Text('汇报正文')
+          .fontSize('12fp')
+          .fontColor($r('app.color.text'))
+          .fontWeight(FontWeight.Medium)
+          .layoutWeight(1)
+        if (!this.summaryLoading) {
+          Text('查看全文')
+            .fontSize('10fp')
+            .fontColor($r('app.color.button_primary'))
+        }
+      }
+      .width('100%')
+      .alignItems(VerticalAlign.Center)
+
+      Column({ space: '6vp' }) {
+        ForEach(this.getReportPreviewLines(), (line: string) => {
+          Text(line)
+            .fontSize(this.isReportHeading(line) ? '13fp' : '12fp')
+            .fontColor(this.isReportHeading(line) ? $r('app.color.text') : $r('app.color.text_secondary'))
+            .fontWeight(this.isReportHeading(line) ? FontWeight.Bold : FontWeight.Regular)
+            .lineHeight('19fp')
+            .width('100%')
+            .maxLines(2)
+            .textOverflow({ overflow: TextOverflow.Ellipsis })
+        }, (line: string, index: number) => `${index}_${line}`)
+      }
+      .width('100%')
+    }
+    .width('100%')
+    .padding({ left: '12vp', right: '12vp', top: '10vp', bottom: '10vp' })
+    .backgroundColor($r('app.color.card_elevated'))
+    .borderRadius('10vp')
+    .onClick((): void => {
+      if (!this.summaryLoading) {
+        this.showReportDialog = true;
+      }
+    })
+  }
+
+  @Builder
+  ReportActions() {
+    Row({ space: '8vp' }) {
+      Button('复制报告')
+        .layoutWeight(1)
+        .height('34vp')
+        .fontSize('11fp')
+        .fontColor($r('app.color.text'))
+        .backgroundColor($r('app.color.button_secondary'))
+        .borderRadius('17vp')
+        .onClick((): void => {
+          this.copyReport();
+        })
+
+      Button('发送领导')
+        .layoutWeight(1)
+        .height('34vp')
+        .fontSize('11fp')
+        .fontColor($r('app.color.text_on_accent'))
+        .backgroundColor($r('app.color.module5_accent'))
+        .borderRadius('17vp')
+        .onClick((): void => {
+          this.shareReportByEmail();
+        })
+    }
+    .width('100%')
+  }
+
+  @Builder
+  ReportDialog() {
+    Stack({ alignContent: Alignment.Center }) {
+      Column()
+        .width('100%')
+        .height('100%')
+        .backgroundColor('#00000066')
+        .onClick((): void => {
+          this.showReportDialog = false;
+        })
+
+      Column({ space: '12vp' }) {
+        Row({ space: '10vp' }) {
+          Column({ space: '3vp' }) {
+            Text('总结汇报全文')
+              .fontSize('18fp')
+              .fontWeight(FontWeight.Bold)
+              .fontColor($r('app.color.text'))
+            Text(this.reportGeneratedAt.length > 0 ? `生成时间 ${this.reportGeneratedAt}` : '可下拉查看全部内容')
+              .fontSize('11fp')
+              .fontColor($r('app.color.text_secondary'))
+          }
+          .layoutWeight(1)
+          .alignItems(HorizontalAlign.Start)
+
+          Button('关闭')
+            .height('32vp')
+            .fontSize('11fp')
+            .fontColor($r('app.color.text'))
+            .backgroundColor($r('app.color.card_elevated'))
+            .borderRadius('16vp')
+            .onClick((): void => {
+              this.showReportDialog = false;
+            })
+        }
+        .width('100%')
+        .alignItems(VerticalAlign.Center)
+
+        Row({ space: '8vp' }) {
+          Button('复制报告')
+            .layoutWeight(1)
+            .height('32vp')
+            .fontSize('11fp')
+            .fontColor($r('app.color.text'))
+            .backgroundColor($r('app.color.button_secondary'))
+            .borderRadius('16vp')
+            .onClick((): void => {
+              this.copyReport();
+            })
+
+          Button('发送领导')
+            .layoutWeight(1)
+            .height('32vp')
+            .fontSize('11fp')
+            .fontColor($r('app.color.text_on_accent'))
+            .backgroundColor($r('app.color.module5_accent'))
+            .borderRadius('16vp')
+            .onClick((): void => {
+              this.shareReportByEmail();
+            })
+        }
+        .width('100%')
+
+        Scroll() {
+          Column({ space: '8vp' }) {
+            ForEach(this.getReportLines(), (line: string) => {
+              Text(line)
+                .fontSize(this.isReportHeading(line) ? '14fp' : '12fp')
+                .fontColor(this.isReportHeading(line) ? $r('app.color.text') : $r('app.color.text_secondary'))
+                .fontWeight(this.isReportHeading(line) ? FontWeight.Bold : FontWeight.Regular)
+                .lineHeight('21fp')
+                .width('100%')
+            }, (line: string, index: number) => `${index}_${line}`)
+          }
+          .width('100%')
+          .padding({ left: '12vp', right: '12vp', top: '12vp', bottom: '12vp' })
+          .backgroundColor($r('app.color.card_elevated'))
+          .borderRadius('12vp')
+        }
+        .layoutWeight(1)
+        .width('100%')
+        .scrollBar(BarState.On)
+      }
+      .width('92%')
+      .height('78%')
+      .padding('16vp')
+      .backgroundColor($r('app.color.card_background'))
+      .borderRadius('18vp')
+      .border({ width: '1vp', color: $r('app.color.divider') })
+      .shadow(ElevatedShadow)
+    }
+    .width('100%')
+    .height('100%')
+    .zIndex(20)
+  }
+
+  @Builder
+  EmailFallbackDialog() {
+    Stack({ alignContent: Alignment.Center }) {
+      Column()
+        .width('100%')
+        .height('100%')
+        .backgroundColor('#00000066')
+        .onClick((): void => {
+          this.showEmailFallbackDialog = false;
+        })
+
+      Column({ space: '12vp' }) {
+        Row({ space: '10vp' }) {
+          Column({ space: '3vp' }) {
+            Text('发送给领导')
+              .fontSize('18fp')
+              .fontWeight(FontWeight.Bold)
+              .fontColor($r('app.color.text'))
+            Text('当前设备未配置可打开的邮件应用，已为你准备好收件人和汇报正文')
+              .fontSize('11fp')
+              .fontColor($r('app.color.text_secondary'))
+              .maxLines(2)
+          }
+          .layoutWeight(1)
+          .alignItems(HorizontalAlign.Start)
+
+          Button('关闭')
+            .height('32vp')
+            .fontSize('11fp')
+            .fontColor($r('app.color.text'))
+            .backgroundColor($r('app.color.card_elevated'))
+            .borderRadius('16vp')
+            .onClick((): void => {
+              this.showEmailFallbackDialog = false;
+            })
+        }
+        .width('100%')
+        .alignItems(VerticalAlign.Center)
+
+        Column({ space: '8vp' }) {
+          EmailInfoRow({ label: '收件人', value: this.leaderEmail })
+          EmailInfoRow({ label: '主题', value: this.getReportSubject() })
+        }
+        .width('100%')
+        .padding('12vp')
+        .backgroundColor($r('app.color.card_elevated'))
+        .borderRadius('12vp')
+
+        Row({ space: '8vp' }) {
+          Button('复制邮箱')
+            .layoutWeight(1)
+            .height('34vp')
+            .fontSize('11fp')
+            .fontColor($r('app.color.text'))
+            .backgroundColor($r('app.color.button_secondary'))
+            .borderRadius('17vp')
+            .onClick((): void => {
+              this.copyLeaderEmail();
+            })
+
+          Button('复制正文')
+            .layoutWeight(1)
+            .height('34vp')
+            .fontSize('11fp')
+            .fontColor($r('app.color.text_on_accent'))
+            .backgroundColor($r('app.color.module5_accent'))
+            .borderRadius('17vp')
+            .onClick((): void => {
+              this.copyReport();
+            })
+        }
+        .width('100%')
+
+        Text('操作方式：打开任意邮箱或 QQ 邮箱，把收件人填入上方邮箱，正文直接粘贴即可。')
+          .fontSize('11fp')
+          .fontColor($r('app.color.text_secondary'))
+          .lineHeight('18fp')
+          .width('100%')
+
+        Scroll() {
+          Column({ space: '8vp' }) {
+            ForEach(this.getReportLines(), (line: string) => {
+              Text(line)
+                .fontSize(this.isReportHeading(line) ? '13fp' : '11fp')
+                .fontColor(this.isReportHeading(line) ? $r('app.color.text') : $r('app.color.text_secondary'))
+                .fontWeight(this.isReportHeading(line) ? FontWeight.Bold : FontWeight.Regular)
+                .lineHeight('19fp')
+                .width('100%')
+            }, (line: string, index: number) => `mail_${index}_${line}`)
+          }
+          .width('100%')
+          .padding('12vp')
+          .backgroundColor($r('app.color.card_elevated'))
+          .borderRadius('12vp')
+        }
+        .layoutWeight(1)
+        .width('100%')
+        .scrollBar(BarState.On)
+      }
+      .width('92%')
+      .height('76%')
+      .padding('16vp')
+      .backgroundColor($r('app.color.card_background'))
+      .borderRadius('18vp')
+      .border({ width: '1vp', color: $r('app.color.divider') })
+      .shadow(ElevatedShadow)
+    }
+    .width('100%')
+    .height('100%')
+    .zIndex(30)
   }
 
   @Builder
@@ -814,8 +1240,40 @@ struct AlertRecords {
       if (this.showChatDialog) {
         this.ChatDialog()
       }
+
+      if (this.showReportDialog) {
+        this.ReportDialog()
+      }
+
+      if (this.showEmailFallbackDialog) {
+        this.EmailFallbackDialog()
+      }
     }
     .width('100%')
     .height('100%')
+  }
+}
+
+@Component
+struct EmailInfoRow {
+  @Prop label: string = '';
+  @Prop value: string = '';
+
+  build() {
+    Column({ space: '4vp' }) {
+      Text(this.label)
+        .fontSize('10fp')
+        .fontColor($r('app.color.text_secondary'))
+        .width('100%')
+      Text(this.value)
+        .fontSize('12fp')
+        .fontColor($r('app.color.text'))
+        .fontWeight(FontWeight.Medium)
+        .width('100%')
+        .maxLines(2)
+        .textOverflow({ overflow: TextOverflow.Ellipsis })
+    }
+    .width('100%')
+    .alignItems(HorizontalAlign.Start)
   }
 }

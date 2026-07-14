@@ -28,7 +28,8 @@ export interface ChatResponse {
 
 const URL = "https://api.deepseek.com/v1/chat/completions";
 let lastRequestTime: number = 0;
-const requestThrottleMs: number = 1000;
+const requestThrottleMs: number = 150;
+const requestTimeoutMs: number = 6000;
 
 function getApiKey(): string {
   return EnvUtil.getInstance().get('DEEPSEEK_API_KEY', '');
@@ -82,8 +83,8 @@ export async function chat(sysPrompt: string, userInput: string): Promise<string
         "Content-Type": "application/json"
       },
       extraData: bodyStr,
-      connectTimeout: 10000,
-      readTimeout: 10000
+      connectTimeout: requestTimeoutMs,
+      readTimeout: requestTimeoutMs
     });
     let resultStr = res.result.toString();
     let resObj: ChatResponse = JSON.parse(resultStr);

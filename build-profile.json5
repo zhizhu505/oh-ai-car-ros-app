@@ -1,6 +1,19 @@
 {
   "app": {
     "signingConfigs": [
+      {
+        "name": "default",
+        "type": "HarmonyOS",
+        "material": {
+          "certpath": "C:\\Users\\lenovo\\.ohos\\config\\default_huawei_OuaTivxpGus8KNKcccmIkis6Gt9tBliL76qvlwhSjZE=.cer",
+          "keyAlias": "debugKey",
+          "keyPassword": "0000001BE5B5CA8398119136A6AAFBD500AB96210CE80DBCE7E4E7B68DD79B20EE67022C2CEBD9E96EE2F6",
+          "profile": "C:\\Users\\lenovo\\.ohos\\config\\default_huawei_OuaTivxpGus8KNKcccmIkis6Gt9tBliL76qvlwhSjZE=.p7b",
+          "signAlg": "SHA256withECDSA",
+          "storeFile": "C:\\Users\\lenovo\\.ohos\\config\\default_huawei_OuaTivxpGus8KNKcccmIkis6Gt9tBliL76qvlwhSjZE=.p12",
+          "storePassword": "0000001B39C0665D4957F3FEF9574AC36116A6B05508B605C696AEBBE34FC0098D14ADB35F6EC6BD582B4E"
+        }
+      }
     ],
     "products": [
       {
