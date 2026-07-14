@@ -152,21 +152,26 @@ export class PatrolStore {
 
   updateVision(data: VisionSnapshot): void {
     this.vision = data;
-    this.vehicle.visionStatus = data.personDetected || data.boxInChannel ? 'alert' : 'normal';
+    this.vehicle.visionStatus = data.personDetected || data.boxInChannel ||
+      data.redBottleDetected || data.alertAreaDetected ? 'alert' : 'normal';
     const latest = this.visionLogs.length > 0 ? this.visionLogs[0] : undefined;
     const isDuplicate = latest !== undefined &&
       latest.time === data.updateTime &&
       latest.point === data.point &&
       latest.message === data.message &&
       latest.personDetected === data.personDetected &&
-      latest.boxInChannel === data.boxInChannel;
+      latest.boxInChannel === data.boxInChannel &&
+      latest.redBottleDetected === data.redBottleDetected &&
+      latest.alertAreaDetected === data.alertAreaDetected;
     if (!isDuplicate) {
       const record: VisionLogRecord = {
         time: data.updateTime,
         point: data.point,
         message: data.message,
         personDetected: data.personDetected,
-        boxInChannel: data.boxInChannel
+        boxInChannel: data.boxInChannel,
+        redBottleDetected: data.redBottleDetected,
+        alertAreaDetected: data.alertAreaDetected
       };
       this.visionLogs.unshift(record);
       if (this.visionLogs.length > 80) {
@@ -195,6 +200,9 @@ export class PatrolStore {
       point: point,
       personDetected: false,
       boxInChannel: isAlert,
+      redBottleDetected: false,
+      alertAreaDetected: isAlert,
+      recommendedAction: isAlert ? 'avoid_left' : 'forward',
       message: message,
       imageUrl: this.vision.imageUrl,
       updateTime: `${hour}:${minute}:${second}`

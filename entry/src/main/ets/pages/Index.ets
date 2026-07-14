@@ -8,7 +8,8 @@ import { VideoComponents } from '../components/VideoComponents';
 import { AlertRecord, AlertLevel, PatrolStatus, patrolStatusText } from '../model/PatrolModels';
 import { CardShadow, CardShadowHover, ElevatedShadow } from '../styles/styles';
 import { onlineColor } from '../utils/PatrolUiUtils';
-import { DEFAULT_CAR_IP, DEFAULT_TCP_PORT, DEFAULT_VIDEO_PORT } from '../utils/PreferencesUtils';
+import { DEFAULT_CAR_IP, DEFAULT_TCP_PORT, DEFAULT_VIDEO_PORT, PreferencesUtils } from '../utils/PreferencesUtils';
+import preferences from '@ohos.data.preferences';
 
 @Entry
 @Component
@@ -521,6 +522,10 @@ struct ConnectCarOverlay {
   onClose: () => void = (): void => {};
   onConnected: () => void = (): void => {};
 
+  aboutToAppear(): void {
+    this.readNetConfig();
+  }
+
   build() {
     Column() {
       Column({ space: '16vp' }) {
@@ -633,9 +638,10 @@ struct ConnectCarOverlay {
     .width('100%')
   }
 
-  private enterPreview(): void {
-    VideoComponents.ip = this.ip;
-    VideoComponents.port = Number.parseInt(this.videoPort);
+  private async enterPreview(): Promise<void> {
+    await this.saveNetConfig();
+    VideoComponents.ip = this.ip.trim();
+    VideoComponents.port = Number.parseInt(this.videoPort.trim());
     PatrolStore.getInstance().setOnline(false);
     PatrolStore.getInstance().updateVehicle({ message: '离线预览模式，未连接小车' });
     promptAction.showToast({ message: '已进入离线预览模式' });
@@ -644,11 +650,12 @@ struct ConnectCarOverlay {
 
   private async connectCar(): Promise<void> {
     this.connecting = true;
-    VideoComponents.ip = this.ip;
-    VideoComponents.port = Number.parseInt(this.videoPort);
+    await this.saveNetConfig();
+    VideoComponents.ip = this.ip.trim();
+    VideoComponents.port = Number.parseInt(this.videoPort.trim());
     TCPClientManager.getInstance().initNetAddress({
-      address: this.ip,
-      port: Number.parseInt(this.tcpPort)
+      address: this.ip.trim(),
+      port: Number.parseInt(this.tcpPort.trim())
     });
     const connected = await TCPClientManager.getInstance().connect();
     this.connecting = false;
@@ -665,6 +672,37 @@ struct ConnectCarOverlay {
       PatrolStore.getInstance().setOnline(false);
       promptAction.showToast({ message: '连接失败，请检查信息' });
     }
+  }
+
+  private readNetConfig(): void {
+    const netUtils = PreferencesUtils.getInstance().netUtils;
+    if (!netUtils) {
+      return;
+    }
+    netUtils.getIP().then((v: preferences.ValueType): void => {
+      this.ip = String(v);
+    })
+    netUtils.getTcpPort().then((v: preferences.ValueType): void => {
+      this.tcpPort = String(v);
+    })
+    netUtils.getVideoPort().then((v: preferences.ValueType): void => {
+      this.videoPort = String(v);
+    })
+  }
+
+  private async saveNetConfig(): Promise<void> {
+    const netUtils = PreferencesUtils.getInstance().netUtils;
+    if (!netUtils) {
+      return;
+    }
+    this.ip = this.ip.trim();
+    this.tcpPort = this.tcpPort.trim();
+    this.videoPort = this.videoPort.trim();
+    await Promise.all([
+      netUtils.setIp(this.ip),
+      netUtils.setTcpPort(this.tcpPort),
+      netUtils.setVideoPort(this.videoPort)
+    ]);
   }
 }
 

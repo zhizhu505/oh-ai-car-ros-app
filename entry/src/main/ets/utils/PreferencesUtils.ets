@@ -30,6 +30,7 @@ export class PreferencesUtils {
    */
   async init(context: Context): Promise<void> {
     this.netUtils = new NetInfoPreferencesUtils(context)
+    await this.netUtils.ready()
   }
 }
 
@@ -47,10 +48,11 @@ export class NetInfoPreferencesUtils {
   public static readonly KEY_VIDEO_PORT = "KEY_TCP_VIDEO";
   /**首选项实例*/
   private pref: preferences.Preferences | undefined = undefined
+  private initPromise: Promise<void> = Promise.resolve()
 
   /**构造函数*/
   constructor(context: Context) {
-    this.init(context)
+    this.initPromise = this.init(context)
   }
 
   /**初始化首首选项实例*/
@@ -65,52 +67,67 @@ export class NetInfoPreferencesUtils {
     }
   }
 
+  async ready(): Promise<void> {
+    await this.initPromise
+  }
+
+  private async getPref(): Promise<preferences.Preferences | undefined> {
+    await this.ready()
+    return this.pref
+  }
+
   // ------------------------------对外接口------------------------------
 
-  getIP(): Promise<preferences.ValueType> {
-    if (!this.pref) {
+  async getIP(): Promise<preferences.ValueType> {
+    const pref = await this.getPref()
+    if (!pref) {
       return Promise.resolve(DEFAULT_CAR_IP)
     }
-    return this.pref.get(NetInfoPreferencesUtils.KEY_IP, DEFAULT_CAR_IP)
+    return pref.get(NetInfoPreferencesUtils.KEY_IP, DEFAULT_CAR_IP)
   }
 
-  setIp(v: string): void {
-    if (!this.pref) {
+  async setIp(v: string): Promise<void> {
+    const pref = await this.getPref()
+    if (!pref) {
       return
     }
-    this.pref.put(NetInfoPreferencesUtils.KEY_IP, v);
-    this.pref.flush()
+    await pref.put(NetInfoPreferencesUtils.KEY_IP, v);
+    await pref.flush()
   }
 
 
-  getTcpPort(): Promise<preferences.ValueType> {
-    if (!this.pref) {
+  async getTcpPort(): Promise<preferences.ValueType> {
+    const pref = await this.getPref()
+    if (!pref) {
       return Promise.resolve(DEFAULT_TCP_PORT)
     }
-    return this.pref.get(NetInfoPreferencesUtils.KEY_TCP_PORT, DEFAULT_TCP_PORT)
+    return pref.get(NetInfoPreferencesUtils.KEY_TCP_PORT, DEFAULT_TCP_PORT)
   }
 
-  setTcpPort(v: string): void {
-    if (!this.pref) {
+  async setTcpPort(v: string): Promise<void> {
+    const pref = await this.getPref()
+    if (!pref) {
       return
     }
-    this.pref.put(NetInfoPreferencesUtils.KEY_TCP_PORT, v);
-    this.pref.flush()
+    await pref.put(NetInfoPreferencesUtils.KEY_TCP_PORT, v);
+    await pref.flush()
   }
 
-  setVideoPort(v: string): void {
-    if (!this.pref) {
+  async setVideoPort(v: string): Promise<void> {
+    const pref = await this.getPref()
+    if (!pref) {
       return
     }
-    this.pref.put(NetInfoPreferencesUtils.KEY_VIDEO_PORT, v);
-    this.pref.flush()
+    await pref.put(NetInfoPreferencesUtils.KEY_VIDEO_PORT, v);
+    await pref.flush()
   }
 
-  getVideoPort(): Promise<preferences.ValueType> {
-    if (!this.pref) {
+  async getVideoPort(): Promise<preferences.ValueType> {
+    const pref = await this.getPref()
+    if (!pref) {
       return Promise.resolve(DEFAULT_VIDEO_PORT)
     }
-    return this.pref.get(NetInfoPreferencesUtils.KEY_VIDEO_PORT, DEFAULT_VIDEO_PORT)
+    return pref.get(NetInfoPreferencesUtils.KEY_VIDEO_PORT, DEFAULT_VIDEO_PORT)
   }
 }
 

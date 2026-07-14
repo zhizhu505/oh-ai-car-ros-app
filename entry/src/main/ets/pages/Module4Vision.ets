@@ -10,7 +10,7 @@ import { VideoComponents } from '../components/VideoComponents';
 import { CardShadow } from '../styles/styles';
 import { carApi } from '../CarUtill/CarApi';
 import { CarEncode } from '../CarUtill/CarEncode';
-import { PatrolCommandUtils, RedBottleDemoStatus } from '../tcp/PatrolCommandUtils';
+import { AlertAreaStatus, PatrolCommandUtils, RedBottleDemoStatus } from '../tcp/PatrolCommandUtils';
 import promptAction from '@ohos.promptAction';
 
 @Entry
@@ -20,6 +20,9 @@ struct Module4Vision {
   @State point: string = '-';
   @State personDetected: boolean = false;
   @State boxInChannel: boolean = false;
+  @State redBottleDetectedLive: boolean = false;
+  @State alertAreaDetectedLive: boolean = false;
+  @State recommendedAction: string = 'forward';
   @State message: string = '等待数据';
   @State imageUrl: string = '';
   @State updateTime: string = '-';
@@ -34,8 +37,15 @@ struct Module4Vision {
   @State redBottleAlarmActive: boolean = false;
   @State redBottleDetected: boolean = false;
   @State redBottleMessage: string = '等待状态同步';
+  @State alertAreaStatus: string = '未启动';
+  @State alertAreaDetected: boolean = false;
+  @State alertAreaConfirmed: boolean = false;
+  @State alertAreaAction: string = 'forward';
+  @State alertAreaConfidence: string = '--';
+  @State alertAreaMessage: string = '等待状态同步';
   private tabs: string[] = ['实时数据', '阈值规则', '异常记录'];
   private redBottleStatusTimer: number = -1;
+  private lastAlertAreaLogSignature: string = '';
   private refreshHandler: () => void = (): void => {
     this.refreshData();
   };
@@ -56,6 +66,9 @@ struct Module4Vision {
     this.point = vision.point;
     this.personDetected = vision.personDetected;
     this.boxInChannel = vision.boxInChannel;
+    this.redBottleDetectedLive = vision.redBottleDetected;
+    this.alertAreaDetectedLive = vision.alertAreaDetected;
+    this.recommendedAction = vision.recommendedAction;
     this.message = vision.message;
     this.imageUrl = vision.imageUrl;
     this.updateTime = vision.updateTime;
@@ -131,6 +144,22 @@ struct Module4Vision {
                 detected: this.boxInChannel,
                 normalText: '通道畅通',
                 alertText: '检测到杂物占道！'
+              })
+              .layoutWeight(1)
+            }
+            Row({ space: '10vp' }) {
+              DetectStatusCard({
+                title: '红瓶停车',
+                detected: this.redBottleDetectedLive || this.redBottleDetected,
+                normalText: '未触发红瓶',
+                alertText: '检测到红瓶！'
+              })
+              .layoutWeight(1)
+              DetectStatusCard({
+                title: '警戒区',
+                detected: this.alertAreaDetectedLive || this.alertAreaDetected,
+                normalText: '未进入警戒区',
+                alertText: '检测到警戒区！'
               })
               .layoutWeight(1)
             }
@@ -237,6 +266,42 @@ struct Module4Vision {
                 .layoutWeight(1)
             }
             Text(this.redBottleMessage)
+              .fontSize('12fp')
+              .fontColor($r('app.color.text_secondary'))
+              .maxLines(2)
+              .textOverflow({ overflow: TextOverflow.Ellipsis })
+          }
+          .width('100%')
+        }
+      }
+      .padding({ left: '14vp', right: '14vp' })
+
+      Column() {
+        InfoCard({ title: '警戒区守护状态' }) {
+          Column({ space: '8vp' }) {
+            Row({ space: '8vp' }) {
+              Text(this.alertAreaStatus)
+                .fontSize('16fp')
+                .fontWeight(FontWeight.Bold)
+                .fontColor(Color.White)
+                .backgroundColor(this.alertAreaConfirmed ? $r('app.color.alert_warning') : $r('app.color.module4_accent'))
+                .padding({ left: '12vp', right: '12vp', top: '7vp', bottom: '7vp' })
+                .borderRadius('14vp')
+              Text(this.alertAreaDetected ? '已识别警戒区' : '未识别警戒区')
+                .fontSize('12fp')
+                .fontColor(this.alertAreaDetected ? $r('app.color.status_active') : $r('app.color.text_secondary'))
+                .layoutWeight(1)
+                .textAlign(TextAlign.End)
+            }
+            Row({ space: '8vp' }) {
+              RedBottleMetricCard({ label: '置信度', value: this.alertAreaConfidence })
+                .layoutWeight(1)
+              RedBottleMetricCard({ label: '建议动作', value: this.alertAreaAction })
+                .layoutWeight(1)
+              RedBottleMetricCard({ label: '确认状态', value: this.alertAreaConfirmed ? '已确认' : '观察中' })
+                .layoutWeight(1)
+            }
+            Text(this.alertAreaMessage)
               .fontSize('12fp')
               .fontColor($r('app.color.text_secondary'))
               .maxLines(2)
@@ -386,6 +451,39 @@ struct Module4Vision {
     this.redBottleAlarmActive = status.alarm_active;
     this.redBottleDetected = status.detection;
     this.redBottleMessage = status.message;
+    const alertStatus: AlertAreaStatus = await PatrolCommandUtils.getAlertAreaStatus();
+    this.alertAreaStatus = alertStatus.status;
+    this.alertAreaDetected = alertStatus.detection;
+    this.alertAreaConfirmed = alertStatus.confirmed;
+    this.alertAreaAction = alertStatus.recommended_action;
+    this.alertAreaConfidence = alertStatus.confidence > 0 ? alertStatus.confidence.toFixed(2) : '--';
+    this.alertAreaMessage = alertStatus.message;
+    this.syncAlertAreaLog(alertStatus);
+  }
+
+  private syncAlertAreaLog(status: AlertAreaStatus): void {
+    const signature = `${status.status}_${status.detection}_${status.confirmed}_${status.recommended_action}_${status.message}`;
+    if (signature === this.lastAlertAreaLogSignature) {
+      return;
+    }
+    this.lastAlertAreaLogSignature = signature;
+
+    if (!status.guard_active && !status.detection && status.status === '未启动') {
+      return;
+    }
+
+    let message = status.message;
+    let isAlert = false;
+    if (status.confirmed) {
+      message = `警戒区已确认，建议动作：${status.recommended_action}`;
+      isAlert = true;
+    } else if (status.detection) {
+      message = `识别到警戒区，置信度：${status.confidence.toFixed(2)}`;
+      isAlert = true;
+    } else if (message.length === 0) {
+      message = `警戒区状态：${status.status}`;
+    }
+    PatrolStore.getInstance().addVisionLog(message, '警戒区视觉', isAlert);
   }
 
   private formatMeters(value: number | null): string {
@@ -428,7 +526,9 @@ struct VisionLogItem {
     point: '-',
     message: '',
     personDetected: false,
-    boxInChannel: false
+    boxInChannel: false,
+    redBottleDetected: false,
+    alertAreaDetected: false
   };
 
   build() {
@@ -436,7 +536,8 @@ struct VisionLogItem {
       Text()
         .width('8vp')
         .height('8vp')
-        .backgroundColor(this.item.personDetected || this.item.boxInChannel ?
+        .backgroundColor(this.item.personDetected || this.item.boxInChannel ||
+          this.item.redBottleDetected || this.item.alertAreaDetected ?
           $r('app.color.alert_critical') : $r('app.color.status_active'))
         .borderRadius('4vp')
       Column({ space: '3vp' }) {

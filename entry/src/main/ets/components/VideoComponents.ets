@@ -220,12 +220,9 @@ export struct VideoComponents {
       return;
     }
 
-    netUtils.getIP().then((v: preferences.ValueType): void => {
-      VideoComponents.ip = String(v);
-      this.videoSrc = this.getWebSrc();
-    })
-    netUtils.getVideoPort().then((v: preferences.ValueType): void => {
-      VideoComponents.port = Number.parseInt(String(v));
+    Promise.all([netUtils.getIP(), netUtils.getVideoPort()]).then((values: preferences.ValueType[]): void => {
+      VideoComponents.ip = String(values[0]).trim();
+      VideoComponents.port = Number.parseInt(String(values[1]).trim());
       this.videoSrc = this.getWebSrc();
     })
   }

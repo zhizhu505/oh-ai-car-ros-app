@@ -302,8 +302,8 @@ struct LoginComponent {
     .width('100%')
   }
 
-  private enterWithoutConnect(): void {
-    this.saveNetConfig();
+  private async enterWithoutConnect(): Promise<void> {
+    await this.saveNetConfig();
     VideoComponents.ip = this.ip;
     VideoComponents.port = Number.parseInt(this.videoPort);
     PatrolStore.getInstance().setOnline(false);
@@ -314,7 +314,7 @@ struct LoginComponent {
 
   private async connectCar(): Promise<void> {
     this.connecting = true;
-    this.saveNetConfig();
+    await this.saveNetConfig();
     VideoComponents.ip = this.ip;
     VideoComponents.port = Number.parseInt(this.videoPort);
     await this.initTcpConfig();
@@ -349,18 +349,30 @@ struct LoginComponent {
     if (!netUtils) {
       return;
     }
-    netUtils.getIP().then((v: preferences.ValueType): string => this.ip = String(v));
-    netUtils.getTcpPort().then((v: preferences.ValueType): string => this.tcpPort = String(v));
-    netUtils.getVideoPort().then((v: preferences.ValueType): string => this.videoPort = String(v));
+    netUtils.getIP().then((v: preferences.ValueType): void => {
+      this.ip = String(v);
+    })
+    netUtils.getTcpPort().then((v: preferences.ValueType): void => {
+      this.tcpPort = String(v);
+    })
+    netUtils.getVideoPort().then((v: preferences.ValueType): void => {
+      this.videoPort = String(v);
+    })
   }
 
-  private saveNetConfig(): void {
+  private async saveNetConfig(): Promise<void> {
     const netUtils = PreferencesUtils.getInstance().netUtils;
     if (!netUtils) {
       return;
     }
-    netUtils.setIp(this.ip);
-    netUtils.setTcpPort(this.tcpPort);
-    netUtils.setVideoPort(this.videoPort);
+    this.ip = this.ip.trim();
+    this.tcpPort = this.tcpPort.trim();
+    this.videoPort = this.videoPort.trim();
+    await Promise.all([
+      netUtils.setIp(this.ip),
+      netUtils.setTcpPort(this.tcpPort),
+      netUtils.setVideoPort(this.videoPort)
+    ]);
   }
+
 }
