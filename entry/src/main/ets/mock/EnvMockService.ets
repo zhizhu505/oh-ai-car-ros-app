@@ -5,7 +5,7 @@ export class EnvMockService {
   private static instance: EnvMockService;
   private timerId: number = -1;
   private tick: number = 0;
-  private temperature: number = 24.6;
+  private temperature: number = 26.0;
   private humidity: number = 57.8;
   private gas: number = 13.6;
   private pm25: number = 34.5;
@@ -61,7 +61,7 @@ export class EnvMockService {
 
   private nextHistoryRecord(offsetSeconds: number): EnvHistoryRecord {
     this.tick++;
-    this.temperature = this.clamp(24.5 + Math.sin(this.tick / 3.8) * 1.8 + this.randomStep(0.22), 22.1, 28.6);
+    this.temperature = this.clamp(26 + Math.sin(this.tick / 3.8) * 0.75 + this.randomStep(0.18), 25.0, 27.0);
     this.humidity = this.clamp(57 + Math.cos(this.tick / 4.5) * 5.4 + this.randomStep(0.9), 48, 66);
     this.gas = this.clamp(14 + Math.sin(this.tick / 5.2) * 4.2 + this.randomStep(0.65), 8, 22);
     this.pm25 = this.clamp(35 + Math.cos(this.tick / 4.1) * 10.5 + this.randomStep(1.4), 20, 52);

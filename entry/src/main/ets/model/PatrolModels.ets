@@ -186,7 +186,7 @@ export const ENV_METRICS: EnvMetricMeta[] = [
 export function createDefaultEnv(): EnvSnapshot {
   return {
     point: '地下管廊',
-    temperature: 24.8,
+    temperature: 26.0,
     humidity: 58,
     smoke: 0,
     gas: 14,

@@ -82,8 +82,9 @@
     .cover {
       padding: 0;
       background:
-        linear-gradient(90deg, rgba(255,255,255,.97) 0%, rgba(255,255,255,.90) 44%, rgba(255,255,255,.48) 74%, rgba(255,255,255,.18) 100%),
-        url("assets/app_dashboard.png") right center / auto 105% no-repeat,
+        linear-gradient(90deg, rgba(255,255,255,.98) 0%, rgba(255,255,255,.92) 45%, rgba(255,255,255,.56) 68%, rgba(255,255,255,.18) 100%),
+        radial-gradient(circle at 72% 55%, rgba(10,167,189,.18), transparent 34%),
+        url("assets/project_logo.png") right 48% center / auto 112% no-repeat,
         linear-gradient(135deg, #f8fbff, #eaf4ff 48%, #eefcf8);
     }
 
@@ -92,8 +93,9 @@
       position: absolute;
       inset: 0;
       background:
-        radial-gradient(circle at 24% 28%, rgba(10,167,189,.14), transparent 28%),
-        radial-gradient(circle at 52% 74%, rgba(47,99,214,.12), transparent 32%);
+        linear-gradient(90deg, rgba(255,255,255,.18), transparent 72%),
+        radial-gradient(circle at 22% 28%, rgba(10,167,189,.12), transparent 26%),
+        radial-gradient(circle at 52% 74%, rgba(47,99,214,.10), transparent 32%);
       pointer-events: none;
     }
 
@@ -480,7 +482,17 @@
     .person {
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 9px;
+      padding: 16px;
+    }
+
+    .person h3 {
+      margin-bottom: 4px;
+    }
+
+    .person ul {
+      font-size: 12.6px;
+      line-height: 1.48;
     }
 
     .person .share {
@@ -501,6 +513,221 @@
       flex: 1;
       min-height: 0;
       margin-top: 16px;
+    }
+
+    .app-real-layout {
+      display: grid;
+      grid-template-columns: .95fr 1.05fr;
+      gap: 18px;
+      flex: 1;
+      min-height: 0;
+      margin-top: 14px;
+    }
+
+    .real-phone-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      min-height: 0;
+    }
+
+    .real-phone-shot {
+      position: relative;
+      overflow: hidden;
+      min-height: 0;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: #f5f9ff;
+      box-shadow: 0 16px 34px rgba(54, 82, 116, .10);
+    }
+
+    .real-phone-shot img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+
+    .capability-board {
+      display: grid;
+      grid-template-rows: auto 1fr;
+      gap: 12px;
+      min-height: 0;
+    }
+
+    .proof-strip {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .proof-item {
+      padding: 13px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: linear-gradient(180deg, #ffffff, #f6fbff);
+      min-height: 82px;
+    }
+
+    .proof-item b {
+      display: block;
+      color: var(--blue);
+      font-size: 22px;
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+
+    .proof-item span {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.42;
+      font-weight: 800;
+    }
+
+    .feature-board {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      min-height: 0;
+    }
+
+    .feature-card {
+      padding: 15px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(255,255,255,.88);
+      box-shadow: 0 12px 28px rgba(54, 82, 116, .08);
+    }
+
+    .feature-card h3 {
+      margin: 0 0 8px;
+      color: var(--ink);
+      font-size: 16px;
+    }
+
+    .feature-card ul {
+      font-size: 12.5px;
+      line-height: 1.48;
+      padding-left: 17px;
+    }
+
+    .env-showcase {
+      display: grid;
+      grid-template-columns: .9fr 1.1fr;
+      gap: 18px;
+      flex: 1;
+      min-height: 0;
+      margin-top: 14px;
+    }
+
+    .env-video-frame {
+      position: relative;
+      overflow: hidden;
+      min-height: 0;
+      border: 1px dashed rgba(10,167,189,.38);
+      border-radius: 14px;
+      background:
+        linear-gradient(135deg, rgba(10,167,189,.10), rgba(47,99,214,.08)),
+        rgba(255,255,255,.86);
+      box-shadow: 0 16px 34px rgba(54, 82, 116, .12);
+      display: grid;
+      place-items: center;
+      padding: 28px;
+    }
+
+    .env-placeholder {
+      height: 86%;
+      max-height: 390px;
+      width: auto;
+      max-width: 84%;
+      aspect-ratio: 9 / 16;
+      border: 1px solid rgba(10,167,189,.28);
+      border-radius: 18px;
+      background: rgba(255,255,255,.82);
+      display: grid;
+      place-items: center;
+      text-align: center;
+      padding: 24px;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.65);
+    }
+
+    .env-placeholder strong {
+      display: block;
+      color: var(--ink);
+      font-size: 24px;
+      line-height: 1.25;
+      margin-bottom: 12px;
+    }
+
+    .env-placeholder span {
+      display: block;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.55;
+      font-weight: 800;
+    }
+
+    .env-info-board {
+      display: grid;
+      grid-template-rows: auto 1fr;
+      gap: 12px;
+      min-height: 0;
+    }
+
+    .env-metrics-row {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .env-chip {
+      min-height: 58px;
+      padding: 10px;
+      border: 1px solid rgba(10,167,189,.22);
+      border-radius: 10px;
+      background: rgba(10,167,189,.08);
+      display: grid;
+      align-content: center;
+      gap: 3px;
+    }
+
+    .env-chip b {
+      color: #0b6372;
+      font-size: 14px;
+      line-height: 1.1;
+    }
+
+    .env-chip span {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .env-flow-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      min-height: 0;
+    }
+
+    .env-flow-card {
+      padding: 15px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(255,255,255,.9);
+      box-shadow: 0 12px 28px rgba(54, 82, 116, .08);
+    }
+
+    .env-flow-card h3 {
+      margin: 0 0 8px;
+      color: var(--ink);
+      font-size: 16px;
+    }
+
+    .env-flow-card ul {
+      font-size: 12.5px;
+      line-height: 1.5;
+      padding-left: 17px;
     }
 
     .phone-stack {
@@ -707,7 +934,7 @@
       h1 { font-size: 36px; }
       .subtitle { font-size: 16px; }
       .nav { display: none; }
-      .cover-points, .cols-2, .cols-3, .cols-4, .split, .timeline, .day-grid, .issue-grid, .people, .app-layout, .phone-stack, .module-grid, .shots, .feature-split, .media-grid {
+      .cover-points, .cols-2, .cols-3, .cols-4, .split, .timeline, .day-grid, .issue-grid, .people, .app-layout, .app-real-layout, .real-phone-grid, .proof-strip, .feature-board, .env-showcase, .env-metrics-row, .env-flow-grid, .phone-stack, .module-grid, .shots, .feature-split, .media-grid {
         grid-template-columns: 1fr;
       }
       .shots { grid-template-rows: none; }
@@ -857,10 +1084,10 @@
       </div>
       <div class="body">
         <div class="people">
-          <article class="person"><h3>武芷竹</h3><span class="pill">组长 / SLAM / 统筹</span><ul><li>项目进度协调与任务拆分。</li><li>SLAM 建图、自动导航、巡检路线与地图参数。</li><li>定点巡检测试、串口排查和多模块联调。</li></ul><div class="share">贡献度 25%</div></article>
-          <article class="person"><h3>胡雅欣</h3><span class="pill">APP / 环境 / 接管 / 文档</span><ul><li>鸿蒙 APP 整合、首页和控制链路适配。</li><li>环境感知、数据面板、阈值规则和异常记录。</li><li>手动接管、多档调速、文档与展示材料。</li></ul><div class="share">贡献度 25%</div></article>
-          <article class="person"><h3>周诗晴</h3><span class="pill">雷达 / AI / 页面接入</span><ul><li>雷达追踪与自动避障配置。</li><li>雷达状态、通道占用与 APP 功能接入。</li><li>AI 咨询、横竖屏适配和界面完善。</li></ul><div class="share">贡献度 25%</div></article>
-          <article class="person"><h3>曹玥</h3><span class="pill">视觉 / YOLO / 场景代码</span><ul><li>目标检测数据集构建和 YOLO 模型训练。</li><li>红瓶停止、警戒区识别和视觉功能环境。</li><li>两类场景下的小车行动代码。</li></ul><div class="share">贡献度 25%</div></article>
+          <article class="person"><h3>武芷竹</h3><span class="pill">组长 / SLAM / 联调</span><ul><li>负责进度统筹、任务拆分和阶段收口。</li><li>完成 SLAM 建图、巡检点位和路线规划。</li><li>参与底盘串口排查、定点巡检测试和实车联调。</li></ul><div class="share">贡献度 25%</div></article>
+          <article class="person"><h3>胡雅欣</h3><span class="pill">APP / 环境 / 接管 / 材料</span><ul><li>整合鸿蒙 APP 首页、连接配置、模块入口和状态展示。</li><li>完成环境感知页：实时数据、趋势图、阈值规则、异常记录。</li><li>完成手动接管：方向控制、摇杆、急停、轮速调节和视频预览入口。</li><li>整理需求、管理、测试说明和结题展示素材。</li></ul><div class="share">贡献度 25%</div></article>
+          <article class="person"><h3>周诗晴</h3><span class="pill">雷达 / AI / 告警</span><ul><li>负责雷达追踪、通道安全状态和避障策略配置。</li><li>把雷达异常接入 APP 告警中心，形成可复盘记录。</li><li>完善 AI 分析、咨询引用和横竖屏展示适配。</li></ul><div class="share">贡献度 25%</div></article>
+          <article class="person"><h3>曹玥</h3><span class="pill">视觉 / YOLO / 场景</span><ul><li>构建目标检测数据集并完成 YOLO 模型训练。</li><li>实现红瓶停止、警戒区识别和视觉异常演示。</li><li>补充两类场景下的小车行动代码与展示素材。</li></ul><div class="share">贡献度 25%</div></article>
         </div>
       </div>
     </section>
@@ -868,7 +1095,7 @@
     <section class="slide" data-section="impl" data-order="10">
       <div class="topbar"></div>
       <div>
-        <div class="kicker">03 · 周诗晴模块：小车端</div>
+        <div class="kicker">03 · 激光雷达避障</div>
         <h2>激光雷达避障与跟踪：把小车从“能移动”提升为“能判断通道安全”</h2>
         <p class="lead">小车端围绕仓储狭窄通道设计雷达检测逻辑，重点处理前方通道、左右货架距离、动态障碍和警戒区域四类问题。</p>
       </div>
@@ -895,7 +1122,7 @@
     <section class="slide" data-section="impl" data-order="11">
       <div class="topbar"></div>
       <div>
-        <div class="kicker">03 · 周诗晴模块：APP 与告警 AI</div>
+        <div class="kicker">03 · 告警中心与 AI 分析</div>
         <h2>APP 场景应用与告警闭环：雷达事件进入告警中心，再由 AI 给出处置建议</h2>
         <p class="lead">APP 端把雷达场景预设、通道安全阈值、告警记录和 AI 分析放到同一条演示链路中，形成可展示、可追溯、可解释的异常处理流程。</p>
       </div>
@@ -921,17 +1148,27 @@
       <div class="topbar"></div>
       <div>
         <div class="kicker">03 · 项目设计与实现</div>
-        <h2>整合 APP：狭域巡航的统一控制台</h2>
-        <p class="lead">APP 作为最终展示入口，把连接配置、巡检状态、模块入口、重点告警和手动接管整合在同一套移动端交互中。</p>
+        <h2>真机 APP 整合：可安装运行、可连接小车、可完成巡检控制</h2>
+        <p class="lead">当前鸿蒙 APP 已在真机上完成部署运行，支持连接小车、同步状态、查看告警、进入各功能模块，并通过手动接管页面发送控制指令。</p>
       </div>
       <div class="body">
-        <div class="app-layout">
-          <div class="image-frame phone"><span class="caption">巡检首页与连接小车</span><img src="assets/app_dashboard.png" alt="APP 巡检首页"></div>
-          <div class="grid cols-2">
-            <article class="card"><h3>首页总览</h3><ul><li>显示“狭域巡航 AI PATROL”品牌。</li><li>展示在线状态、当前点位、下一点位和巡检进度。</li><li>重点告警在首页直接提示，减少现场查找成本。</li></ul></article>
-            <article class="card"><h3>连接机制</h3><ul><li>支持 IP、TCP 端口、视频端口配置。</li><li>连接后同步小车数据，未连接时可进入离线预览。</li><li>便于设备不稳定时继续完整展示业务流程。</li></ul></article>
-            <article class="card"><h3>模块入口</h3><ul><li>环境感知、SLAM 导航、激光雷达、视觉识别、手动接管。</li><li>模块卡片显示当前状态和异常摘要。</li></ul></article>
-            <article class="card"><h3>告警闭环</h3><ul><li>环境、雷达、视觉异常统一进入告警中心。</li><li>支持 AI 分析、复制汇报和发送领导。</li></ul></article>
+        <div class="app-real-layout">
+          <div class="real-phone-grid">
+            <div class="real-phone-shot"><span class="caption">真机首页</span><img src="assets/real_app_home.jpg" alt="真机运行的 APP 首页"></div>
+            <div class="real-phone-shot"><span class="caption">连接小车</span><img src="assets/real_app_connect.jpg" alt="真机连接小车弹窗"></div>
+          </div>
+          <div class="capability-board">
+            <div class="proof-strip">
+              <div class="proof-item"><b>真机</b><span>HAP 可部署到手机，APP 可进入首页并运行</span></div>
+              <div class="proof-item"><b>TCP</b><span>配置 IP、控制端口、视频端口连接小车</span></div>
+              <div class="proof-item"><b>控制</b><span>连接后可发送遥控、急停、轮速等指令</span></div>
+            </div>
+            <div class="feature-board">
+              <article class="feature-card"><h3>首页状态</h3><ul><li>显示在线/离线、当前点位、下一点位、巡检进度。</li><li>首页直接展示重点告警，支持快速定位风险。</li><li>支持跳过连接进入离线预览，展示链路不中断。</li></ul></article>
+              <article class="feature-card"><h3>模块入口</h3><ul><li>环境感知、SLAM 导航、激光雷达、视觉识别、手动接管。</li><li>模块卡片显示摘要状态，如异常阈值、巡检路线、通道占用、视觉告警。</li></ul></article>
+              <article class="feature-card"><h3>远程接管</h3><ul><li>支持摇杆控制、按键控制、慢/中/快三档速度。</li><li>支持自动循迹开关、急停、停止和四轮独立轮速调节。</li><li>接入视频预览，用于辅助判断前方环境。</li></ul></article>
+              <article class="feature-card"><h3>告警与复盘</h3><ul><li>环境、雷达、视觉异常统一进入告警记录。</li><li>支持单条 AI 分析、多条引用咨询、汇总报告、复制和发送领导。</li><li>测试告警可用于现场演示完整闭环。</li></ul></article>
+            </div>
           </div>
         </div>
       </div>
@@ -940,20 +1177,34 @@
     <section class="slide" data-section="impl" data-order="8">
       <div class="topbar"></div>
       <div>
-        <div class="kicker">03 · 胡雅欣负责模块</div>
-        <h2>环境监测：实时数据、阈值规则、异常记录三层展示</h2>
-        <p class="lead">这部分用于说明仓储环境是否安全，并把温度、湿度、可燃气体、PM2.5、光照等数据转化为可解释的告警。</p>
+        <div class="kicker">03 · 环境感知</div>
+        <h2>环境感知：多维数据监测、阈值规则和告警闭环</h2>
+        <p class="lead">环境感知页面围绕管廊巡检场景展示实时趋势、阈值规则和异常记录，异常数据会进入告警中心，供后续 AI 分析、处置建议和总结日报使用。</p>
       </div>
       <div class="body">
-        <div class="split">
-          <div class="phone-stack">
-            <div class="phone-shot"><span class="caption">实时数据</span><img src="assets/env_monitor.png" alt="环境实时数据"></div>
-            <div class="phone-shot"><span class="caption">阈值规则</span><img src="assets/threshold_rules.png" alt="环境阈值规则"></div>
+        <div class="env-showcase">
+          <div class="env-video-frame">
+            <div class="env-placeholder">
+              <div>
+                <strong>环境感知演示占位</strong>
+                <span>用于现场放置环境感知演示视频或真机截图<br>建议竖屏素材，覆盖同等展示区域</span>
+              </div>
+            </div>
           </div>
-          <div class="grid">
-            <article class="card"><h3>实现内容</h3><ul><li>环境总览显示统一采样时间和整体状态。</li><li>温度、湿度、可燃气体、PM2.5、光照卡片展示实时值、阈值和单位。</li><li>趋势图展示最近 24 次采样，红线表示预警阈值。</li><li>阈值规则页把正常、预警、严重异常和处置建议写清楚。</li><li>异常记录页保存历史测试或运行中触发的环境异常。</li></ul></article>
-            <article class="card"><h3>展示价值</h3><ul><li>把抽象传感器数据转化为仓储巡检语言。</li><li>能解释“为什么这个点位需要处理”。</li><li>能与告警中心、AI 咨询和巡检点位绑定。</li></ul></article>
-            <div class="quote">讲解重点：我负责的不只是页面展示，还包括阈值规则、异常文案、记录结构和文档整理，让环境监测从数据展示变成可复盘的业务功能。</div>
+          <div class="env-info-board">
+            <div class="env-metrics-row">
+              <div class="env-chip"><b>温度</b><span>℃</span></div>
+              <div class="env-chip"><b>湿度</b><span>%</span></div>
+              <div class="env-chip"><b>可燃气体</b><span>ppm</span></div>
+              <div class="env-chip"><b>PM2.5</b><span>μg/m³</span></div>
+              <div class="env-chip"><b>光照</b><span>lux</span></div>
+            </div>
+            <div class="env-flow-grid">
+              <article class="env-flow-card"><h3>实时数据</h3><ul><li>显示管廊环境总览和统一采样时间。</li><li>每 3 秒更新趋势，保留最近 24 组采样。</li><li>选中指标后展示对应曲线、当前值和阈值线。</li></ul></article>
+              <article class="env-flow-card"><h3>阈值规则</h3><ul><li>为温湿度、气体、颗粒物和光照设置正常、预警、严重边界。</li><li>规则页展示指标单位、风险等级和处理建议。</li><li>红线对应趋势图中的预警阈值。</li></ul></article>
+              <article class="env-flow-card"><h3>异常记录</h3><ul><li>连续越线或历史测试异常会生成环境异常记录。</li><li>记录包含时间、对象、读数、异常等级和风险来源。</li><li>便于后续复盘环境风险和处理闭环。</li></ul></article>
+              <article class="env-flow-card"><h3>告警联动</h3><ul><li>环境异常统一汇入告警中心。</li><li>告警可被 AI 引用分析，输出原因和处置建议。</li><li>最终可生成巡检总结日报素材。</li></ul></article>
+            </div>
           </div>
         </div>
       </div>
@@ -962,7 +1213,7 @@
     <section class="slide" data-section="impl" data-order="9">
       <div class="topbar"></div>
       <div>
-        <div class="kicker">03 · 胡雅欣负责模块</div>
+        <div class="kicker">03 · 手动接管</div>
         <h2>手动接管：异常时能够立即控制小车，保证现场安全</h2>
         <p class="lead">手动接管是整个系统的安全兜底能力。自动巡检遇到堵塞、识别异常或导航不稳定时，操作者可以切换到遥控、按键、急停或高级轮速调节。</p>
       </div>
