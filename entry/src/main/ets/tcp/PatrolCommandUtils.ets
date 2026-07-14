@@ -34,6 +34,18 @@ interface StartRedBottleGuardPayload {
   fail_safe_stop: boolean;
 }
 
+interface StartAlertAreaGuardPayload {
+  cmd: string;
+  confidence: number;
+  min_box_area: number;
+  confirm_frames: number;
+  turn_percent: number;
+  turn_seconds: number;
+  cooldown_seconds: number;
+  publish_forward: boolean;
+  fail_safe_stop: boolean;
+}
+
 interface LidarStrategyPayload {
   cmd: string;
   frontWarnM: number;
@@ -71,7 +83,39 @@ export interface RedBottleDemoStatus {
   updated_at: number;
 }
 
-type PatrolCmdPayload = StartPatrolPayload | SetModePayload | SimpleCmdPayload | StartRedBottleGuardPayload;
+export interface AlertAreaStatus {
+  type: string;
+  mode: string;
+  status: string;
+  detection: boolean;
+  confirmed: boolean;
+  alarm_active: boolean;
+  confidence: number;
+  bbox_xyxy: number[];
+  recommended_action: string;
+  guard_active: boolean;
+  event: string;
+  message: string;
+  updated_at: number;
+}
+
+export interface VisionGuardStatus {
+  type: string;
+  online: boolean;
+  red_bottle: RedBottleDemoStatus;
+  alert_area: AlertAreaStatus;
+  event: string;
+  level: string;
+  recommended_action: string;
+  should_stop: boolean;
+  should_turn: boolean;
+  message: string;
+  updated_at: number;
+}
+
+type PatrolCmdPayload = StartPatrolPayload | SetModePayload | SimpleCmdPayload |
+  StartRedBottleGuardPayload | StartAlertAreaGuardPayload |
+  LidarStrategyPayload | LidarAvoidPayload | LidarTrackPayload;
 
 /**
  * 向小车端发送 JSON 巡检控制命令
@@ -151,6 +195,35 @@ export class PatrolCommandUtils {
     return PatrolCommandUtils.sendDemo(payload);
   }
 
+  static async startAlertAreaGuard(
+    confidence: number = 0.45,
+    minBoxArea: number = 12000.0,
+    confirmFrames: number = 2,
+    turnPercent: number = 18,
+    turnSeconds: number = 1.0,
+    cooldownSeconds: number = 1.5,
+    publishForward: boolean = false,
+    failSafeStop: boolean = false
+  ): Promise<boolean> {
+    const payload: StartAlertAreaGuardPayload = {
+      cmd: 'start_alert_area_guard',
+      confidence: confidence,
+      min_box_area: minBoxArea,
+      confirm_frames: confirmFrames,
+      turn_percent: turnPercent,
+      turn_seconds: turnSeconds,
+      cooldown_seconds: cooldownSeconds,
+      publish_forward: publishForward,
+      fail_safe_stop: failSafeStop
+    };
+    return PatrolCommandUtils.sendDemo(payload);
+  }
+
+  static async stopAlertAreaGuard(): Promise<boolean> {
+    const payload: SimpleCmdPayload = { cmd: 'stop_alert_area_guard' };
+    return PatrolCommandUtils.sendDemo(payload);
+  }
+
   static async pushLidarStrategy(strategy: LidarStrategyPayload): Promise<boolean> {
     strategy.cmd = 'set_lidar_strategy';
     console.info(TAG, `pushLidarStrategy called, strategy=${JSON.stringify(strategy)}`);
@@ -204,6 +277,46 @@ export class PatrolCommandUtils {
     } catch (e) {
       console.error(TAG, 'getRedBottleStatus parse failed', JSON.stringify(e));
       return PatrolCommandUtils.defaultRedBottleStatus('状态解析失败');
+    }
+  }
+
+  static async getAlertAreaStatus(): Promise<AlertAreaStatus> {
+    const payload: SimpleCmdPayload = { cmd: 'get_alert_area_status' };
+    const message = `${JSON.stringify(payload)}\n`;
+    const response = await TCPClientManager.getInstance().requestMessageFromPort(6600, message);
+    if (response.length === 0) {
+      return PatrolCommandUtils.defaultAlertAreaStatus('状态服务无响应');
+    }
+    try {
+      const line = response.split('\n')[0];
+      const status = JSON.parse(line) as AlertAreaStatus;
+      if (!status.status) {
+        return PatrolCommandUtils.defaultAlertAreaStatus('状态数据异常');
+      }
+      return status;
+    } catch (e) {
+      console.error(TAG, 'getAlertAreaStatus parse failed', JSON.stringify(e));
+      return PatrolCommandUtils.defaultAlertAreaStatus('状态解析失败');
+    }
+  }
+
+  static async getVisionGuardStatus(): Promise<VisionGuardStatus> {
+    const payload: SimpleCmdPayload = { cmd: 'get_vision_guard_status' };
+    const message = `${JSON.stringify(payload)}\n`;
+    const response = await TCPClientManager.getInstance().requestMessageFromPort(6600, message);
+    if (response.length === 0) {
+      return PatrolCommandUtils.defaultVisionGuardStatus('状态服务无响应');
+    }
+    try {
+      const line = response.split('\n')[0];
+      const status = JSON.parse(line) as VisionGuardStatus;
+      if (!status.type) {
+        return PatrolCommandUtils.defaultVisionGuardStatus('状态数据异常');
+      }
+      return status;
+    } catch (e) {
+      console.error(TAG, 'getVisionGuardStatus parse failed', JSON.stringify(e));
+      return PatrolCommandUtils.defaultVisionGuardStatus('状态解析失败');
     }
   }
 
@@ -274,6 +387,40 @@ export class PatrolCommandUtils {
       guard_active: false,
       stop_latched: false,
       event: '',
+      message: message,
+      updated_at: 0
+    };
+  }
+
+  private static defaultAlertAreaStatus(message: string): AlertAreaStatus {
+    return {
+      type: 'alert_area_status',
+      mode: 'idle',
+      status: '未启动',
+      detection: false,
+      confirmed: false,
+      alarm_active: false,
+      confidence: 0.0,
+      bbox_xyxy: [],
+      recommended_action: 'forward',
+      guard_active: false,
+      event: '',
+      message: message,
+      updated_at: 0
+    };
+  }
+
+  private static defaultVisionGuardStatus(message: string): VisionGuardStatus {
+    return {
+      type: 'vision_guard_status',
+      online: false,
+      red_bottle: PatrolCommandUtils.defaultRedBottleStatus(message),
+      alert_area: PatrolCommandUtils.defaultAlertAreaStatus(message),
+      event: '',
+      level: 'normal',
+      recommended_action: 'forward',
+      should_stop: false,
+      should_turn: false,
       message: message,
       updated_at: 0
     };

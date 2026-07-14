@@ -152,11 +152,20 @@ export class PatrolMessageHandler {
       point: PatrolMessageHandler.readString(payload, 'point', store.vision.point),
       personDetected: PatrolMessageHandler.readBoolean(payload, 'personDetected'),
       boxInChannel: PatrolMessageHandler.readBoolean(payload, 'boxInChannel'),
+      redBottleDetected: PatrolMessageHandler.readBoolean(payload, 'redBottleDetected'),
+      alertAreaDetected: PatrolMessageHandler.readBoolean(payload, 'alertAreaDetected'),
+      recommendedAction: PatrolMessageHandler.readString(payload, 'recommendedAction', 'forward'),
       message: PatrolMessageHandler.readString(payload, 'message', '视觉检测更新'),
       imageUrl: PatrolMessageHandler.readString(payload, 'imageUrl', ''),
       updateTime: PatrolMessageHandler.readString(payload, 'time', PatrolMessageHandler.nowTime())
     };
     store.updateVision(vision);
+    if (vision.redBottleDetected || vision.alertAreaDetected) {
+      store.updateVehicle({
+        patrolStatus: vision.redBottleDetected ? PatrolStatus.Alerting : PatrolStatus.Avoiding,
+        message: vision.message
+      });
+    }
   }
 
   private static handleStatus(payload: Record<string, Object>): void {

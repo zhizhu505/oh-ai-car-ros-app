@@ -115,6 +115,9 @@ export interface VisionSnapshot {
   point: string;
   personDetected: boolean;
   boxInChannel: boolean;
+  redBottleDetected: boolean;
+  alertAreaDetected: boolean;
+  recommendedAction: string;
   message: string;
   imageUrl: string;
   updateTime: string;
@@ -127,6 +130,8 @@ export interface VisionLogRecord {
   message: string;
   personDetected: boolean;
   boxInChannel: boolean;
+  redBottleDetected: boolean;
+  alertAreaDetected: boolean;
 }
 
 /** 小车整体状态 */
@@ -229,6 +234,9 @@ export function createDefaultVision(): VisionSnapshot {
     point: '-',
     personDetected: false,
     boxInChannel: false,
+    redBottleDetected: false,
+    alertAreaDetected: false,
+    recommendedAction: 'forward',
     message: '等待数据',
     imageUrl: '',
     updateTime: '-'
