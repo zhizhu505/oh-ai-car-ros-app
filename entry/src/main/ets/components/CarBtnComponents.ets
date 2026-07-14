@@ -2,6 +2,7 @@ import { carApi } from '../CarUtill/CarApi'
 import { CarEncode } from '../CarUtill/CarEncode'
 import { CarDirection } from '../CarUtill/CarEnum'
 import { ButtonShadow } from '../styles/styles'
+import { PatrolCommandUtils } from '../tcp/PatrolCommandUtils'
 
 /**
  * 按键控制UI组件
@@ -11,6 +12,8 @@ struct CarBtnComponents {
   @Prop speedValue: number = 45;
   private repeatTimer: number = -1;
   private activeDirection: CarDirection = CarDirection.Stop;
+  private lastVoiceMessage: string = '';
+  private lastVoiceAt: number = 0;
 
   build(): void {
     Grid() {
@@ -129,6 +132,7 @@ struct CarBtnComponents {
   private startContinuousControl(direction: CarDirection): void {
     this.stopRepeatTimer();
     this.activeDirection = direction;
+    this.announceDirection(direction);
     this.sendDirectionSpeed(direction);
     this.repeatTimer = setInterval((): void => {
       this.sendDirectionSpeed(this.activeDirection);
@@ -139,6 +143,7 @@ struct CarBtnComponents {
     this.stopRepeatTimer();
     this.activeDirection = CarDirection.Stop;
     this.sendStop();
+    this.announceVoice('停止');
   }
 
   private stopRepeatTimer(): void {
@@ -178,6 +183,45 @@ struct CarBtnComponents {
 
   private sendStop(): void {
     carApi.send(CarEncode.UpSpeedCarEncode(0, 0, 0, 0));
+  }
+
+  private announceDirection(direction: CarDirection): void {
+    const message = this.directionVoiceMessage(direction);
+    if (message.length === 0) {
+      return;
+    }
+    this.announceVoice(message);
+  }
+
+  private directionVoiceMessage(direction: CarDirection): string {
+    switch (direction) {
+      case CarDirection.Front:
+        return '前进';
+      case CarDirection.After:
+        return '后退';
+      case CarDirection.Left:
+        return '左移';
+      case CarDirection.Right:
+        return '右移';
+      case CarDirection.LeftRotate:
+        return '左转';
+      case CarDirection.RightRotate:
+        return '右转';
+      case CarDirection.Brake:
+        return '停止';
+      default:
+        return '';
+    }
+  }
+
+  private announceVoice(message: string): void {
+    const now = Date.now();
+    if (message === this.lastVoiceMessage && now - this.lastVoiceAt < 1200) {
+      return;
+    }
+    this.lastVoiceMessage = message;
+    this.lastVoiceAt = now;
+    PatrolCommandUtils.speakVoice(message);
   }
 
   private clamp(value: number, min: number, max: number): number {

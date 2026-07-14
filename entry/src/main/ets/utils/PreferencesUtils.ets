@@ -3,7 +3,7 @@ import preferences from '@ohos.data.preferences';
 export const DEFAULT_CAR_IP = '192.168.43.5';
 export const DEFAULT_TCP_PORT = '6000';
 export const CAR_CONTROL_TCP_PORT = 6000;
-export const DEFAULT_VIDEO_PORT = '6500';
+export const DEFAULT_VIDEO_PORT = '6700';
 
 /**首选项对象*/
 export class PreferencesUtils {
@@ -128,7 +128,12 @@ export class NetInfoPreferencesUtils {
     if (!pref) {
       return Promise.resolve(DEFAULT_VIDEO_PORT)
     }
-    return pref.get(NetInfoPreferencesUtils.KEY_VIDEO_PORT, DEFAULT_VIDEO_PORT)
+    const value = await pref.get(NetInfoPreferencesUtils.KEY_VIDEO_PORT, DEFAULT_VIDEO_PORT)
+    if (String(value).trim() === '6500') {
+      await this.setVideoPort(DEFAULT_VIDEO_PORT)
+      return DEFAULT_VIDEO_PORT
+    }
+    return value
   }
 }
 

@@ -248,6 +248,7 @@ struct Module3Lidar {
       this.avoidanceStatus = enabled ? 'scanning' : 'idle';
       PatrolStore.getInstance().setLidarAvoidanceEnabled(enabled);
       promptAction.showToast({ message: enabled ? '雷达避障已开启' : '雷达避障已关闭' });
+      PatrolCommandUtils.speakVoice(enabled ? '雷达避障已开启' : '雷达避障已关闭');
       console.info('Module3Lidar', `toggleAvoidance success, status updated to ${this.avoidanceStatus}`);
     } else {
       promptAction.showToast({ message: '命令发送失败，请检查连接' });
@@ -273,6 +274,7 @@ struct Module3Lidar {
       }
       PatrolStore.getInstance().setLidarTrackingEnabled(enabled);
       promptAction.showToast({ message: enabled ? '目标跟踪已开启' : '目标跟踪已关闭' });
+      PatrolCommandUtils.speakVoice(enabled ? '目标跟踪已开启' : '目标跟踪已关闭');
       console.info('Module3Lidar', `toggleTracking success, status updated to ${this.avoidanceStatus}`);
     } else {
       promptAction.showToast({ message: '命令发送失败，请检查连接' });
@@ -622,6 +624,7 @@ struct Module3Lidar {
               .borderRadius('19vp')
               .onClick((): void => {
                 this.sendRosCommand('start_auto');
+                PatrolCommandUtils.speakVoice('自动通道避障已启动');
               })
             Button('停止自动避障')
               .layoutWeight(1)
@@ -632,6 +635,7 @@ struct Module3Lidar {
               .borderRadius('19vp')
               .onClick((): void => {
                 this.sendRosCommand('stop_auto');
+                PatrolCommandUtils.speakVoice('自动通道避障已停止');
               })
           }
 
@@ -646,6 +650,7 @@ struct Module3Lidar {
               .border({ width: '1vp', color: $r('app.color.divider') })
               .onClick((): void => {
                 this.sendRosCommand(this.rosNarrowMode ? 'normal_mode' : 'narrow_mode');
+                PatrolCommandUtils.speakVoice(this.rosNarrowMode ? '已恢复正常速度' : '已进入狭窄通道低速模式');
               })
             Button(`下发减速阈值 ${this.rosFrontWarnM.toFixed(1)}m`)
               .layoutWeight(1)
@@ -657,6 +662,7 @@ struct Module3Lidar {
               .border({ width: '1vp', color: $r('app.color.divider') })
               .onClick((): void => {
                 this.sendRosCommand(`set_front:${this.rosFrontWarnM}`);
+                PatrolCommandUtils.speakVoice(`减速阈值已设置为${this.rosFrontWarnM.toFixed(1)}米`);
               })
           }
         }
@@ -718,25 +724,41 @@ struct Module3Lidar {
           Row({ space: '8vp' }) {
             ActionChip({ label: '前方0.7m减速', accent: $r('app.color.alert_warning'), onTap: (): void => {
               this.simulateScenario(0.70, 0.60, 0.62, 3, false);
+              PatrolCommandUtils.speakVoice('前方减速，请慢行');
             } })
             ActionChip({ label: '前方0.3m停车', accent: $r('app.color.alert_critical'), onTap: (): void => {
               this.simulateScenario(0.30, 0.58, 0.61, 5, false);
+              PatrolCommandUtils.speakVoice('前方停车，检测到障碍物');
             } })
           }
           Row({ space: '8vp' }) {
             ActionChip({ label: '左侧靠近', accent: $r('app.color.module3_accent'), onTap: (): void => {
               this.simulateScenario(1.20, 0.35, 0.65, 2, false);
+              PatrolCommandUtils.speakVoice('左侧货架距离偏近');
             } })
             ActionChip({ label: '右侧靠近', accent: $r('app.color.module3_accent'), onTap: (): void => {
               this.simulateScenario(1.20, 0.65, 0.35, 2, false);
+              PatrolCommandUtils.speakVoice('右侧货架距离偏近');
             } })
           }
           Row({ space: '8vp' }) {
             ActionChip({ label: '货物堆放5秒', accent: $r('app.color.alert_critical'), onTap: (): void => {
               this.simulateScenario(0.42, 0.58, 0.60, 6, false);
+              PatrolCommandUtils.speakVoice('检测到货物堆放异常');
             } })
             ActionChip({ label: '禁区移动目标', accent: $r('app.color.alert_critical'), onTap: (): void => {
               this.simulateScenario(1.20, 0.60, 0.58, 1, true);
+              PatrolCommandUtils.speakVoice('警戒区域检测到移动目标');
+            } })
+          }
+          Row({ space: '8vp' }) {
+            ActionChip({ label: '可疑人员跟踪', accent: $r('app.color.alert_critical'), onTap: (): void => {
+              this.simulateScenario(1.05, 0.64, 0.55, 3, true, true);
+              PatrolCommandUtils.speakVoice('检测到可疑人员，开始跟踪');
+            } })
+            ActionChip({ label: '目标离开恢复', accent: $r('app.color.status_success'), onTap: (): void => {
+              this.simulateScenario(1.40, 0.60, 0.60, 0, false, false);
+              PatrolCommandUtils.speakVoice('目标已离开，恢复正常通行');
             } })
           }
         }
