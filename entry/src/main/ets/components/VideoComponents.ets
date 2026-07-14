@@ -267,7 +267,7 @@ export struct VideoComponents {
       VideoComponents.ip = String(values[0]).trim();
       VideoComponents.port = Number.parseInt(String(values[1]).trim());
       setTimeout(applyReload, 180);
-    }).catch((e): void => {
+    }).catch((e: Error): void => {
       console.error(TAG, 'reload config failed', JSON.stringify(e));
       setTimeout(applyReload, 180);
     })
