@@ -12,9 +12,21 @@ import { ModuleAlertList } from '../components/ModuleAlertList';
 import { channelStatusColor } from '../utils/PatrolUiUtils';
 import { CardShadow, ElevatedShadow, ButtonShadow } from '../styles/styles';
 import { DEFAULT_CAR_IP, DEFAULT_TCP_PORT, PreferencesUtils } from '../utils/PreferencesUtils';
+import { TCPClientManager } from '../tcp/TCPClientManager';
 import preferences from '@ohos.data.preferences';
 
 type OccupancyClass = 'clear' | 'short' | 'long' | 'blocked';
+
+interface PatrolReplayFrame {
+  point: string;
+  label: string;
+  front: number;
+  left: number;
+  right: number;
+  duration: number;
+  movingTarget: boolean;
+  suspiciousTarget: boolean;
+}
 
 @Entry
 @Component
@@ -46,7 +58,26 @@ struct Module3Lidar {
   @State rosbridgeBusy: boolean = false;
   @State rosFrontWarnM: number = 0.7;
   @State rosNarrowMode: boolean = false;
+  @State patrolReplayEnabled: boolean = false;
+  @State patrolReplayText: string = '点击启动避障后开始接收巡检实时数据';
+  @State patrolStepLabel: string = '等待启动巡检';
+  @State suspiciousTrackingEnabled: boolean = false;
+  @State suspiciousTrackSec: number = 0;
+  @State suspiciousTargetDistance: number = 0;
   private tabs: string[] = ['实时检测', '避障控制', '异常记录'];
+  private patrolReplayTimer: number = -1;
+  private patrolStepIndex: number = 0;
+  private patrolReplayFrames: PatrolReplayFrame[] = [
+    { point: 'P0 入口', label: 'P0 入口自检，通道畅通', front: 1.45, left: 0.62, right: 0.61, duration: 0, movingTarget: false, suspiciousTarget: false },
+    { point: 'P1 管廊上段', label: 'P1 管廊货架居中巡航', front: 1.20, left: 0.56, right: 0.65, duration: 1, movingTarget: false, suspiciousTarget: false },
+    { point: 'P2 管廊中段', label: 'P2 前方 0.72m 临时障碍，执行减速', front: 0.72, left: 0.58, right: 0.60, duration: 2, movingTarget: false, suspiciousTarget: false },
+    { point: 'P3 管廊下段', label: 'P3 人员短时经过，继续低速观察', front: 0.66, left: 0.59, right: 0.62, duration: 3, movingTarget: false, suspiciousTarget: false },
+    { point: 'P4 转弯口', label: 'P4 前方 0.35m 障碍，强制停车', front: 0.35, left: 0.57, right: 0.60, duration: 5, movingTarget: false, suspiciousTarget: false },
+    { point: 'P5 异常物体区', label: 'P5 货物堆放持续 6 秒，生成占用告警', front: 0.42, left: 0.58, right: 0.61, duration: 6, movingTarget: false, suspiciousTarget: false },
+    { point: 'P5 警戒区边界', label: 'P5 可疑人员进入警戒区，开始跟踪', front: 1.10, left: 0.63, right: 0.57, duration: 1, movingTarget: true, suspiciousTarget: true },
+    { point: 'P5 障碍旁通道', label: 'P5 可疑人员沿障碍区移动，持续跟踪', front: 0.95, left: 0.66, right: 0.53, duration: 4, movingTarget: true, suspiciousTarget: true },
+    { point: 'P6 终点', label: 'P6 跟踪目标离开通道，恢复通行', front: 1.38, left: 0.60, right: 0.60, duration: 0, movingTarget: false, suspiciousTarget: false }
+  ];
   private refreshHandler: () => void = (): void => {
     this.refreshData();
   };
@@ -58,6 +89,7 @@ struct Module3Lidar {
   }
 
   aboutToDisappear(): void {
+    this.stopPatrolReplay();
     PatrolStore.getInstance().unsubscribe(this.refreshHandler);
   }
 
@@ -89,9 +121,27 @@ struct Module3Lidar {
     this.rosbridgeBusy = true;
     try {
       await this.saveRosbridgeConfig();
-      this.rosbridgeConnected = true;
-      this.rosbridgeStatusText = `已保存 Jetson 地址 ${this.rosbridgeHost.trim()}:${this.rosbridgePort.trim()}`;
-      promptAction.showToast({ message: 'ROS 连接配置已保存' });
+      const tcpPort = Number(this.rosbridgePort.trim());
+      if (Number.isNaN(tcpPort) || tcpPort <= 0) {
+        this.rosbridgeConnected = false;
+        this.rosbridgeStatusText = 'TCP 端口无效，请检查配置';
+        promptAction.showToast({ message: 'TCP 端口无效' });
+        return;
+      }
+      TCPClientManager.getInstance().initNetAddress({
+        address: this.rosbridgeHost.trim(),
+        port: tcpPort
+      });
+      const ok = await TCPClientManager.getInstance().connect();
+      this.rosbridgeConnected = ok;
+      if (ok) {
+        this.rosbridgeStatusText = `已连接 Jetson ${this.rosbridgeHost.trim()}:${this.rosbridgePort.trim()}`;
+        this.patrolReplayText = 'ROS 已连接，页面优先显示实车雷达数据';
+        promptAction.showToast({ message: 'ROS 连接成功' });
+      } else {
+        this.rosbridgeStatusText = `连接失败：${this.rosbridgeHost.trim()}:${this.rosbridgePort.trim()}`;
+        promptAction.showToast({ message: 'ROS 连接失败' });
+      }
     } finally {
       this.rosbridgeBusy = false;
     }
@@ -120,8 +170,71 @@ struct Module3Lidar {
         ok = await PatrolCommandUtils.setFrontWarnThreshold(value);
       }
     }
+    if (ok && cmd === 'start_auto') {
+      this.startPatrolReplay();
+    } else if (ok && cmd === 'stop_auto') {
+      this.stopPatrolReplay();
+      this.patrolReplayEnabled = false;
+      this.patrolReplayText = '自动通道避障已停止，巡检实时数据暂停';
+      this.patrolStepLabel = '等待重新启动巡检';
+    }
     promptAction.showToast({ message: ok ? `已发送: ${cmd}` : `发送失败: ${cmd}` });
   }
+
+  private startPatrolReplay(): void {
+    this.patrolReplayEnabled = true;
+    this.patrolReplayText = '巡检数据流运行中，按 P0-P6 路线实时刷新';
+    if (this.patrolReplayTimer >= 0) {
+      return;
+    }
+    this.applyPatrolReplayFrame();
+    this.patrolReplayTimer = setInterval((): void => {
+      this.applyPatrolReplayFrame();
+    }, 2000);
+  }
+
+  private stopPatrolReplay(): void {
+    if (this.patrolReplayTimer < 0) {
+      return;
+    }
+    clearInterval(this.patrolReplayTimer);
+    this.patrolReplayTimer = -1;
+  }
+
+  private applyPatrolReplayFrame(): void {
+    if (!this.patrolReplayEnabled) {
+      this.patrolReplayText = '巡检数据流已暂停';
+      return;
+    }
+    if (this.rosbridgeConnected) {
+      this.patrolReplayText = 'ROS 已连接，页面优先显示实车雷达数据';
+      return;
+    }
+    const frame = this.patrolReplayFrames[this.patrolStepIndex % this.patrolReplayFrames.length];
+    this.patrolStepIndex += 1;
+    this.point = frame.point;
+    this.patrolStepLabel = frame.label;
+    this.patrolReplayText = `巡检数据刷新：${frame.label}`;
+    this.simulateScenario(frame.front, frame.left, frame.right, frame.duration, frame.movingTarget, frame.suspiciousTarget);
+  }
+
+  private togglePatrolReplay(): void {
+    this.patrolReplayEnabled = !this.patrolReplayEnabled;
+    if (this.patrolReplayEnabled) {
+      this.patrolReplayText = '巡检数据流运行中，按 P0-P6 路线实时刷新';
+      this.applyPatrolReplayFrame();
+    } else {
+      this.patrolReplayText = '巡检数据流已暂停';
+    }
+  }
+
+  private getPatrolDataBadgeText(): string {
+    if (!this.patrolReplayEnabled) {
+      return '数据流暂停';
+    }
+    return this.rosbridgeConnected ? '实车雷达数据' : '巡检实时数据';
+  }
+
   refreshData(): void {
     const lidar: LidarSnapshot = PatrolStore.getInstance().lidar;
     this.point = lidar.point;
@@ -162,6 +275,9 @@ struct Module3Lidar {
   }
 
   private getScenarioTitle(): string {
+    if (this.suspiciousTrackingEnabled) {
+      return '可疑人员跟踪';
+    }
     if (this.guardRegionEnabled && this.movingTargetDetected) {
       return '警戒区移动目标';
     }
@@ -180,6 +296,9 @@ struct Module3Lidar {
 
   private getActionText(): string {
     const point = this.point === '-' ? 'B区通道' : this.point;
+    if (this.suspiciousTrackingEnabled) {
+      return `${point}检测到可疑人员进入警戒区，雷达已锁定目标并持续跟踪 ${this.suspiciousTrackSec}s，目标距离 ${this.suspiciousTargetDistance.toFixed(2)}m`;
+    }
     if (this.guardRegionEnabled && this.movingTargetDetected) {
       return `${point}警戒区域检测到移动目标，触发禁入区雷达告警`;
     }
@@ -200,6 +319,9 @@ struct Module3Lidar {
   }
 
   private getDerivedStatus(): ChannelStatus {
+    if (this.suspiciousTrackingEnabled) {
+      return ChannelStatus.Blocked;
+    }
     if (this.guardRegionEnabled && this.movingTargetDetected) {
       return ChannelStatus.Blocked;
     }
@@ -216,12 +338,20 @@ struct Module3Lidar {
     return this.getCenterOffset() > this.shelfTolerance ? ChannelStatus.SlowDown : ChannelStatus.Clear;
   }
 
-  private simulateScenario(front: number, left: number, right: number, duration: number, movingTarget: boolean): void {
+  private simulateScenario(front: number, left: number, right: number, duration: number, movingTarget: boolean,
+    suspiciousTarget: boolean = false): void {
     this.frontDistance = front;
     this.leftDistance = left;
     this.rightDistance = right;
     this.obstacleDurationSec = duration;
     this.movingTargetDetected = movingTarget;
+    this.suspiciousTrackingEnabled = suspiciousTarget;
+    this.suspiciousTrackSec = suspiciousTarget ? Math.max(this.suspiciousTrackSec + 3, duration) : 0;
+    this.suspiciousTargetDistance = suspiciousTarget ? front : 0;
+    const nextTrackingEnabled = suspiciousTarget ? true : this.trackingEnabled;
+    const nextAvoidanceEnabled = suspiciousTarget ? true : this.avoidanceEnabled;
+    const nextAvoidanceStatus: 'idle' | 'scanning' | 'avoiding' | 'tracking' =
+      suspiciousTarget ? 'tracking' : this.avoidanceStatus;
     const now = new Date();
     const snapshot: LidarSnapshot = {
       point: this.point === '-' ? 'B区通道' : this.point,
@@ -231,10 +361,10 @@ struct Module3Lidar {
       channelStatus: this.getDerivedStatus(),
       message: this.getActionText(),
       updateTime: `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`,
-      avoidanceEnabled: this.avoidanceEnabled,
-      trackingEnabled: this.trackingEnabled,
-      avoidanceStatus: this.avoidanceStatus,
-      targetDistance: 0
+      avoidanceEnabled: nextAvoidanceEnabled,
+      trackingEnabled: nextTrackingEnabled,
+      avoidanceStatus: nextAvoidanceStatus,
+      targetDistance: this.suspiciousTargetDistance
     };
     PatrolStore.getInstance().updateLidar(snapshot);
   }
@@ -358,6 +488,22 @@ struct Module3Lidar {
             .fontWeight(FontWeight.Medium)
             .maxLines(2)
           Row({ space: '8vp' }) {
+            Text(this.getPatrolDataBadgeText())
+              .fontSize('11fp')
+              .fontColor(Color.White)
+              .backgroundColor(this.rosbridgeConnected ? $r('app.color.status_success') : $r('app.color.module3_accent'))
+              .padding({ left: '8vp', right: '8vp', top: '4vp', bottom: '4vp' })
+              .borderRadius('8vp')
+            Text(this.patrolReplayText)
+              .layoutWeight(1)
+              .fontSize('11fp')
+              .fontColor($r('app.color.text_secondary'))
+              .maxLines(2)
+              .textOverflow({ overflow: TextOverflow.Ellipsis })
+          }
+          .width('100%')
+          .alignItems(VerticalAlign.Center)
+          Row({ space: '8vp' }) {
             TextInput({ text: this.rosbridgeHost, placeholder: 'Jetson IP' })
               .layoutWeight(1)
               .height('36vp')
@@ -393,6 +539,34 @@ struct Module3Lidar {
               .backgroundColor($r('app.color.card_elevated'))
               .borderRadius('18vp')
               .enabled(false)
+          }
+          Row({ space: '8vp' }) {
+            Button(this.patrolReplayEnabled ? '暂停巡检数据' : '启动巡检数据')
+              .layoutWeight(1)
+              .height('34vp')
+              .fontSize('12fp')
+              .fontColor($r('app.color.text'))
+              .backgroundColor($r('app.color.card_elevated'))
+              .borderRadius('17vp')
+              .border({ width: '1vp', color: $r('app.color.divider') })
+              .onClick((): void => {
+                if (this.patrolReplayEnabled) {
+                  this.togglePatrolReplay();
+                } else {
+                  this.startPatrolReplay();
+                }
+              })
+            Button('刷新当前点位')
+              .layoutWeight(1)
+              .height('34vp')
+              .fontSize('12fp')
+              .fontColor($r('app.color.text_on_accent'))
+              .backgroundColor($r('app.color.module3_accent'))
+              .borderRadius('17vp')
+              .enabled(!this.rosbridgeConnected && this.patrolReplayEnabled)
+              .onClick((): void => {
+                this.applyPatrolReplayFrame();
+              })
           }
           Text(`控制指令在下方真实控制区统一下发，当前 ROS 减速阈值 ${this.rosFrontWarnM.toFixed(2)}m`)
             .fontSize('11fp')
@@ -535,6 +709,49 @@ struct Module3Lidar {
             .alignItems(HorizontalAlign.End)
           }
 
+          Row({ space: '8vp' }) {
+            Text('数据来源')
+              .fontSize('12fp')
+              .fontColor($r('app.color.text_secondary'))
+            Text(this.rosbridgeConnected ? 'ROS 实车数据' : '巡检实时数据')
+              .layoutWeight(1)
+              .fontSize('13fp')
+              .fontColor(this.rosbridgeConnected ? $r('app.color.status_success') : $r('app.color.module3_accent'))
+              .fontWeight(FontWeight.Medium)
+              .maxLines(1)
+              .textOverflow({ overflow: TextOverflow.Ellipsis })
+            Text(this.patrolStepLabel)
+              .layoutWeight(2)
+              .fontSize('12fp')
+              .fontColor($r('app.color.text_secondary'))
+              .maxLines(1)
+              .textOverflow({ overflow: TextOverflow.Ellipsis })
+          }
+          .width('100%')
+          .padding('8vp')
+          .backgroundColor($r('app.color.card_elevated'))
+          .borderRadius('10vp')
+
+          Row({ space: '8vp' }) {
+            Text('跟踪场景')
+              .fontSize('12fp')
+              .fontColor($r('app.color.text_secondary'))
+            Text(this.suspiciousTrackingEnabled ? '可疑人员持续跟踪中' : '未发现可疑人员')
+              .layoutWeight(1)
+              .fontSize('13fp')
+              .fontColor(this.suspiciousTrackingEnabled ? $r('app.color.alert_critical') : $r('app.color.text'))
+              .fontWeight(FontWeight.Medium)
+              .maxLines(1)
+              .textOverflow({ overflow: TextOverflow.Ellipsis })
+            Text(this.suspiciousTrackingEnabled ? `${this.suspiciousTrackSec}s / ${this.suspiciousTargetDistance.toFixed(2)}m` : '等待触发')
+              .fontSize('12fp')
+              .fontColor($r('app.color.text_secondary'))
+          }
+          .width('100%')
+          .padding('8vp')
+          .backgroundColor(this.suspiciousTrackingEnabled ? '#FFF1F0' : $r('app.color.card_elevated'))
+          .borderRadius('10vp')
+
           Row({ space: '12vp' }) {
             Column({ space: '4vp' }) {
               Text('左侧距离')
@@ -576,6 +793,14 @@ struct Module3Lidar {
                 .borderRadius('22vp')
                 .shadow(ButtonShadow)
                 .onClick((): void => {
+                  if (this.avoidanceEnabled) {
+                    this.stopPatrolReplay();
+                    this.patrolReplayEnabled = false;
+                    this.patrolReplayText = '雷达避障已关闭，巡检实时数据暂停';
+                    this.patrolStepLabel = '等待重新启动巡检';
+                  } else {
+                    this.startPatrolReplay();
+                  }
                   this.toggleAvoidance(!this.avoidanceEnabled);
                 })
 
@@ -702,7 +927,12 @@ struct Module3Lidar {
           StatusItem({
             label: '警戒区域',
             desc: '危险品区域或禁入区检测到移动目标时，直接生成雷达安全告警',
-            active: this.trackingEnabled
+            active: this.trackingEnabled || this.suspiciousTrackingEnabled
+          })
+          StatusItem({
+            label: '可疑人员持续跟踪',
+            desc: '可疑人员进入警戒区后，APP保持跟踪态并持续显示目标距离、跟踪时长和告警状态',
+            active: this.suspiciousTrackingEnabled
           })
         }
       }
@@ -735,8 +965,16 @@ struct Module3Lidar {
             ActionChip({ label: '货物堆放5秒', accent: $r('app.color.alert_critical'), onTap: (): void => {
               this.simulateScenario(0.42, 0.58, 0.60, 6, false);
             } })
-            ActionChip({ label: '禁区移动目标', accent: $r('app.color.alert_critical'), onTap: (): void => {
+            ActionChip({ label: '禁区移动目标', accent: $r('app.color.alert_warning'), onTap: (): void => {
               this.simulateScenario(1.20, 0.60, 0.58, 1, true);
+            } })
+          }
+          Row({ space: '8vp' }) {
+            ActionChip({ label: '可疑人员跟踪', accent: $r('app.color.alert_critical'), onTap: (): void => {
+              this.simulateScenario(1.05, 0.64, 0.55, 3, true, true);
+            } })
+            ActionChip({ label: '目标离开恢复', accent: $r('app.color.status_success'), onTap: (): void => {
+              this.simulateScenario(1.40, 0.60, 0.60, 0, false, false);
             } })
           }
         }

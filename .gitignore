@@ -18,3 +18,4 @@
 compile_output.txt
 entry/src/main/resources/rawfile/config.env
 *.log
+*.mp4

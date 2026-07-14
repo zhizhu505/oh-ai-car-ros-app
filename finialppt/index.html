@@ -1,4 +1,4 @@
-gitgit <!doctype html>
+<!doctype html>
 <html lang="zh-CN">
 <head>
   <meta charset="utf-8">
@@ -521,6 +521,228 @@ gitgit <!doctype html>
       font-weight: 800;
     }
 
+    .app-proof {
+      flex: 1;
+      min-height: 0;
+      display: grid;
+      grid-template-rows: auto 1fr;
+      gap: 14px;
+      margin-top: 14px;
+    }
+
+    .compact-steps {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .compact-steps .logic-step {
+      padding: 10px 12px;
+    }
+
+    .compact-steps .logic-step strong {
+      font-size: 14px;
+    }
+
+    .compact-steps .logic-step span {
+      font-size: 12px;
+      line-height: 1.42;
+    }
+
+    .app-media-grid {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: 1.05fr 1.25fr;
+      grid-template-rows: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .app-media-grid .media-tile img,
+    .app-media-grid .media-tile video {
+      min-height: 0;
+      object-fit: cover;
+    }
+
+    .app-media-grid .media-tile.portrait img,
+    .app-media-grid .media-tile.portrait video {
+      object-fit: contain;
+      background: linear-gradient(135deg, #eef7fb, #fff);
+    }
+
+    .scene-showcase {
+      display: grid;
+      grid-template-columns: 1.08fr .92fr;
+      gap: 14px;
+      flex: 1;
+      min-height: 0;
+      margin-top: 16px;
+    }
+
+    .scene-main,
+    .scene-side {
+      min-height: 0;
+      display: grid;
+      gap: 12px;
+    }
+
+    .scene-main {
+      grid-template-rows: repeat(2, minmax(0, 1fr));
+    }
+
+    .scene-side {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-rows: 1fr 1fr;
+    }
+
+    .scene-tile {
+      position: relative;
+      min-height: 0;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #f8fbfd;
+      box-shadow: 0 10px 26px rgba(15, 23, 42, .045);
+    }
+
+    .scene-tile img,
+    .scene-tile video {
+      width: 100%;
+      height: 100%;
+      min-height: 0;
+      display: block;
+      object-fit: cover;
+      background: #fff;
+    }
+
+    .scene-tile.contain img,
+    .scene-tile.contain video {
+      object-fit: contain;
+      padding: 6px;
+      background: linear-gradient(135deg, #eef7fb, #fff);
+    }
+
+    .scene-tile.wide {
+      grid-column: 1 / -1;
+    }
+
+    .scene-tile.tall {
+      grid-row: span 2;
+    }
+
+    .scene-tile span {
+      position: absolute;
+      left: 10px;
+      top: 10px;
+      padding: 5px 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.92);
+      border: 1px solid rgba(219,232,239,.9);
+      color: #0f3554;
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .proof-board {
+      flex: 1;
+      min-height: 0;
+      display: grid;
+      gap: 14px;
+      margin-top: 16px;
+    }
+
+    .proof-board.two {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .proof-board.hero-side {
+      grid-template-columns: 1.18fr .82fr;
+    }
+
+    .proof-board.tall-stack {
+      grid-template-columns: 1fr;
+      grid-template-rows: 1.15fr 1fr 1fr;
+    }
+
+    .alert-combined {
+      flex: 1;
+      min-height: 0;
+      display: grid;
+      grid-template-columns: 1fr .72fr;
+      gap: 14px;
+      margin-top: 16px;
+    }
+
+    .alert-left {
+      min-height: 0;
+      display: grid;
+      grid-template-rows: 1fr auto;
+      gap: 12px;
+    }
+
+    .alert-stacked {
+      min-height: 0;
+      display: grid;
+      grid-template-rows: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .alert-video {
+      min-height: 0;
+      display: flex;
+    }
+
+    .proof-board .proof-card {
+      position: relative;
+      min-height: 0;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: linear-gradient(135deg, #f7fbff, #ffffff);
+      box-shadow: 0 10px 26px rgba(15, 23, 42, .045);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .proof-card img,
+    .proof-card video {
+      width: 100%;
+      height: 100%;
+      min-height: 0;
+      display: block;
+      object-fit: contain;
+      background: transparent;
+    }
+
+    .proof-card.video video {
+      object-fit: cover;
+      background: #000;
+    }
+
+    .proof-card .caption {
+      position: absolute;
+      left: 12px;
+      top: 12px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.94);
+      border: 1px solid rgba(219,232,239,.95);
+      color: #0f3554;
+      font-size: 12px;
+      font-weight: 900;
+      z-index: 2;
+    }
+
+    .proof-notes {
+      min-height: 0;
+      display: grid;
+      gap: 12px;
+    }
+
+    .proof-notes .logic-step {
+      padding: 14px 16px;
+    }
+
     .module-grid {
       margin-top: 18px;
       flex: 1;
@@ -956,31 +1178,85 @@ gitgit <!doctype html>
             <div class="metric"><b>3区</b><span>前方扇区、左侧货架、右侧货架独立判断</span></div>
           </div>
         </div>
-        <div class="quote">讲述重点：这一部分不是单纯展示雷达数值，而是把数值转成“减速、停车、占用、告警”这些可解释的安全策略。</div>
       </div>
     </section>
 
-    <section class="slide" data-section="zsq-app">
+    <section class="slide" data-section="zsq-radar-video">
       <div class="topbar"></div>
       <div>
-        <div class="kicker">09 · 周诗晴模块：APP 与告警 AI</div>
-        <h2>APP 场景应用与告警闭环：雷达事件进入告警中心，再由 AI 给出处置建议</h2>
-        <p class="lead">APP 端把雷达场景预设、通道安全阈值、告警记录和 AI 分析放到同一条演示链路中，形成可展示、可追溯、可解释的异常处理流程。</p>
+        <div class="kicker">09 · 周诗晴模块：雷达视频演示</div>
+        <h2>小车端场景录像：避障通行与可疑人员跟踪分开展示，避免关键画面被压缩</h2>
+        <p class="lead">左侧展示小车遇到障碍后的避障过程，右侧展示可疑人员进入警戒区域后的持续跟踪过程。</p>
       </div>
       <div class="body">
-        <div class="feature-split">
-          <div class="logic-stack">
-            <div class="logic-step"><strong>雷达场景预设</strong><span>提供前方 0.7m 减速、0.3m 停车、货物堆放 5 秒、禁区移动目标等按钮，便于答辩现场快速触发场景。</span></div>
-            <div class="logic-step"><strong>告警同步</strong><span>雷达快照更新后进入 PatrolStore，非正常通道状态会自动写入告警列表，告警模块可以直接查看。</span></div>
-            <div class="logic-step"><strong>告警中心展示</strong><span>告警记录包含时间、点位、类型、等级和消息，支持按模块复盘通道堵塞、占用和警戒区异常。</span></div>
-            <div class="logic-step"><strong>AI 分析与咨询</strong><span>支持对单条或多条告警做总结分析，也可以围绕告警内容进行问答，输出风险判断和处理建议。</span></div>
+        <div class="proof-board two">
+          <div class="proof-card video"><span class="caption">避障演示视频</span><video src="assets/zsq/雷达/避障.mp4" controls muted></video></div>
+          <div class="proof-card video"><span class="caption">可疑人员跟踪视频</span><video src="assets/zsq/雷达/跟踪.mp4" controls muted></video></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="zsq-radar-ui">
+      <div class="topbar"></div>
+      <div>
+        <div class="kicker">10 · 周诗晴模块：雷达 APP 页面</div>
+        <h2>雷达实时检测与控制闭环：实时距离、避障开关和异常记录三页合一展示</h2>
+        <p class="lead">三张竖屏截图并列展示，标题置于图片上方，下方补充关键操作说明。</p>
+      </div>
+      <div class="body">
+        <div style="display: grid; grid-template-columns: 1.5fr .5fr; gap: 14px; flex: 1; min-height: 0; margin-top: 16px;">
+          <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; min-height: 0;">
+            <div style="display: flex; flex-direction: column; min-height: 0;">
+              <span style="padding: 6px 0 4px; color: #0f3554; font-size: 12px; font-weight: 900; text-align: center;">实时检测页面</span>
+              <div class="proof-card" style="flex: 1; min-height: 0; padding: 3px;"><img src="assets/zsq/雷达/实时检验.jpg" alt="雷达实时检测"></div>
+            </div>
+            <div style="display: flex; flex-direction: column; min-height: 0;">
+              <span style="padding: 6px 0 4px; color: #0f3554; font-size: 12px; font-weight: 900; text-align: center;">避障控制页面</span>
+              <div class="proof-card" style="flex: 1; min-height: 0; padding: 3px;"><img src="assets/zsq/雷达/避障控制.jpg" alt="雷达避障控制"></div>
+            </div>
+            <div style="display: flex; flex-direction: column; min-height: 0;">
+              <span style="padding: 6px 0 4px; color: #0f3554; font-size: 12px; font-weight: 900; text-align: center;">异常记录页面</span>
+              <div class="proof-card" style="flex: 1; min-height: 0; padding: 3px;"><img src="assets/zsq/雷达/异常记录.jpg" alt="雷达异常记录"></div>
+            </div>
           </div>
-          <div class="media-grid">
-            <div class="media-tile"><span>告警中心</span><img src="assets/zsq/告警中心/告警中心一览.jpg" alt="告警中心一览"></div>
-            <div class="media-tile"><span>AI 分析</span><img src="assets/zsq/告警中心/ai分析.jpg" alt="AI 分析"></div>
-            <div class="media-tile"><span>AI 咨询</span><img src="assets/zsq/告警中心/ai咨询.jpg" alt="AI 咨询"></div>
-            <div class="media-tile"><span>演示视频</span><video src="assets/zsq/告警中心/告警+ai.mp4" controls muted></video></div>
+          <div class="proof-notes">
+            <div class="logic-step"><strong>实时变化</strong><span>点击启动避障后，每 2 秒推进一次 P0-P6 巡检点位数据。</span></div>
+            <div class="logic-step"><strong>三区检测</strong><span>前方通道、左侧货架、右侧货架分别展示距离和阈值。</span></div>
+            <div class="logic-step"><strong>状态解释</strong><span>将雷达距离转成通道畅通、减速、停车、占用和跟踪状态。</span></div>
+            <div class="logic-step"><strong>控制闭环</strong><span>启动避障后触发数据流，异常状态自动进入告警记录。</span></div>
           </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="zsq-alert">
+      <div class="topbar"></div>
+      <div>
+        <div class="kicker">11 · 周诗晴模块：告警中心</div>
+        <h2>告警中心：雷达事件、视觉事件和 AI 结果集中展示，形成可追溯异常记录</h2>
+        <p class="lead">告警中心、AI 分析和 AI 咨询三页合一，配合演示视频完整展示异常处置闭环。</p>
+      </div>
+      <div class="body">
+        <div style="display: grid; grid-template-columns: 1.5fr .5fr; gap: 14px; flex: 1; min-height: 0; margin-top: 16px;">
+          <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; min-height: 0;">
+            <div style="display: flex; flex-direction: column; min-height: 0;">
+              <span style="padding: 6px 0 4px; color: #0f3554; font-size: 12px; font-weight: 900; text-align: center;">告警中心一览</span>
+              <div class="proof-card" style="flex: 1; min-height: 0; padding: 3px;"><img src="assets/zsq/告警中心/告警中心一览.jpg" alt="告警中心一览"></div>
+            </div>
+            <div style="display: flex; flex-direction: column; min-height: 0;">
+              <span style="padding: 6px 0 4px; color: #0f3554; font-size: 12px; font-weight: 900; text-align: center;">AI 分析结果</span>
+              <div class="proof-card" style="flex: 1; min-height: 0; padding: 3px;"><img src="assets/zsq/告警中心/ai分析.jpg" alt="AI 分析"></div>
+            </div>
+            <div style="display: flex; flex-direction: column; min-height: 0;">
+              <span style="padding: 6px 0 4px; color: #0f3554; font-size: 12px; font-weight: 900; text-align: center;">AI 咨询对话</span>
+              <div class="proof-card" style="flex: 1; min-height: 0; padding: 3px;"><img src="assets/zsq/告警中心/ai咨询.jpg" alt="AI 咨询"></div>
+            </div>
+          </div>
+          <div class="proof-card video" style="min-height: 100%;"><span class="caption">告警 + AI 演示视频</span><video src="assets/zsq/告警中心/告警+ai.mp4" controls muted></video></div>
+        </div>
+        <div class="proof-notes" style="margin-top: 10px;">
+          <div class="logic-step"><strong>告警同步</strong><span>雷达快照进入 PatrolStore 后，异常通道状态自动写入告警列表。</span></div>
+          <div class="logic-step"><strong>告警复盘</strong><span>保留时间、点位、来源、等级和描述，支持按模块复盘。</span></div>
         </div>
       </div>
     </section>
@@ -988,7 +1264,7 @@ gitgit <!doctype html>
     <section class="slide" data-section="demo">
       <div class="topbar"></div>
       <div>
-        <div class="kicker">08 · 现场演示安排</div>
+        <div class="kicker">12 · 现场演示安排</div>
         <h2>演示脚本：先用网页讲闭环，再切到 APP 或视频展示关键操作</h2>
       </div>
       <div class="body">
@@ -1005,7 +1281,7 @@ gitgit <!doctype html>
           </article>
           <article class="demo-card">
             <img src="assets/architecture-flow.png" alt="系统闭环流程图">
-          </article>
+          </div>
         </div>
       </div>
     </section>
@@ -1013,7 +1289,7 @@ gitgit <!doctype html>
     <section class="slide" data-section="closing">
       <div class="topbar"></div>
       <div>
-        <div class="kicker">09 · 总结</div>
+        <div class="kicker">13 · 总结</div>
         <h2>最终完成度：项目已具备课程答辩所需的设计说明、实现展示、测试结论和演示闭环</h2>
       </div>
       <div class="body">
@@ -1028,7 +1304,7 @@ gitgit <!doctype html>
 
     <div class="controls" aria-label="翻页控制">
       <button class="btn" id="prev" aria-label="上一页">‹</button>
-      <div class="pager" id="pager">1 / 10</div>
+      <div class="pager" id="pager">1 / 15</div>
       <button class="btn" id="next" aria-label="下一页">›</button>
     </div>
     <div class="progress"><span id="progress"></span></div>
@@ -1041,7 +1317,7 @@ gitgit <!doctype html>
       { label: "管理", sections: ["management"] },
       { label: "实现", sections: ["implementation", "screens", "test"] },
       { label: "分工", sections: ["team"] },
-      { label: "周诗晴", sections: ["zsq-car", "zsq-app"] },
+      { label: "周诗晴", sections: ["zsq-car", "zsq-radar-video", "zsq-radar-ui", "zsq-alert"] },
       { label: "演示", sections: ["demo", "closing"] }
     ];
 
