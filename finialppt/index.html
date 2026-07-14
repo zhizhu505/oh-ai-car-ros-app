@@ -3,25 +3,24 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>狭域巡航 aiPotRol · 最终答辩</title>
+  <title>狭域巡航 aiPotRol</title>
   <style>
     :root {
-      --bg: #eef7fb;
-      --paper: #ffffff;
-      --ink: #102033;
-      --muted: #5e7288;
-      --line: #dbe8ef;
-      --blue: #1677ff;
-      --cyan: #11a8b5;
-      --green: #20b26b;
-      --amber: #f59e0b;
-      --red: #e5484d;
-      --soft-blue: #eaf4ff;
-      --soft-cyan: #e8fbfb;
-      --soft-green: #eafaf1;
-      --soft-amber: #fff6e5;
-      --shadow: 0 24px 70px rgba(30, 64, 96, .13);
-      --radius: 10px;
+      --bg: #f6f9ff;
+      --panel: #ffffff;
+      --panel-2: #eef5ff;
+      --ink: #132238;
+      --text: #344863;
+      --muted: #6b7d94;
+      --line: rgba(91, 114, 143, .22);
+      --blue: #2f63d6;
+      --cyan: #0aa7bd;
+      --green: #10a36f;
+      --amber: #e89216;
+      --pink: #cf3b87;
+      --red: #df3d45;
+      --shadow: 0 28px 80px rgba(51, 83, 122, .18);
+      --radius: 14px;
     }
 
     * { box-sizing: border-box; }
@@ -33,24 +32,25 @@
       overflow: hidden;
       color: var(--ink);
       background:
-        linear-gradient(135deg, rgba(22, 119, 255, .12), transparent 38%),
-        linear-gradient(225deg, rgba(17, 168, 181, .10), transparent 34%),
-        var(--bg);
+        radial-gradient(circle at 16% 18%, rgba(10, 167, 189, .15), transparent 32%),
+        radial-gradient(circle at 88% 12%, rgba(47, 99, 214, .13), transparent 30%),
+        linear-gradient(135deg, #f7fbff 0%, #edf5ff 48%, #fff9ed 100%);
       font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans SC", Arial, sans-serif;
     }
 
     button { font: inherit; }
+    h1, h2, h3, p { margin: 0; }
 
     .deck {
-      width: min(96vw, calc(94vh * 16 / 9));
-      height: min(94vh, calc(96vw * 9 / 16));
       position: fixed;
       inset: 50%;
+      width: min(96vw, calc(94vh * 16 / 9));
+      height: min(94vh, calc(96vw * 9 / 16));
       transform: translate(-50%, -50%);
       overflow: hidden;
-      background: var(--paper);
-      border: 1px solid rgba(207, 225, 235, .92);
-      border-radius: 18px;
+      background: #ffffff;
+      border: 1px solid rgba(91, 114, 143, .18);
+      border-radius: 22px;
       box-shadow: var(--shadow);
     }
 
@@ -62,15 +62,16 @@
       gap: 18px;
       padding: 56px 58px 48px;
       background:
-        linear-gradient(rgba(255, 255, 255, .94), rgba(255, 255, 255, .96)),
-        linear-gradient(90deg, rgba(22, 119, 255, .035) 1px, transparent 1px),
-        linear-gradient(0deg, rgba(17, 168, 181, .035) 1px, transparent 1px);
-      background-size: auto, 56px 56px, 56px 56px;
+        linear-gradient(180deg, rgba(47,99,214,.055), transparent 24%),
+        linear-gradient(90deg, rgba(91,114,143,.10) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(91,114,143,.08) 1px, transparent 1px),
+        #ffffff;
+      background-size: auto, 52px 52px, 52px 52px;
     }
 
     .slide.active {
       display: flex;
-      animation: enter .28s ease-out;
+      animation: enter .24s ease-out;
     }
 
     @keyframes enter {
@@ -80,168 +81,167 @@
 
     .cover {
       padding: 0;
-      display: none;
       background:
-        linear-gradient(90deg, rgba(255,255,255,.98) 0%, rgba(255,255,255,.92) 48%, rgba(255,255,255,.60) 68%, rgba(255,255,255,.15) 100%),
-        linear-gradient(135deg, #e9f6ff, #f7fbff 54%, #e9fff7);
+        linear-gradient(90deg, rgba(255,255,255,.97) 0%, rgba(255,255,255,.90) 44%, rgba(255,255,255,.48) 74%, rgba(255,255,255,.18) 100%),
+        url("assets/app_dashboard.png") right center / auto 105% no-repeat,
+        linear-gradient(135deg, #f8fbff, #eaf4ff 48%, #eefcf8);
     }
 
-    .cover.active { display: flex; }
-
-    .cover::after {
+    .cover::before {
       content: "";
       position: absolute;
-      right: 0;
-      top: 0;
-      width: 48%;
-      height: 100%;
+      inset: 0;
       background:
-        linear-gradient(90deg, rgba(255,255,255,.20), rgba(255,255,255,0)),
-        url("assets/Index.png") center / cover no-repeat;
-      opacity: .56;
+        radial-gradient(circle at 24% 28%, rgba(10,167,189,.14), transparent 28%),
+        radial-gradient(circle at 52% 74%, rgba(47,99,214,.12), transparent 32%);
+      pointer-events: none;
     }
 
-    .cover-copy {
+    .cover-inner {
       position: relative;
-      z-index: 2;
-      width: 60%;
-      min-width: 560px;
+      z-index: 1;
       height: 100%;
-      padding: 86px 62px 64px;
+      width: 58%;
+      min-width: 560px;
       display: flex;
       flex-direction: column;
       justify-content: center;
+      padding: 74px 62px;
     }
 
     .brand-row {
       display: flex;
       align-items: center;
-      gap: 14px;
-      margin-bottom: 26px;
+      gap: 16px;
+      margin-bottom: 28px;
     }
 
     .logo {
-      width: 52px;
-      height: 52px;
-      border-radius: 12px;
+      width: 76px;
+      height: 76px;
+      border-radius: 50%;
       object-fit: cover;
-      border: 1px solid var(--line);
+      border: 1px solid rgba(91,114,143,.22);
       background: #fff;
+      box-shadow: 0 12px 34px rgba(10,167,189,.18);
     }
 
-    .tag {
-      display: inline-flex;
-      align-items: center;
-      width: fit-content;
-      min-height: 32px;
-      padding: 6px 14px;
-      border-radius: 999px;
-      color: #075985;
-      background: var(--soft-blue);
-      border: 1px solid #bfdbfe;
-      font-size: 14px;
+    .brand-name {
+      display: grid;
+      gap: 5px;
+      color: var(--muted);
+      font-size: 15px;
       font-weight: 800;
+      letter-spacing: .08em;
+      text-transform: uppercase;
     }
-
-    h1, h2, h3, p { margin: 0; }
 
     h1 {
-      max-width: 720px;
-      font-size: 48px;
-      line-height: 1.16;
+      max-width: 760px;
+      font-size: 56px;
+      line-height: 1.08;
       letter-spacing: 0;
     }
 
     .subtitle {
-      margin-top: 24px;
-      max-width: 660px;
-      color: var(--muted);
-      font-size: 19px;
-      line-height: 1.72;
+      margin-top: 22px;
+      max-width: 720px;
+      color: var(--text);
+      font-size: 20px;
+      line-height: 1.68;
     }
 
-    .meta-line {
+    .cover-points {
       margin-top: 34px;
       display: grid;
-      gap: 10px;
-      color: #334155;
-      font-size: 16px;
-      line-height: 1.5;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      max-width: 720px;
+    }
+
+    .cover-points span {
+      min-height: 62px;
+      padding: 13px 14px;
+      border: 1px solid rgba(91,114,143,.18);
+      border-radius: 12px;
+      background: rgba(255,255,255,.84);
+      color: var(--text);
+      font-weight: 800;
+      line-height: 1.35;
     }
 
     .topbar {
       position: absolute;
       left: 0;
-      top: 0;
       right: 0;
+      top: 0;
       height: 42px;
+      z-index: 5;
       display: flex;
       align-items: center;
       gap: 18px;
       padding: 0 28px;
-      z-index: 5;
-      border-bottom: 1px solid rgba(219, 232, 239, .9);
-      background: rgba(255, 255, 255, .88);
+      border-bottom: 1px solid rgba(91,114,143,.18);
+      background: rgba(255, 255, 255, .86);
       backdrop-filter: blur(12px);
     }
 
     .brand {
-      white-space: nowrap;
-      color: #075985;
+      color: #0b6372;
       font-weight: 900;
       font-size: 13px;
+      white-space: nowrap;
     }
 
     .nav {
       flex: 1;
       display: flex;
       justify-content: center;
-      gap: 6px;
+      gap: 5px;
       min-width: 0;
     }
 
     .nav span {
-      min-width: 0;
-      padding: 5px 12px;
+      padding: 5px 11px;
       border-radius: 999px;
       color: var(--muted);
       font-size: 12px;
-      font-weight: 700;
+      font-weight: 800;
       white-space: nowrap;
     }
 
     .nav span.on {
-      color: #075985;
-      background: var(--soft-blue);
+      color: #ffffff;
+      background: linear-gradient(135deg, var(--cyan), var(--blue));
     }
 
     .slide-no {
-      color: #93a8b9;
+      min-width: 44px;
+      color: var(--muted);
       font-size: 11px;
-      font-weight: 800;
-      white-space: nowrap;
+      font-weight: 900;
+      text-align: right;
     }
 
     .kicker {
       color: var(--cyan);
       font-size: 12px;
       font-weight: 900;
-      letter-spacing: .12em;
+      letter-spacing: .14em;
       text-transform: uppercase;
     }
 
     h2 {
       margin-top: 8px;
-      max-width: 1040px;
-      color: #0f172a;
-      font-size: clamp(24px, 2.65vw, 34px);
-      line-height: 1.23;
+      max-width: 1080px;
+      font-size: clamp(25px, 2.65vw, 36px);
+      line-height: 1.2;
       letter-spacing: 0;
     }
 
     .lead {
       margin-top: 10px;
-      max-width: 980px;
+      max-width: 1040px;
       color: var(--muted);
       font-size: 15px;
       line-height: 1.62;
@@ -259,227 +259,306 @@
     .cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
     .cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 
-    .card, .panel, .metric {
-      background: rgba(255, 255, 255, .96);
+    .card, .panel, .metric, .demo-card, .shot, .person, .module {
       border: 1px solid var(--line);
       border-radius: var(--radius);
-      box-shadow: 0 10px 26px rgba(15, 23, 42, .045);
+      background: linear-gradient(180deg, #ffffff, #f7fbff);
+      box-shadow: 0 16px 34px rgba(54, 82, 116, .10);
     }
 
-    .card {
-      padding: 20px 20px 18px;
-      min-height: 0;
-    }
+    .card, .panel, .person, .module { padding: 20px; }
 
-    .card h3, .panel h3 {
-      color: #0f172a;
-      font-size: 20px;
-      line-height: 1.32;
-    }
-
-    .card p, .card li, .panel p, .panel li {
-      color: #42566d;
-      font-size: 15px;
-      line-height: 1.58;
+    .card h3, .panel h3, .person h3, .module h3, .demo-card h3 {
+      color: var(--ink);
+      font-size: 18px;
+      margin-bottom: 12px;
     }
 
     ul {
-      margin: 14px 0 0;
+      margin: 0;
       padding-left: 18px;
+      color: var(--text);
+      font-size: 14px;
+      line-height: 1.64;
     }
 
-    li { margin: 8px 0; }
-
-    .highlight { color: #075985; font-weight: 900; }
-    .green { color: #15803d; }
-    .amber { color: #b45309; }
-    .red { color: #b91c1c; }
+    li + li { margin-top: 5px; }
 
     .metric {
-      padding: 18px;
-      min-height: 118px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      background: linear-gradient(135deg, #fff, #f4fbff);
+      padding: 14px;
+      min-height: 102px;
+      display: grid;
+      align-content: start;
+      gap: 8px;
     }
 
     .metric b {
-      display: block;
       color: var(--blue);
       font-size: 28px;
       line-height: 1;
     }
 
     .metric span {
-      display: block;
-      margin-top: 10px;
-      color: var(--muted);
-      font-size: 14px;
-      line-height: 1.45;
-    }
-
-    .timeline {
-      margin-top: 22px;
-      display: grid;
-      grid-template-columns: repeat(5, minmax(0, 1fr));
-      gap: 12px;
-    }
-
-    .step {
-      min-height: 168px;
-      padding: 18px 16px;
-      border-radius: var(--radius);
-      border: 1px solid var(--line);
-      background: linear-gradient(135deg, #fff, #f6fbff);
-    }
-
-    .step b {
-      display: block;
-      color: var(--cyan);
-      font-size: 24px;
-      line-height: 1;
-    }
-
-    .step strong {
-      display: block;
-      margin-top: 12px;
-      color: #0f172a;
-      font-size: 16px;
-      line-height: 1.35;
-    }
-
-    .step span {
-      display: block;
-      margin-top: 9px;
       color: var(--muted);
       font-size: 13px;
       line-height: 1.45;
+      font-weight: 700;
     }
 
-    .arch {
-      margin-top: 18px;
-      flex: 1;
-      min-height: 0;
-      display: grid;
-      grid-template-columns: .95fr 1.1fr .95fr;
-      gap: 18px;
-      align-items: stretch;
-    }
-
-    .arch .panel {
-      padding: 22px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-    }
-
-    .flow {
-      display: grid;
-      gap: 12px;
-      align-content: center;
-    }
-
-    .flow-node {
-      padding: 14px 16px;
-      border-radius: var(--radius);
-      color: #075985;
-      background: var(--soft-blue);
-      border: 1px solid #bfdbfe;
-      font-size: 15px;
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      width: fit-content;
+      min-height: 30px;
+      padding: 5px 12px;
+      border-radius: 999px;
+      background: rgba(10,167,189,.10);
+      color: #0b6372;
+      border: 1px solid rgba(10,167,189,.22);
       font-weight: 900;
-      text-align: center;
+      font-size: 12px;
     }
 
-    .flow-node:nth-child(2) {
-      color: #0f766e;
-      background: var(--soft-cyan);
-      border-color: #99f6e4;
-    }
+    .highlight { color: var(--blue); font-weight: 900; }
+    .green { color: var(--green); font-weight: 900; }
+    .amber { color: var(--amber); font-weight: 900; }
+    .red { color: var(--red); font-weight: 900; }
+    .pink { color: var(--pink); font-weight: 900; }
 
-    .flow-node:nth-child(3) {
-      color: #15803d;
-      background: var(--soft-green);
-      border-color: #bbf7d0;
-    }
-
-    .flow-node:nth-child(4) {
-      color: #b45309;
-      background: var(--soft-amber);
-      border-color: #fed7aa;
-    }
-
-    .shots {
-      margin-top: 18px;
+    .split {
+      display: grid;
+      grid-template-columns: 1.08fr .92fr;
+      gap: 18px;
       flex: 1;
       min-height: 0;
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      grid-template-rows: repeat(2, minmax(0, 1fr));
-      gap: 14px;
+      margin-top: 16px;
     }
 
-    .shot {
-      min-height: 0;
+    .image-frame {
+      position: relative;
       overflow: hidden;
-      border-radius: var(--radius);
+      min-height: 0;
       border: 1px solid var(--line);
-      background: #f7fbff;
-      display: flex;
-      flex-direction: column;
+      border-radius: var(--radius);
+      background: #f5f9ff;
     }
 
-    .shot img {
+    .image-frame img {
       width: 100%;
       height: 100%;
-      min-height: 0;
       object-fit: cover;
       display: block;
     }
 
-    .shot.fit img { object-fit: contain; padding: 10px; }
+    .image-frame.phone img { object-fit: contain; padding: 10px; }
 
-    .shot span {
-      padding: 8px 10px;
-      color: #075985;
-      background: rgba(234,244,255,.94);
+    .caption {
+      position: absolute;
+      left: 12px;
+      top: 12px;
+      z-index: 2;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.88);
+      color: #0b6372;
+      border: 1px solid rgba(91,114,143,.18);
       font-size: 12px;
       font-weight: 900;
-      border-bottom: 1px solid var(--line);
+    }
+
+    .timeline {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .step {
+      position: relative;
+      min-height: 150px;
+      padding: 16px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.86);
+      overflow: hidden;
+    }
+
+    .step::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 4px;
+      background: linear-gradient(90deg, var(--cyan), var(--blue));
+    }
+
+    .step b {
+      display: block;
+      color: var(--blue);
+      font-size: 22px;
+      margin-bottom: 8px;
+    }
+
+    .step strong {
+      display: block;
+      color: var(--ink);
+      font-size: 15px;
+      margin-bottom: 8px;
+    }
+
+    .step span {
+      color: var(--muted);
+      font-size: 12.5px;
+      line-height: 1.5;
+    }
+
+    .day-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 14px;
+      flex: 1;
+    }
+
+    .day {
+      padding: 13px;
+      border-radius: 12px;
+      border: 1px solid rgba(91,114,143,.18);
+      background: rgba(255,255,255,.84);
+      min-height: 118px;
+    }
+
+    .day b {
+      display: block;
+      color: var(--ink);
+      font-size: 14px;
+      margin-bottom: 7px;
+    }
+
+    .day span {
+      color: var(--muted);
+      font-size: 12.5px;
+      line-height: 1.45;
+    }
+
+    .issue-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      flex: 1;
+      margin-top: 16px;
+    }
+
+    .issue {
+      padding: 20px;
+      border-radius: var(--radius);
+      border: 1px solid rgba(232, 146, 22, .24);
+      background: linear-gradient(180deg, rgba(255,248,230,.92), #ffffff);
+    }
+
+    .issue h3 {
+      color: var(--ink);
+      font-size: 18px;
+      margin-bottom: 10px;
+    }
+
+    .issue p {
+      color: var(--text);
+      font-size: 14px;
+      line-height: 1.62;
+    }
+
+    .people {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 18px;
+      flex: 1;
+    }
+
+    .person {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .person .share {
+      margin-top: auto;
+      color: #ffffff;
+      background: linear-gradient(135deg, var(--cyan), var(--blue));
+      border-radius: 999px;
+      padding: 6px 10px;
+      text-align: center;
+      font-weight: 900;
+      font-size: 13px;
+    }
+
+    .app-layout {
+      display: grid;
+      grid-template-columns: .92fr 1.08fr;
+      gap: 18px;
+      flex: 1;
+      min-height: 0;
+      margin-top: 16px;
+    }
+
+    .phone-stack {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      min-height: 0;
+    }
+
+    .phone-shot {
+      position: relative;
+      overflow: hidden;
+      min-height: 0;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: #f5f9ff;
+    }
+
+    .phone-shot img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: top center;
+      display: block;
     }
 
     .feature-split {
       display: grid;
       grid-template-columns: 1.05fr .95fr;
-      gap: 18px;
+      gap: 14px;
       flex: 1;
       min-height: 0;
     }
 
     .logic-stack {
       display: grid;
-      gap: 10px;
+      gap: 8px;
     }
 
     .logic-step {
-      padding: 12px 14px;
+      padding: 9px 12px;
       border: 1px solid var(--line);
       border-left: 5px solid var(--cyan);
       border-radius: 8px;
-      background: #fff;
+      background: rgba(255,255,255,.88);
     }
 
     .logic-step strong {
       display: block;
       margin-bottom: 4px;
-      color: #0f3554;
-      font-size: 15px;
+      color: var(--ink);
+      font-size: 14px;
     }
 
     .logic-step span {
       color: var(--muted);
-      font-size: 13px;
-      line-height: 1.55;
+      font-size: 12.2px;
+      line-height: 1.42;
     }
 
     .media-grid {
@@ -495,7 +574,7 @@
       overflow: hidden;
       border: 1px solid var(--line);
       border-radius: 8px;
-      background: #f8fbfd;
+      background: #f5f9ff;
     }
 
     .media-tile img,
@@ -505,7 +584,7 @@
       min-height: 160px;
       display: block;
       object-fit: contain;
-      background: #fff;
+      background: #f5f9ff;
     }
 
     .media-tile span {
@@ -514,9 +593,9 @@
       top: 10px;
       padding: 5px 9px;
       border-radius: 999px;
-      background: rgba(255,255,255,.9);
-      border: 1px solid rgba(219,232,239,.9);
-      color: #0f3554;
+      background: rgba(255,255,255,.88);
+      border: 1px solid rgba(91,114,143,.20);
+      color: #0b6372;
       font-size: 12px;
       font-weight: 800;
     }
@@ -744,111 +823,59 @@
     }
 
     .module-grid {
-      margin-top: 18px;
-      flex: 1;
-      min-height: 0;
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 16px;
+      gap: 14px;
+      margin-top: 16px;
+      flex: 1;
     }
 
-    .module-card {
-      padding: 20px 20px 18px;
-      border-radius: var(--radius);
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,.96);
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
+    .module {
+      min-height: 150px;
     }
 
-    .module-card h3 {
-      color: #075985;
-      font-size: 19px;
-      line-height: 1.28;
-    }
-
-    .module-card:nth-child(2) h3,
-    .module-card:nth-child(5) h3 { color: #0f766e; }
-
-    .module-card:nth-child(3) h3,
-    .module-card:nth-child(6) h3 { color: #b45309; }
-
-    .table {
-      margin-top: 18px;
-      overflow: hidden;
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      background: #fff;
-    }
-
-    .row {
+    .shots {
       display: grid;
-      grid-template-columns: 1.05fr 1fr 1.35fr 1.25fr;
-      min-height: 54px;
-      border-bottom: 1px solid var(--line);
-    }
-
-    .row:last-child { border-bottom: 0; }
-
-    .row div {
-      padding: 12px 14px;
-      display: flex;
-      align-items: center;
-      color: #42566d;
-      font-size: 13px;
-      line-height: 1.45;
-      border-right: 1px solid var(--line);
-    }
-
-    .row div:last-child { border-right: 0; }
-
-    .row.head div {
-      color: #075985;
-      background: var(--soft-blue);
-      font-weight: 900;
-    }
-
-    .quote {
-      margin-top: auto;
-      padding: 18px 22px;
-      border-radius: var(--radius);
-      background: linear-gradient(90deg, var(--soft-blue), var(--soft-cyan));
-      color: #075985;
-      font-size: 17px;
-      line-height: 1.55;
-      font-weight: 900;
-    }
-
-    .demo-layout {
-      margin-top: 18px;
+      grid-template-columns: 1.1fr .9fr .9fr;
+      grid-template-rows: repeat(2, minmax(0, 1fr));
+      gap: 14px;
       flex: 1;
       min-height: 0;
-      display: grid;
-      grid-template-columns: 1fr 1.08fr;
-      gap: 18px;
+      margin-top: 16px;
     }
 
-    .demo-card {
-      padding: 24px;
-      border-radius: var(--radius);
-      border: 1px solid var(--line);
-      background: #fff;
-      min-height: 0;
-      display: flex;
-      flex-direction: column;
+    .shot {
+      position: relative;
+      overflow: hidden;
+      background: #f5f9ff;
     }
 
-    .demo-card img {
+    .shot.wide { grid-row: span 2; }
+
+    .shot img {
       width: 100%;
       height: 100%;
-      min-height: 0;
-      object-fit: contain;
+      object-fit: cover;
+      object-position: top center;
+      display: block;
+    }
+
+    .shot.wide img { object-fit: contain; padding: 10px; }
+
+    .quote {
+      margin-top: 10px;
+      padding: 11px 15px;
+      border-left: 4px solid var(--cyan);
+      border-radius: 12px;
+      color: var(--text);
+      background: rgba(10, 167, 189, .08);
+      line-height: 1.55;
+      font-size: 13px;
     }
 
     .controls {
       position: absolute;
-      right: 22px;
+      right: 24px;
       bottom: 18px;
       z-index: 10;
       display: flex;
@@ -861,7 +888,7 @@
       height: 36px;
       border: 1px solid var(--line);
       border-radius: 50%;
-      color: #075985;
+      color: var(--blue);
       background: rgba(255,255,255,.94);
       cursor: pointer;
       font-size: 20px;
@@ -869,9 +896,9 @@
     }
 
     .pager {
-      min-width: 56px;
+      min-width: 58px;
+      color: var(--muted);
       text-align: center;
-      color: #64748b;
       font-size: 12px;
       font-weight: 900;
     }
@@ -882,7 +909,7 @@
       right: 0;
       bottom: 0;
       height: 5px;
-      background: #e5eef5;
+      background: rgba(91,114,143,.16);
       z-index: 9;
     }
 
@@ -890,275 +917,180 @@
       display: block;
       height: 100%;
       width: 0;
-      background: linear-gradient(90deg, var(--blue), var(--cyan), var(--green), var(--amber));
+      background: linear-gradient(90deg, var(--cyan), var(--blue), var(--pink), var(--amber));
       transition: width .22s ease;
     }
 
     @media (max-width: 900px) {
-      .deck {
-        width: 100vw;
-        height: 100vh;
-        border-radius: 0;
-      }
-
+      .deck { width: 100vw; height: 100vh; border-radius: 0; }
       .slide { padding: 54px 22px 54px; overflow-y: auto; }
-      .cover-copy { width: 100%; min-width: 0; padding: 70px 24px 70px; }
-      .cover::after { opacity: .16; width: 100%; }
-      h1 { font-size: 34px; }
+      .cover-inner { width: 100%; min-width: 0; padding: 70px 24px; }
+      .cover { background-position: right center; }
+      h1 { font-size: 36px; }
       .subtitle { font-size: 16px; }
       .nav { display: none; }
-      .cols-2, .cols-3, .cols-4, .arch, .module-grid, .demo-layout, .shots, .timeline, .feature-split, .media-grid {
+      .cover-points, .cols-2, .cols-3, .cols-4, .split, .timeline, .day-grid, .issue-grid, .people, .app-layout, .phone-stack, .module-grid, .shots, .feature-split, .media-grid {
         grid-template-columns: 1fr;
       }
       .shots { grid-template-rows: none; }
-      .row { grid-template-columns: 1fr; }
-      .row div { border-right: 0; }
     }
   </style>
 </head>
 <body>
-  <main class="deck" aria-label="狭域巡航 aiPotRol 最终答辩">
-    <section class="slide cover" data-section="cover">
-      <div class="cover-copy">
+  <main class="deck" aria-label="狭域巡航 aiPotRol 项目展示">
+    <section class="slide cover" data-section="cover" data-order="0">
+      <div class="cover-inner">
         <div class="brand-row">
-          <img class="logo" src="assets/project_logo.png" alt="项目标识">
-          <span class="tag">最终答辩 · 线下展示 · 10-15 分钟</span>
+          <img class="logo" src="assets/project_logo.png" alt="狭域巡航项目标识">
+          <div class="brand-name"><span>AI PATROL</span><span>狭域巡航 aiPotRol</span></div>
         </div>
-        <h1>狭域巡航 aiPotRol 智能巡检小车</h1>
-        <p class="subtitle">面向仓储、通道与管廊等狭域场景，完成小车远程控制、巡检监控、环境感知、雷达通道判定、视觉异常识别、告警记录与 AI 辅助分析的一体化应用。</p>
-        <div class="meta-line">
-          <div><strong>答辩日期：</strong>2026 年 7 月 15 日，线下全天答辩</div>
-          <div><strong>展示方式：</strong>HTML 网页演示 + 现场操作 + 视频/截图成果支撑</div>
-        </div>
-      </div>
-    </section>
-
-    <section class="slide" data-section="requirement">
-      <div class="topbar"></div>
-      <div>
-        <div class="kicker">00 · 答辩要求提取</div>
-        <h2>最终答辩重点：按立项、管理、分工、实现、成果五条线展开</h2>
-        <p class="lead">来自课程安排截图：每组展示 10-15 分钟，提问 5 分钟，按分组顺序答辩；所有组员需到场发言。</p>
-      </div>
-      <div class="body">
-        <div class="grid cols-3" style="margin-top:18px; flex:1;">
-          <article class="card">
-            <h3>项目立项</h3>
-            <ul>
-              <li>说明如何看待和细化需求</li>
-              <li>覆盖功能需求与非功能需求</li>
-              <li>给出概要设计与应用场景</li>
-            </ul>
-          </article>
-          <article class="card">
-            <h3>项目管理</h3>
-            <ul>
-              <li>呈现时间进度安排</li>
-              <li>说明实际完成情况</li>
-              <li>推荐甘特图或燃尽图表达</li>
-            </ul>
-          </article>
-          <article class="card">
-            <h3>成员分工与贡献</h3>
-            <ul>
-              <li>每位成员单独一页介绍</li>
-              <li>重点说明负责模块与打分项</li>
-              <li>避免只介绍文档工作</li>
-            </ul>
-          </article>
-          <article class="card">
-            <h3>设计与实现</h3>
-            <ul>
-              <li>说明系统架构和模块边界</li>
-              <li>展示核心逻辑、通信协议和页面实现</li>
-              <li>每名成员讲清自己的实现部分</li>
-            </ul>
-          </article>
-          <article class="card">
-            <h3>成果展示</h3>
-            <ul>
-              <li>推荐录制视频与现场演示结合</li>
-              <li>展示构建、运行、控制、告警和 AI 分析</li>
-              <li>用截图和测试结论支撑完成度</li>
-            </ul>
-          </article>
-          <article class="card">
-            <h3>现场策略</h3>
-            <ul>
-              <li>开场先讲最终闭环</li>
-              <li>中段按模块分工发言</li>
-              <li>结尾进入演示和问答准备</li>
-            </ul>
-          </article>
+        <h1>仓储环境智能巡检与货物异常监测小车</h1>
+        <p class="subtitle">以润和 iCar 智能小车为移动平台，整合 HarmonyOS APP、环境感知、SLAM 巡检、激光雷达、视觉识别、告警记录与 AI 辅助分析，形成“巡检 - 发现 - 记录 - 分析 - 接管”的仓储狭域巡航闭环。</p>
+        <div class="cover-points">
+          <span>固定点位巡检<br>P1-P6 路线状态</span>
+          <span>环境 / 雷达 / 视觉<br>多源异常告警</span>
+          <span>手动接管与急停<br>保障现场可控</span>
         </div>
       </div>
     </section>
 
-    <section class="slide" data-section="project">
+    <section class="slide" data-section="project" data-order="1">
       <div class="topbar"></div>
       <div>
         <div class="kicker">01 · 项目立项</div>
-        <h2>需求细化：从“能跑的小车”升级为“可巡检、可告警、可接管”的狭域巡航系统</h2>
+        <h2>背景：仓储狭窄通道更需要可定位、可接管、可复盘的巡检系统</h2>
+        <p class="lead">项目不是做一辆“能跑的小车”，而是围绕货架间通道、管廊式仓储区域和高风险设备段，构建能够发现环境、通道和货物异常的智能巡检小车。</p>
       </div>
       <div class="body">
         <div class="grid cols-4" style="margin-top:18px;">
-          <div class="metric"><b>8</b><span>核心页面：网络、首页、遥控、环境、雷达、视觉、告警、系统监控</span></div>
-          <div class="metric"><b>3 类</b><span>异常来源：环境风险、通道占用、视觉异常</span></div>
-          <div class="metric"><b>2 路</b><span>通信入口：TCP 控制通道 + 视频预览通道</span></div>
-          <div class="metric"><b>AI</b><span>告警引用、多选咨询、汇总分析和处置建议</span></div>
+          <div class="metric"><b>6 个点位</b><span>P1 入口、P2/P3 A 区管线、P4 设备段、P5 高风险区域、P6 返回起点</span></div>
+          <div class="metric"><b>4 类异常</b><span>环境异常、通道占用、视觉异常、巡检任务异常统一进入告警记录</span></div>
+          <div class="metric"><b>2 种模式</b><span>自动巡检与手动接管切换，异常时支持暂停、停止、返回与急停</span></div>
+          <div class="metric"><b>1 个控制台</b><span>APP 汇总连接、巡检、控制、数据、告警和 AI 分析入口</span></div>
         </div>
-        <div class="grid cols-2" style="margin-top:18px; flex:1;">
-          <article class="card">
-            <h3>功能需求</h3>
+        <div class="grid cols-3" style="margin-top:18px; flex:1;">
+          <article class="card"><h3>项目背景</h3><ul><li>仓储狭窄区域视线遮挡，人工巡查容易遗漏。</li><li>通道堵塞、人员闯入、环境异常需要快速定位。</li><li>课堂展示需要真实功能链路，而不是静态页面。</li></ul></article>
+          <article class="card"><h3>项目目标</h3><ul><li>让小车可以被连接、查看、控制和接管。</li><li>让巡检过程以点位、路线、进度和状态展示。</li><li>让异常形成记录，并给出处置建议。</li></ul></article>
+          <article class="card"><h3>最终闭环</h3><ul><li>连接小车，进入巡检看板。</li><li>环境、雷达、视觉持续返回状态。</li><li>异常写入告警，并支持 AI 分析和人工接管。</li></ul></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="project" data-order="2">
+      <div class="topbar"></div>
+      <div>
+        <div class="kicker">01 · 需求分析</div>
+        <h2>功能需求与非功能需求：围绕现场巡检可操作性展开</h2>
+      </div>
+      <div class="body">
+        <div class="split">
+          <article class="panel">
+            <h3>功能性需求</h3>
             <ul>
-              <li>完成小车 IP、TCP 端口、视频端口配置并建立连接。</li>
-              <li>支持摇杆、方向按钮、麦克纳姆轮和手动接管控制。</li>
-              <li>展示巡检点位、巡检状态、任务进度与最新告警。</li>
-              <li>整合环境、雷达、视觉结果，形成告警列表和 AI 分析入口。</li>
+              <li><span class="highlight">连接与状态：</span>配置小车 IP、TCP 指令端口和视频端口，显示在线/离线状态。</li>
+              <li><span class="highlight">巡检路线：</span>展示当前点位、下一点位、路线进度和异常点位。</li>
+              <li><span class="highlight">环境监测：</span>温度、湿度、可燃气体、PM2.5、光照等实时数据、阈值规则和异常记录。</li>
+              <li><span class="highlight">雷达与视觉：</span>判断通道占用、近距离障碍、人员闯入、红瓶/货物异常。</li>
+              <li><span class="highlight">手动接管：</span>方向按键、摇杆、麦克纳姆轮、高级轮速、急停和停止巡检。</li>
+              <li><span class="highlight">告警与 AI：</span>告警列表、多选引用、单条分析、汇总报告和处理建议。</li>
             </ul>
           </article>
-          <article class="card">
-            <h3>非功能需求</h3>
+          <article class="panel">
+            <h3>非功能性需求</h3>
             <ul>
-              <li>界面适配移动端，重点信息可快速扫读，现场演示稳定。</li>
-              <li>网络失败、API Key 缺失、小车离线等情况要有可理解提示。</li>
-              <li>页面模块化，控制、状态、告警和 AI 能独立维护。</li>
-              <li>答辩环境下支持离线预览，避免真实设备不可用时无法展示。</li>
+              <li><span class="green">易用性：</span>仓库管理员在手机端即可完成连接、查看、控制和处理。</li>
+              <li><span class="green">实时性：</span>急停、刹车和停止巡检优先级高，状态收到后及时刷新。</li>
+              <li><span class="green">可靠性：</span>真实小车连接失败时仍支持离线预览，保证展示不中断。</li>
+              <li><span class="green">安全性：</span>通道堵塞、人员闯入、严重环境异常均可触发告警或接管。</li>
+              <li><span class="green">可维护性：</span>页面、组件、TCP、Store、模型和工具类分层，方便继续扩展真实传感器和算法。</li>
             </ul>
+            <div class="quote">需求设计重点：让项目能说明“为什么要巡检、巡检到哪里、发现了什么、如何处理”。</div>
           </article>
         </div>
       </div>
     </section>
 
-    <section class="slide" data-section="management">
+    <section class="slide" data-section="project" data-order="3">
+      <div class="topbar"></div>
+      <div>
+        <div class="kicker">01 · 概要设计</div>
+        <h2>系统分层：APP 统一展示与控制，车端和感知模块提供状态与动作</h2>
+      </div>
+      <div class="body">
+        <div class="split">
+          <div class="image-frame"><span class="caption">巡检业务闭环</span><img src="assets/architecture-flow.png" alt="系统闭环流程"></div>
+          <div class="grid" style="gap:12px;">
+            <article class="card"><h3>上位机 APP 层</h3><ul><li>首页总览、网络连接、巡检看板、环境监测、雷达、视觉、告警、手动接管。</li><li>ArkTS / ArkUI 页面组件化，适合移动端现场操作。</li></ul></article>
+            <article class="card"><h3>通信与状态层</h3><ul><li>TCPClientManager 负责连接和消息收发，PatrolMessageHandler 解析业务消息。</li><li>PatrolStore 统一保存车辆、环境、雷达、视觉、告警和点位状态。</li></ul></article>
+            <article class="card"><h3>车端与算法层</h3><ul><li>底盘控制、视频回传、环境采样、雷达距离、视觉检测和 SLAM 导航。</li><li>告警发生后支持暂停巡检、手动接管、急停或返回起点。</li></ul></article>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="manage" data-order="4">
       <div class="topbar"></div>
       <div>
         <div class="kicker">02 · 项目管理</div>
-        <h2>进度安排：从原型、联通、模块实现到最终闭环验证</h2>
-        <p class="lead">以课程节点倒推任务，先保证可演示闭环，再补齐告警、AI 和文档测试材料。</p>
+        <h2>时间推进：7.6 明确任务，7.15 完成项目展示闭环</h2>
+        <p class="lead">项目管理主线是根据设备状态动态调整工作重心：小车可用时优先实车联调，不可用时推进 APP、模型、文档、PPT 和场景。</p>
       </div>
       <div class="body">
         <div class="timeline">
-          <div class="step"><b>01</b><strong>需求与原型</strong><span>明确仓储巡检场景，完成网络页、首页、遥控页等原型和页面路由规划。</span></div>
-          <div class="step"><b>02</b><strong>通信与控制</strong><span>接入 TCP 6000 控制通道，完成摇杆、方向按钮和控制指令封装。</span></div>
-          <div class="step"><b>03</b><strong>巡检模块</strong><span>完成巡检监控、环境数据、雷达通道判定、视觉状态展示。</span></div>
-          <div class="step"><b>04</b><strong>告警与 AI</strong><span>完成异常记录、告警筛选、引用咨询、汇总分析和模板问答。</span></div>
-          <div class="step"><b>05</b><strong>测试与答辩</strong><span>完成构建、签名安装、主链路测试、使用手册和最终 HTML 展示。</span></div>
+          <div class="step"><b>7.6</b><strong>启动与环境</strong><span>企业老师授课后明确任务，完成 Ubuntu / ROS 环境搭建，确定仓储狭域巡航方向。</span></div>
+          <div class="step"><b>7.7-7.8</b><strong>小车上手</strong><span>下午拿到小车，完成连接和基础控制；并行推进 SLAM、雷达、传感器、视觉数据集和 APP 页面。</span></div>
+          <div class="step"><b>7.9</b><strong>硬件受阻</strong><span>电池无法充电并返修，实车调试受限，转向文档、PPT、模型、APP 和场景搭建。</span></div>
+          <div class="step"><b>7.10-7.11</b><strong>暴雨调整</strong><span>连续暴雨影响取车，完成中期展示，继续完善 APP、资料和后续联调计划。</span></div>
+          <div class="step"><b>7.12-7.14</b><strong>集中收口</strong><span>开发时间延长至 9:00-21:00，完成控制、地图、视觉、雷达、AI 和展示材料；7.14 小车黑屏再次送修，转向 PPT 收口。</span></div>
         </div>
-        <div class="quote">实际完成情况：主链路已覆盖“连接小车 → 巡检监控 → 数据感知 → 异常告警 → AI 辅助判断 → 人工接管”的展示闭环。</div>
+        <div class="day-grid">
+          <div class="day"><b>APP 实际完成</b><span>网络、首页、巡检看板、环境监测、手动接管、告警中心、AI 咨询等页面形成闭环。</span></div>
+          <div class="day"><b>环境与告警</b><span>完成实时数据、阈值规则、异常记录、告警汇总和 AI 多选引用分析。</span></div>
+          <div class="day"><b>实车与控制</b><span>完成基础连接、方向按钮、摇杆、麦克纳姆轮、高级调节、急停和视频预览入口。</span></div>
+          <div class="day"><b>视觉与雷达</b><span>完成 YOLO 数据集、红瓶停止、警戒区识别、雷达追踪避障和串口排查。</span></div>
+          <div class="day"><b>材料与展示</b><span>完成需求文档、开发管理文档、测试报告、使用手册、结题页面和演示视频/截图准备。</span></div>
+        </div>
       </div>
     </section>
 
-    <section class="slide" data-section="architecture">
+    <section class="slide" data-section="manage" data-order="5">
       <div class="topbar"></div>
       <div>
-        <div class="kicker">03 · 概要设计</div>
-        <h2>系统架构：HarmonyOS APP 作为统一控制台，承接设备控制、状态同步与异常处置</h2>
+        <div class="kicker">02 · 项目管理</div>
+        <h2>进度影响与处理：把设备不可用时间转化为可交付成果</h2>
       </div>
       <div class="body">
-        <div class="arch">
-          <article class="panel">
-            <h3>车端与传感层</h3>
-            <ul>
-              <li>小车底盘与麦克纳姆轮控制</li>
-              <li>视频服务与前方画面预览</li>
-              <li>环境传感器、雷达距离与视觉检测结果</li>
-            </ul>
-          </article>
-          <div class="flow">
-            <div class="flow-node">网络设置：IP + TCP 6000 + 视频 6500</div>
-            <div class="flow-node">PatrolStore：统一保存车辆、环境、雷达、视觉、告警状态</div>
-            <div class="flow-node">页面模块：监控、遥控、环境、雷达、视觉、告警</div>
-            <div class="flow-node">处置闭环：告警记录 + AI 分析 + 人工接管</div>
-          </div>
-          <article class="panel">
-            <h3>APP 与业务层</h3>
-            <ul>
-              <li>ArkTS / ArkUI 页面和组件化实现</li>
-              <li>TCPClientManager 负责连接与消息收发</li>
-              <li>DeepSeekUtil 支持告警问答和风险总结</li>
-            </ul>
-          </article>
+        <div class="issue-grid">
+          <article class="issue"><h3>7.9 小车电池无法充电</h3><p>影响：SLAM、雷达、底盘控制和视觉部署无法连续验证。处理：小车返修，同时推进 APP 页面、PPT、需求文档、模型训练和仓储场景搭建。</p></article>
+          <article class="issue"><h3>7.10-7.11 连续暴雨</h3><p>影响：无法稳定拿到小车，硬件联调窗口继续被压缩。处理：完成中期展示，整理前期成果和后续任务，把可离线完成的工作全部前置。</p></article>
+          <article class="issue"><h3>7.13 串口与多模块联调</h3><p>影响：底盘控制、雷达和 APP 指令链路存在排查成本。处理：集中定位底盘串口与雷达串口指向，优先保证展示闭环稳定。</p></article>
+          <article class="issue"><h3>7.14 小车黑屏并再次无法充电</h3><p>影响：展示前实车验证和最终排练再次受限。处理：上午送修小车，等待期间整理结题 PPT、完善文档、梳理演示逻辑和视频预案。</p></article>
         </div>
+        <div class="quote">管理结论：项目不是按理想条件推进，而是在硬件故障、天气和时间压缩下，通过任务切换保证每天都有可交付产出。</div>
       </div>
     </section>
 
-    <section class="slide" data-section="implementation">
+    <section class="slide" data-section="team" data-order="6">
       <div class="topbar"></div>
       <div>
-        <div class="kicker">04 · 设计与实现</div>
-        <h2>模块实现：围绕巡检控制台拆成可演示、可测试、可扩展的六个部分</h2>
+        <div class="kicker">02 · 成员分工</div>
+        <h2>四人分工与贡献度：按模块负责，联调阶段共同收口</h2>
+        <p class="lead">贡献度按团队共识均分，每人 25%。中期后根据硬件状态和展示需要动态支援，不只按单一模块工作。</p>
       </div>
       <div class="body">
-        <div class="module-grid">
-          <article class="module-card"><h3>网络连接</h3><ul><li>保存 IP、TCP 端口、视频端口</li><li>支持连接失败提示和离线预览</li></ul></article>
-          <article class="module-card"><h3>巡检监控</h3><ul><li>点位、下一站、进度和在线状态</li><li>模块入口与重点告警摘要</li></ul></article>
-          <article class="module-card"><h3>远程控制</h3><ul><li>摇杆、方向按钮、刹车、接管</li><li>支持麦克纳姆轮控制扩展</li></ul></article>
-          <article class="module-card"><h3>环境与雷达</h3><ul><li>温湿度、气体、PM2.5、光照</li><li>通道占用、减速、停车阈值</li></ul></article>
-          <article class="module-card"><h3>视觉识别</h3><ul><li>人员、障碍物、画面异常展示</li><li>为货物异常检测预留闭环</li></ul></article>
-          <article class="module-card"><h3>告警与 AI</h3><ul><li>告警列表、多选引用、模板问答</li><li>汇总风险、优先级和处置建议</li></ul></article>
+        <div class="people">
+          <article class="person"><h3>武芷竹</h3><span class="pill">组长 / SLAM / 统筹</span><ul><li>项目进度协调与任务拆分。</li><li>SLAM 建图、自动导航、巡检路线与地图参数。</li><li>定点巡检测试、串口排查和多模块联调。</li></ul><div class="share">贡献度 25%</div></article>
+          <article class="person"><h3>胡雅欣</h3><span class="pill">APP / 环境 / 接管 / 文档</span><ul><li>鸿蒙 APP 整合、首页和控制链路适配。</li><li>环境感知、数据面板、阈值规则和异常记录。</li><li>手动接管、多档调速、文档与展示材料。</li></ul><div class="share">贡献度 25%</div></article>
+          <article class="person"><h3>周诗晴</h3><span class="pill">雷达 / AI / 页面接入</span><ul><li>雷达追踪与自动避障配置。</li><li>雷达状态、通道占用与 APP 功能接入。</li><li>AI 咨询、横竖屏适配和界面完善。</li></ul><div class="share">贡献度 25%</div></article>
+          <article class="person"><h3>曹玥</h3><span class="pill">视觉 / YOLO / 场景代码</span><ul><li>目标检测数据集构建和 YOLO 模型训练。</li><li>红瓶停止、警戒区识别和视觉功能环境。</li><li>两类场景下的小车行动代码。</li></ul><div class="share">贡献度 25%</div></article>
         </div>
       </div>
     </section>
 
-    <section class="slide" data-section="screens">
+    <section class="slide" data-section="impl" data-order="10">
       <div class="topbar"></div>
       <div>
-        <div class="kicker">05 · 成果展示</div>
-        <h2>APP 页面成果：从连接、首页到遥控和麦克纳姆轮控制已形成可展示界面</h2>
-      </div>
-      <div class="body">
-        <div class="shots">
-          <div class="shot"><span>网络配置</span><img src="assets/NetworkSettings.png" alt="网络配置页面"></div>
-          <div class="shot"><span>首页入口</span><img src="assets/Index.png" alt="首页页面"></div>
-          <div class="shot"><span>遥控状态</span><img src="assets/RemoteControl1.png" alt="遥控页面状态一"></div>
-          <div class="shot"><span>遥控操作</span><img src="assets/RemoteControl2.png" alt="遥控页面状态二"></div>
-          <div class="shot"><span>麦克纳姆轮</span><img src="assets/MecanumWheel.png" alt="麦克纳姆轮页面"></div>
-          <div class="shot fit"><span>项目流程</span><img src="assets/patrol-flow.png" alt="巡检流程图"></div>
-        </div>
-      </div>
-    </section>
-
-    <section class="slide" data-section="test">
-      <div class="topbar"></div>
-      <div>
-        <div class="kicker">06 · 测试验证</div>
-        <h2>测试结论：构建、安装、连接、控制、告警和 AI 分析主链路均通过</h2>
-      </div>
-      <div class="body">
-        <div class="table">
-          <div class="row head"><div>模块</div><div>测试内容</div><div>结果说明</div><div>结论</div></div>
-          <div class="row"><div>构建打包</div><div>DevEco 构建 HAP</div><div>签名配置恢复，可生成安装产物</div><div class="green">通过</div></div>
-          <div class="row"><div>网络连接</div><div>IP + TCP 6000 + 视频端口</div><div>连接成功后在线状态更新，可进入首页</div><div class="green">通过</div></div>
-          <div class="row"><div>遥控控制</div><div>摇杆与方向按钮</div><div>控制命令可发送，界面响应正常</div><div class="green">通过</div></div>
-          <div class="row"><div>雷达阈值</div><div>减速、停车、占用阈值</div><div>参数可查看、调整并参与状态判断</div><div class="green">通过</div></div>
-          <div class="row"><div>告警管理</div><div>列表、引用、模板问答</div><div>支持多选引用和 AI 汇总分析入口</div><div class="green">通过</div></div>
-          <div class="row"><div>异常场景</div><div>离线、服务未启动、API Key 缺失</div><div>页面给出提示，适合答辩预案说明</div><div class="amber">可控</div></div>
-        </div>
-      </div>
-    </section>
-
-    <section class="slide" data-section="team">
-      <div class="topbar"></div>
-      <div>
-        <div class="kicker">07 · 成员分工与贡献</div>
-        <h2>分工建议页：每位成员按“负责模块、实现内容、答辩发言点”单独说明</h2>
-        <p class="lead">中期材料中出现的成员与模块包括：项目统筹 / SLAM 导航、环境感知 / 鸿蒙 APP、雷达避障、视觉 AI。最终答辩可按实际姓名再替换细节。</p>
-      </div>
-      <div class="body">
-        <div class="grid cols-4" style="margin-top:18px; flex:1;">
-          <article class="card"><h3>项目统筹 / SLAM</h3><ul><li>需求拆分、进度协调、演示链路组织</li><li>巡检点位、路线规划、任务状态闭环</li><li>答辩重点：项目管理与总体架构</li></ul></article>
-          <article class="card"><h3>环境感知 / APP</h3><ul><li>环境数据展示、阈值异常、首页整合</li><li>鸿蒙页面、资源、运行与真机验证</li><li>答辩重点：页面成果与用户操作链路</li></ul></article>
-          <article class="card"><h3>雷达避障</h3><ul><li>前方距离、左右货架距离、通道状态</li><li>减速、停车、占用阈值和告警策略</li><li>答辩重点：安全策略与参数设计</li></ul></article>
-          <article class="card"><h3>视觉 AI / 告警</h3><ul><li>视觉异常、人员/障碍物识别结果展示</li><li>AI 告警咨询、汇总分析、处置建议</li><li>答辩重点：AI 能力与异常闭环</li></ul></article>
-        </div>
-      </div>
-    </section>
-
-    <section class="slide" data-section="zsq-car">
-      <div class="topbar"></div>
-      <div>
-        <div class="kicker">08 · 周诗晴模块：小车端</div>
+        <div class="kicker">03 · 周诗晴模块：小车端</div>
         <h2>激光雷达避障与跟踪：把小车从“能移动”提升为“能判断通道安全”</h2>
         <p class="lead">小车端围绕仓储狭窄通道设计雷达检测逻辑，重点处理前方通道、左右货架距离、动态障碍和警戒区域四类问题。</p>
       </div>
@@ -1181,12 +1113,12 @@
       </div>
     </section>
 
-    <section class="slide" data-section="zsq-radar-video">
+    <section class="slide" data-section="impl" data-order="11">
       <div class="topbar"></div>
       <div>
-        <div class="kicker">09 · 周诗晴模块：雷达视频演示</div>
-        <h2>小车端场景录像：避障通行与可疑人员跟踪分开展示，避免关键画面被压缩</h2>
-        <p class="lead">左侧展示小车遇到障碍后的避障过程，右侧展示可疑人员进入警戒区域后的持续跟踪过程。</p>
+        <div class="kicker">03 · 周诗晴模块：APP 与告警 AI</div>
+        <h2>APP 场景应用与告警闭环：雷达事件进入告警中心，再由 AI 给出处置建议</h2>
+        <p class="lead">APP 端把雷达场景预设、通道安全阈值、告警记录和 AI 分析放到同一条演示链路中，形成可展示、可追溯、可解释的异常处理流程。</p>
       </div>
       <div class="body">
         <div class="proof-board two">
@@ -1229,82 +1161,153 @@
       </div>
     </section>
 
-    <section class="slide" data-section="zsq-alert">
+    <section class="slide" data-section="impl" data-order="7">
       <div class="topbar"></div>
       <div>
-        <div class="kicker">11 · 周诗晴模块：告警中心</div>
-        <h2>告警中心：雷达事件、视觉事件和 AI 结果集中展示，形成可追溯异常记录</h2>
-        <p class="lead">告警中心、AI 分析和 AI 咨询三页合一，配合演示视频完整展示异常处置闭环。</p>
+        <div class="kicker">03 · 项目设计与实现</div>
+        <h2>整合 APP：狭域巡航的统一控制台</h2>
+        <p class="lead">APP 作为最终展示入口，把连接配置、巡检状态、模块入口、重点告警和手动接管整合在同一套移动端交互中。</p>
       </div>
       <div class="body">
-        <div style="display: grid; grid-template-columns: 1.5fr .5fr; gap: 14px; flex: 1; min-height: 0; margin-top: 16px;">
-          <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; min-height: 0;">
-            <div style="display: flex; flex-direction: column; min-height: 0;">
-              <span style="padding: 6px 0 4px; color: #0f3554; font-size: 12px; font-weight: 900; text-align: center;">告警中心一览</span>
-              <div class="proof-card" style="flex: 1; min-height: 0; padding: 3px;"><img src="assets/zsq/告警中心/告警中心一览.jpg" alt="告警中心一览"></div>
-            </div>
-            <div style="display: flex; flex-direction: column; min-height: 0;">
-              <span style="padding: 6px 0 4px; color: #0f3554; font-size: 12px; font-weight: 900; text-align: center;">AI 分析结果</span>
-              <div class="proof-card" style="flex: 1; min-height: 0; padding: 3px;"><img src="assets/zsq/告警中心/ai分析.jpg" alt="AI 分析"></div>
-            </div>
-            <div style="display: flex; flex-direction: column; min-height: 0;">
-              <span style="padding: 6px 0 4px; color: #0f3554; font-size: 12px; font-weight: 900; text-align: center;">AI 咨询对话</span>
-              <div class="proof-card" style="flex: 1; min-height: 0; padding: 3px;"><img src="assets/zsq/告警中心/ai咨询.jpg" alt="AI 咨询"></div>
-            </div>
+        <div class="app-layout">
+          <div class="image-frame phone"><span class="caption">巡检首页与连接小车</span><img src="assets/app_dashboard.png" alt="APP 巡检首页"></div>
+          <div class="grid cols-2">
+            <article class="card"><h3>首页总览</h3><ul><li>显示“狭域巡航 AI PATROL”品牌。</li><li>展示在线状态、当前点位、下一点位和巡检进度。</li><li>重点告警在首页直接提示，减少现场查找成本。</li></ul></article>
+            <article class="card"><h3>连接机制</h3><ul><li>支持 IP、TCP 端口、视频端口配置。</li><li>连接后同步小车数据，未连接时可进入离线预览。</li><li>便于设备不稳定时继续完整展示业务流程。</li></ul></article>
+            <article class="card"><h3>模块入口</h3><ul><li>环境感知、SLAM 导航、激光雷达、视觉识别、手动接管。</li><li>模块卡片显示当前状态和异常摘要。</li></ul></article>
+            <article class="card"><h3>告警闭环</h3><ul><li>环境、雷达、视觉异常统一进入告警中心。</li><li>支持 AI 分析、复制汇报和发送领导。</li></ul></article>
           </div>
-          <div class="proof-card video" style="min-height: 100%;"><span class="caption">告警 + AI 演示视频</span><video src="assets/zsq/告警中心/告警+ai.mp4" controls muted></video></div>
-        </div>
-        <div class="proof-notes" style="margin-top: 10px;">
-          <div class="logic-step"><strong>告警同步</strong><span>雷达快照进入 PatrolStore 后，异常通道状态自动写入告警列表。</span></div>
-          <div class="logic-step"><strong>告警复盘</strong><span>保留时间、点位、来源、等级和描述，支持按模块复盘。</span></div>
         </div>
       </div>
     </section>
 
-    <section class="slide" data-section="demo">
+    <section class="slide" data-section="impl" data-order="8">
       <div class="topbar"></div>
       <div>
-        <div class="kicker">12 · 现场演示安排</div>
-        <h2>演示脚本：先用网页讲闭环，再切到 APP 或视频展示关键操作</h2>
+        <div class="kicker">03 · 胡雅欣负责模块</div>
+        <h2>环境监测：实时数据、阈值规则、异常记录三层展示</h2>
+        <p class="lead">这部分用于说明仓储环境是否安全，并把温度、湿度、可燃气体、PM2.5、光照等数据转化为可解释的告警。</p>
       </div>
       <div class="body">
-        <div class="demo-layout">
-          <article class="demo-card">
-            <h3>建议演示顺序</h3>
+        <div class="split">
+          <div class="phone-stack">
+            <div class="phone-shot"><span class="caption">实时数据</span><img src="assets/env_monitor.png" alt="环境实时数据"></div>
+            <div class="phone-shot"><span class="caption">阈值规则</span><img src="assets/threshold_rules.png" alt="环境阈值规则"></div>
+          </div>
+          <div class="grid">
+            <article class="card"><h3>实现内容</h3><ul><li>环境总览显示统一采样时间和整体状态。</li><li>温度、湿度、可燃气体、PM2.5、光照卡片展示实时值、阈值和单位。</li><li>趋势图展示最近 24 次采样，红线表示预警阈值。</li><li>阈值规则页把正常、预警、严重异常和处置建议写清楚。</li><li>异常记录页保存历史测试或运行中触发的环境异常。</li></ul></article>
+            <article class="card"><h3>展示价值</h3><ul><li>把抽象传感器数据转化为仓储巡检语言。</li><li>能解释“为什么这个点位需要处理”。</li><li>能与告警中心、AI 咨询和巡检点位绑定。</li></ul></article>
+            <div class="quote">讲解重点：我负责的不只是页面展示，还包括阈值规则、异常文案、记录结构和文档整理，让环境监测从数据展示变成可复盘的业务功能。</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="impl" data-order="9">
+      <div class="topbar"></div>
+      <div>
+        <div class="kicker">03 · 胡雅欣负责模块</div>
+        <h2>手动接管：异常时能够立即控制小车，保证现场安全</h2>
+        <p class="lead">手动接管是整个系统的安全兜底能力。自动巡检遇到堵塞、识别异常或导航不稳定时，操作者可以切换到遥控、按键、急停或高级轮速调节。</p>
+      </div>
+      <div class="body">
+        <div class="split">
+          <div class="image-frame"><span class="caption">遥控 + 视频预览 + 高级调节</span><img src="assets/manual_takeover.png" alt="手动接管页面"></div>
+          <div class="grid">
+            <article class="card"><h3>控制入口</h3><ul><li>按键控制：前、后、左、右、左转、右转、停止。</li><li>摇杆控制：适合连续方向控制。</li><li>急停按钮：异常场景下优先级最高。</li><li>视频预览：用于辅助判断前方通道情况。</li></ul></article>
+            <article class="card"><h3>高级调节</h3><ul><li>四轮速度独立调节：L1、R1、L2、R2。</li><li>支持全部归零、前进预设、后退预设和应用轮速。</li><li>体现麦克纳姆轮在狭窄通道内的横移和姿态调整能力。</li></ul></article>
+            <article class="card"><h3>文档与展示材料</h3><ul><li>同步完善需求分析文档、项目开发与管理文档。</li><li>整理功能截图、测试说明和展示页面素材。</li><li>把实际开发过程中的故障、暴雨停工和 7.14 送修情况写入管理材料。</li></ul></article>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="impl" data-order="12">
+      <div class="topbar"></div>
+      <div>
+        <div class="kicker">03 · 其他模块框架</div>
+        <h2>SLAM、雷达、视觉与 AI：共同支撑巡检异常闭环</h2>
+      </div>
+      <div class="body">
+        <div class="module-grid">
+          <article class="module"><h3>SLAM 导航</h3><ul><li>实车建图，生成仓储路线。</li><li>设计 P1-P6 巡检点和路线顺序。</li><li>调整成本地图参数，支持窄道通过。</li><li>定点巡检测试通过后接入展示流程。</li></ul></article>
+          <article class="module"><h3>激光雷达</h3><ul><li>前方、左侧、右侧距离检测。</li><li>通道畅通、减速、堵塞、占用状态。</li><li>近距离障碍物触发减速或停车。</li><li>联调中排查底盘和雷达串口问题。</li></ul></article>
+          <article class="module"><h3>视觉识别</h3><ul><li>YOLO 数据集构建和模型训练。</li><li>红瓶停止、警戒区识别、人员闯入。</li><li>视觉异常进入告警中心。</li><li>可扩展为货物堆积和占道识别。</li></ul></article>
+          <article class="module"><h3>AI 告警咨询</h3><ul><li>支持单条告警分析。</li><li>支持多选引用告警并提问。</li><li>输出共同风险、优先级和处置建议。</li><li>网络不可用时不影响基础告警展示。</li></ul></article>
+          <article class="module"><h3>告警中心</h3><ul><li>共 7 条记录，严重 3 条、预警 4 条。</li><li>支持汇总报告、复制报告、发送领导。</li><li>记录时间、点位、类别、等级和读数。</li></ul></article>
+          <article class="module"><h3>现场预案</h3><ul><li>视频 + 现场演示结合。</li><li>小车不可用时使用截图、报告和录制视频说明。</li><li>7.14 黑屏送修后，保留离线预览展示链路。</li></ul></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="result" data-order="13">
+      <div class="topbar"></div>
+      <div>
+        <div class="kicker">04 · 成果展示</div>
+        <h2>APP 页面成果：从巡检首页到环境、接管、告警和 AI 分析</h2>
+      </div>
+      <div class="body">
+        <div class="shots">
+          <div class="shot wide"><span class="caption">AI 告警中心与多选咨询</span><img src="assets/ai_alert.png" alt="AI 告警咨询"></div>
+          <div class="shot"><span class="caption">巡检首页</span><img src="assets/app_dashboard.png" alt="巡检首页"></div>
+          <div class="shot"><span class="caption">环境监测</span><img src="assets/env_monitor.png" alt="环境监测"></div>
+          <div class="shot"><span class="caption">手动接管</span><img src="assets/manual_takeover.png" alt="手动接管"></div>
+          <div class="shot"><span class="caption">阈值规则</span><img src="assets/threshold_rules.png" alt="阈值规则"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="result" data-order="14">
+      <div class="topbar"></div>
+      <div>
+        <div class="kicker">04 · 测试与演示</div>
+        <h2>展示方式：视频证明实车过程，现场演示说明 APP 闭环</h2>
+      </div>
+      <div class="body">
+        <div class="split">
+          <article class="panel">
+            <h3>演示顺序</h3>
             <ul>
-              <li><span class="highlight">连接配置：</span>输入小车 IP、TCP 6000、视频 6500，说明离线预览预案。</li>
-              <li><span class="highlight">巡检监控：</span>展示当前点位、下一点位、进度、模块入口和重点告警。</li>
-              <li><span class="highlight">人工接管：</span>展示摇杆、方向按钮、刹车和麦克纳姆轮控制思路。</li>
-              <li><span class="highlight">异常处置：</span>展示环境/雷达/视觉告警进入列表，再做 AI 汇总分析。</li>
+              <li><span class="highlight">连接小车：</span>配置 IP、TCP 端口和视频端口，说明在线与离线预览模式。</li>
+              <li><span class="highlight">巡检首页：</span>展示当前点位、下一点位、进度、重点告警和模块入口。</li>
+              <li><span class="highlight">环境监测：</span>讲实时数据、趋势图、阈值规则和异常记录。</li>
+              <li><span class="highlight">手动接管：</span>展示按键、摇杆、急停、视频预览和高级轮速调节。</li>
+              <li><span class="highlight">告警 AI：</span>展示汇总报告、多选引用、共同风险和优先级建议。</li>
             </ul>
-            <div class="quote">现场设备不稳定时：使用录制视频 + 本页截图成果 + 测试报告结论完成证明链。</div>
           </article>
-          <article class="demo-card">
-            <img src="assets/architecture-flow.png" alt="系统闭环流程图">
-          </div>
+          <article class="panel">
+            <h3>测试结论</h3>
+            <ul>
+              <li>构建打包、签名安装、页面运行主链路可用。</li>
+              <li>网络配置、遥控控制、巡检看板、环境页面、雷达和视觉入口已形成可展示界面。</li>
+              <li>告警记录、单条 AI 分析、多选 AI 咨询和汇总报告具备展示能力。</li>
+              <li>真实小车不稳定时，可使用录制视频、截图和测试报告完成证明链。</li>
+            </ul>
+            <div class="quote">7.14 上午小车黑屏并再次无法充电后，团队送修设备，同时整理结题 PPT 和演示流程，因此最终展示采用“视频 + 现场页面演示 + 文档证明”组合。</div>
+          </article>
         </div>
       </div>
     </section>
 
-    <section class="slide" data-section="closing">
+    <section class="slide" data-section="summary" data-order="15">
       <div class="topbar"></div>
       <div>
-        <div class="kicker">13 · 总结</div>
-        <h2>最终完成度：项目已具备课程答辩所需的设计说明、实现展示、测试结论和演示闭环</h2>
+        <div class="kicker">05 · 总结</div>
+        <h2>最终成果：完成从项目立项、过程管理到功能展示的完整闭环</h2>
       </div>
       <div class="body">
         <div class="grid cols-3" style="margin-top:18px; flex:1;">
-          <article class="card"><h3>已经完成</h3><ul><li>HarmonyOS / ArkTS 主应用工程</li><li>网络、控制、巡检、告警、AI 页面链路</li><li>使用手册和测试报告</li></ul></article>
-          <article class="card"><h3>答辩亮点</h3><ul><li>不是单页面原型，而是可运行应用结构</li><li>告警与 AI 分析增强项目辨识度</li><li>支持现场演示和离线预案</li></ul></article>
-          <article class="card"><h3>后续可扩展</h3><ul><li>接入真实 Jetson 小车与更多传感器</li><li>完善视觉货物异常模型</li><li>沉淀历史报表和巡检任务管理</li></ul></article>
+          <article class="card"><h3>已完成内容</h3><ul><li>狭域巡航 aiPotRol 品牌与项目定位。</li><li>HarmonyOS / ArkTS 主应用和模块页面。</li><li>环境、雷达、视觉、巡检、接管、告警和 AI 展示链路。</li><li>需求文档、开发管理文档、测试报告、使用手册和展示页面。</li></ul></article>
+          <article class="card"><h3>项目亮点</h3><ul><li>不是单一遥控页面，而是仓储巡检业务闭环。</li><li>环境阈值、通道占用、视觉异常统一进入告警中心。</li><li>AI 分析让告警从“提示”变成“可解释、可处置”。</li><li>手动接管和急停保障现场安全可控。</li></ul></article>
+          <article class="card"><h3>过程价值</h3><ul><li>面对电池故障、连续暴雨和 7.14 黑屏送修，团队持续调整计划。</li><li>硬件不可用时推进 APP、模型、PPT、文档和场景。</li><li>硬件可用时集中完成实车联调和功能验证。</li><li>最终保留视频、截图、文档和现场页面多重证明。</li></ul></article>
         </div>
-        <div class="quote">谢谢老师，欢迎批评指正。</div>
+        <div class="quote">狭域巡航 aiPotRol：让仓储狭窄区域巡检过程可视化、异常可记录、风险可分析、设备可接管。</div>
       </div>
     </section>
 
     <div class="controls" aria-label="翻页控制">
       <button class="btn" id="prev" aria-label="上一页">‹</button>
-      <div class="pager" id="pager">1 / 15</div>
+      <div class="pager" id="pager">1 / 13</div>
       <button class="btn" id="next" aria-label="下一页">›</button>
     </div>
     <div class="progress"><span id="progress"></span></div>
@@ -1312,16 +1315,16 @@
 
   <script>
     const groups = [
-      { label: "要求", sections: ["requirement"] },
-      { label: "立项", sections: ["project", "architecture"] },
-      { label: "管理", sections: ["management"] },
-      { label: "实现", sections: ["implementation", "screens", "test"] },
-      { label: "分工", sections: ["team"] },
-      { label: "周诗晴", sections: ["zsq-car", "zsq-radar-video", "zsq-radar-ui", "zsq-alert"] },
-      { label: "演示", sections: ["demo", "closing"] }
+      { label: "立项", sections: ["project"] },
+      { label: "管理", sections: ["manage", "team"] },
+      { label: "实现", sections: ["impl"] },
+      { label: "周诗晴", sections: ["zsq-car", "zsq-radar-video", "zsq-radar-ui"] },
+      { label: "成果", sections: ["result"] },
+      { label: "总结", sections: ["summary"] }
     ];
 
-    const slides = [...document.querySelectorAll(".slide")];
+    const slides = [...document.querySelectorAll(".slide")]
+      .sort((a, b) => Number(a.dataset.order) - Number(b.dataset.order));
     const pager = document.querySelector("#pager");
     const progress = document.querySelector("#progress");
     let current = 0;
@@ -1342,7 +1345,8 @@
 
       const section = slides[current].dataset.section;
       document.querySelectorAll(".topbar").forEach((bar) => {
-        bar.querySelector(".slide-no").textContent = `${current + 1} / ${slides.length}`;
+        const slideNo = bar.querySelector(".slide-no");
+        if (slideNo) slideNo.textContent = `${current + 1} / ${slides.length}`;
         bar.querySelectorAll(".nav span").forEach((item, i) => {
           item.classList.toggle("on", groups[i].sections.includes(section));
         });
