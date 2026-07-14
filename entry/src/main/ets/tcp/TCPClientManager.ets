@@ -1,6 +1,7 @@
 // 1. import 需要的 socket 模块。
 import socket from '@ohos.net.socket';
 import promptAction from '@ohos.promptAction';
+import { CAR_CONTROL_TCP_PORT } from '../utils/PreferencesUtils';
 
 const TAG = "TCPClientManager";
 
@@ -38,7 +39,7 @@ export class TCPClientManager {
     address: {
       address: "127.0.0.1",
       // family?: number,
-      port: 12345
+      port: CAR_CONTROL_TCP_PORT
     },
     timeout: 3000
   }

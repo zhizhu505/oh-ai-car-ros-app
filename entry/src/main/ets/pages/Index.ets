@@ -11,8 +11,6 @@ import { onlineColor } from '../utils/PatrolUiUtils';
 import { DEFAULT_CAR_IP, DEFAULT_TCP_PORT, DEFAULT_VIDEO_PORT, PreferencesUtils } from '../utils/PreferencesUtils';
 import preferences from '@ohos.data.preferences';
 
-const LEGACY_LIDAR_TCP_PORT = '6000';
-
 @Entry
 @Component
 struct Index {
@@ -652,9 +650,6 @@ struct ConnectCarOverlay {
 
   private async connectCar(): Promise<void> {
     this.connecting = true;
-    if (this.tcpPort === LEGACY_LIDAR_TCP_PORT) {
-      this.tcpPort = DEFAULT_TCP_PORT;
-    }
     await this.saveNetConfig();
     VideoComponents.ip = this.ip.trim();
     VideoComponents.port = Number.parseInt(this.videoPort.trim());

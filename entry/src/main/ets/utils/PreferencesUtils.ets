@@ -1,8 +1,8 @@
 import preferences from '@ohos.data.preferences';
 
 export const DEFAULT_CAR_IP = '192.168.43.5';
-export const DEFAULT_TCP_PORT = '12345';
-export const LIDAR_SNAPSHOT_PORT = 6000;
+export const DEFAULT_TCP_PORT = '6000';
+export const CAR_CONTROL_TCP_PORT = 6000;
 export const DEFAULT_VIDEO_PORT = '6500';
 
 /**首选项对象*/

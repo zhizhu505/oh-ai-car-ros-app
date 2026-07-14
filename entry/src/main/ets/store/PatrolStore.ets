@@ -212,7 +212,9 @@ export class PatrolStore {
       point: point,
       message: message,
       personDetected: false,
-      boxInChannel: isAlert
+      boxInChannel: isAlert,
+      redBottleDetected: false,
+      alertAreaDetected: isAlert
     });
     if (this.visionLogs.length > 80) {
       this.visionLogs.pop();

@@ -1,5 +1,5 @@
 import { TCPClientManager } from './TCPClientManager';
-import { LIDAR_SNAPSHOT_PORT } from '../utils/PreferencesUtils';
+import { CAR_CONTROL_TCP_PORT } from '../utils/PreferencesUtils';
 
 const TAG = 'PatrolCommandUtils';
 
@@ -257,7 +257,7 @@ export class PatrolCommandUtils {
   static async requestLidarSnapshot(): Promise<string> {
     const payload: SimpleCmdPayload = { cmd: 'get_lidar_snapshot' };
     const message = `${JSON.stringify(payload)}\n`;
-    return TCPClientManager.getInstance().requestMessageFromPort(LIDAR_SNAPSHOT_PORT, message);
+    return TCPClientManager.getInstance().requestMessageFromPort(CAR_CONTROL_TCP_PORT, message);
   }
 
   static async getRedBottleStatus(): Promise<RedBottleDemoStatus> {
