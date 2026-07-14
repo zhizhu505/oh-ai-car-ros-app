@@ -17,7 +17,7 @@ struct PatrolDashboard {
   @State currentPoint: string = 'P1';
   @State nextPoint: string = 'P2';
   @State progress: number = 0;
-  @State route: string = 'warehouse_A';
+  @State route: string = 'pipeline_route_01';
   @State lidarMessage: string = '等待数据';
   @State visionMessage: string = '等待数据';
   @State patrolPoints: PatrolPoint[] = [];

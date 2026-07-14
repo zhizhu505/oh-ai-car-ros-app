@@ -1,6 +1,7 @@
 import { TCPClientManager } from '../tcp/TCPClientManager';
 import { TCPClientSendUtils } from '../tcp/TCPClientSendUtils';
 import { PatrolMessageHandler } from '../tcp/PatrolMessageHandler';
+import { PatrolCommandUtils } from '../tcp/PatrolCommandUtils';
 import { PatrolStore } from '../store/PatrolStore';
 import promptAction from '@ohos.promptAction';
 import router from '@ohos.router';
@@ -322,6 +323,7 @@ struct LoginComponent {
         PatrolMessageHandler.handleMessage(message);
       };
       PatrolStore.getInstance().setOnline(true);
+      await PatrolCommandUtils.queryPatrol();
       TCPClientSendUtils.getInstance().init();
       this.connectSuccessRun();
     } else {

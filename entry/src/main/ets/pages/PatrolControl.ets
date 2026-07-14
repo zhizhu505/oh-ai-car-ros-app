@@ -1,6 +1,6 @@
 import router from '@ohos.router';
 import promptAction from '@ohos.promptAction';
-import { ControlMode, PatrolStatus, patrolStatusText } from '../model/PatrolModels';
+import { ControlMode, patrolStatusText } from '../model/PatrolModels';
 import { PatrolStore } from '../store/PatrolStore';
 import { PatrolCommandUtils } from '../tcp/PatrolCommandUtils';
 import { VideoComponents } from '../components/VideoComponents';
@@ -13,7 +13,7 @@ struct PatrolControl {
   @State controlMode: ControlMode = ControlMode.Manual;
   @State patrolStatusTextValue: string = '空闲';
   @State statusMessage: string = '等待连接';
-  @State route: string = 'warehouse_A';
+  @State route: string = 'pipeline_route_01';
   private refreshHandler: () => void = (): void => {
     this.refreshData();
   };
@@ -196,44 +196,35 @@ struct PatrolControl {
   }
 
   private async switchMode(mode: ControlMode): Promise<void> {
-    const cmdMode = mode === ControlMode.Auto ? 'auto' : 'manual';
-    const ok = await PatrolCommandUtils.setControlMode(cmdMode);
-    if (ok) {
-      PatrolStore.getInstance().updateVehicle({ controlMode: mode });
-      promptAction.showToast({ message: mode === ControlMode.Auto ? '已切换自动巡检' : '已切换手动遥控' });
-    } else {
-      PatrolStore.getInstance().updateVehicle({ controlMode: mode });
-      promptAction.showToast({ message: '命令已发送（本地模式已切换）' });
+    const store = PatrolStore.getInstance();
+    if (mode === ControlMode.Auto) {
+      promptAction.showToast({ message: '请通过“开始巡检”启动自动任务' });
+      return;
     }
+    if (store.vehicle.manualControlLocked) {
+      promptAction.showToast({ message: '巡检任务未结束，暂不能切换手动遥控' });
+      return;
+    }
+    store.updateVehicle({ controlMode: ControlMode.Manual });
+    promptAction.showToast({ message: '已切换手动遥控' });
   }
 
   private async sendPatrolCommand(action: string): Promise<void> {
-    const store = PatrolStore.getInstance();
     let ok = false;
     if (action === 'start') {
-      ok = await PatrolCommandUtils.startPatrol(this.route as 'warehouse_A' | 'warehouse_B');
-      store.updateVehicle({
-        controlMode: ControlMode.Auto,
-        patrolStatus: PatrolStatus.Patrolling,
-        message: '已发送开始巡检命令'
-      });
-      store.resetPatrolPoints();
+      ok = (await PatrolCommandUtils.startPatrol(this.route)).sent;
     } else if (action === 'pause') {
-      ok = await PatrolCommandUtils.pausePatrol();
-      store.updateVehicle({ patrolStatus: PatrolStatus.Paused, message: '已发送暂停巡检命令' });
+      ok = (await PatrolCommandUtils.pausePatrol()).sent;
     } else if (action === 'resume') {
-      ok = await PatrolCommandUtils.resumePatrol();
-      store.updateVehicle({ patrolStatus: PatrolStatus.Patrolling, message: '已发送继续巡检命令' });
+      ok = (await PatrolCommandUtils.resumePatrol()).sent;
     } else if (action === 'return') {
-      ok = await PatrolCommandUtils.returnHome();
-      store.updateVehicle({ patrolStatus: PatrolStatus.Returning, message: '已发送返回起点命令' });
+      ok = (await PatrolCommandUtils.returnHome()).sent;
     } else if (action === 'stop') {
-      ok = await PatrolCommandUtils.stopPatrol();
-      store.updateVehicle({ patrolStatus: PatrolStatus.Idle, message: '已发送停止巡检命令' });
+      ok = (await PatrolCommandUtils.stopPatrol()).sent;
     }
 
     promptAction.showToast({
-      message: ok ? '命令发送成功' : '命令已记录，请检查网络连接'
+      message: ok ? '请求已发送，等待 Jetson 确认' : '请求发送失败，请检查网络连接'
     });
   }
 }

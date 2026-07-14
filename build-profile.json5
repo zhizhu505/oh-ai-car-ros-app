@@ -1,27 +1,12 @@
 {
   "app": {
-    "signingConfigs": [
-      {
-        "name": "default",
-        "type": "HarmonyOS",
-        "material": {
-          "certpath": "C:\\Users\\28772\\.ohos\\config\\default_oh-ai-car-ros-app_SmMFOvKe5d20jnRbhKCN_ct1rsPzb-zgHUDVrhUbKFU=.cer",
-          "keyAlias": "debugKey",
-          "keyPassword": "0000001B2B13DFE60FD1ACF35707EC6013DAE5C17D50A74953A0247EA7D5557D8871B1D5C41103F453E9D0",
-          "profile": "C:\\Users\\28772\\.ohos\\config\\default_oh-ai-car-ros-app_SmMFOvKe5d20jnRbhKCN_ct1rsPzb-zgHUDVrhUbKFU=.p7b",
-          "signAlg": "SHA256withECDSA",
-          "storeFile": "C:\\Users\\28772\\.ohos\\config\\default_oh-ai-car-ros-app_SmMFOvKe5d20jnRbhKCN_ct1rsPzb-zgHUDVrhUbKFU=.p12",
-          "storePassword": "0000001BB9C428935F52C27FF626FBB356AB5427677A9E706B3CF58909BC34AADE7C6905AC28A638D7DB63"
-        }
-      }
-    ],
+    "signingConfigs": [],
     "products": [
       {
         "name": "default",
         "compatibleSdkVersion": "6.0.1(21)",
         "targetSdkVersion": "6.0.1(21)",
-        "runtimeOS": "HarmonyOS",
-        "signingConfig": "default"
+        "runtimeOS": "HarmonyOS"
       }
     ]
   },

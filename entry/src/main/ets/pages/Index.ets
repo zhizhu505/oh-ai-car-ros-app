@@ -27,6 +27,9 @@ struct Index {
 
       Scroll() {
         Column({ space: '12vp' }) {
+          PatrolLaunchCard()
+            .width('100%')
+
           Row({ space: '10vp' }) {
             ModuleEntry({
               title: '环境感知',
@@ -143,6 +146,64 @@ struct Index {
       offsetY: 2,
       color: '#00000030'
     })
+  }
+}
+
+@Component
+struct PatrolLaunchCard {
+  build() {
+    Column({ space: '12vp' }) {
+      Row({ space: '12vp' }) {
+        Stack() {
+          Column()
+            .width('46vp')
+            .height('46vp')
+            .backgroundColor($r('app.color.module2_accent') + '28')
+            .borderRadius('14vp')
+          Text('⌁')
+            .fontSize('27fp')
+            .fontColor($r('app.color.module2_accent'))
+            .fontWeight(FontWeight.Bold)
+        }
+        .alignContent(Alignment.Center)
+
+        Column({ space: '4vp' }) {
+          Text('地下管廊智能巡检')
+            .fontSize('16fp')
+            .fontColor($r('app.color.text'))
+            .fontWeight(FontWeight.Bold)
+            .maxLines(1)
+          Text('预设路线 P0 → P6 · 环境感知 · 异常避障')
+            .fontSize('11fp')
+            .fontColor($r('app.color.text_secondary'))
+            .maxLines(1)
+            .textOverflow({ overflow: TextOverflow.Ellipsis })
+        }
+        .alignItems(HorizontalAlign.Start)
+        .layoutWeight(1)
+      }
+      .width('100%')
+      .alignItems(VerticalAlign.Center)
+
+      Button('开始管廊巡检')
+        .width('100%')
+        .height('42vp')
+        .fontSize('15fp')
+        .fontColor(Color.White)
+        .fontWeight(FontWeight.Bold)
+        .backgroundColor($r('app.color.module2_accent'))
+        .borderRadius('21vp')
+        .shadow({ radius: 10, offsetX: 0, offsetY: 4, color: $r('app.color.module2_accent') + '55' })
+        .onClick((): void => {
+          router.pushUrl({ url: 'pages/Module2Navigation' });
+        })
+    }
+    .width('100%')
+    .padding('14vp')
+    .backgroundColor($r('app.color.card_background'))
+    .border({ width: '1vp', color: $r('app.color.module2_accent') + '70' })
+    .borderRadius('16vp')
+    .shadow(CardShadow)
   }
 }
 

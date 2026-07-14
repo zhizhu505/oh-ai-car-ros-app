@@ -16,6 +16,24 @@ export enum PatrolStatus {
   Returning = 'returning'
 }
 
+/**
+ * Jetson 巡检任务的生命周期状态。
+ *
+ * PatrolStatus 为旧页面保留的展示状态；任务是否真正已被 Jetson 接受、完成或失败，
+ * 必须以 taskState 为准。
+ */
+export enum PatrolTaskState {
+  Disconnected = 'DISCONNECTED',
+  Ready = 'READY',
+  Starting = 'STARTING',
+  Running = 'RUNNING',
+  Paused = 'PAUSED',
+  Stopping = 'STOPPING',
+  Succeeded = 'SUCCEEDED',
+  Failed = 'FAILED',
+  Canceled = 'CANCELED'
+}
+
 /** 控制模式 */
 export enum ControlMode {
   Manual = 'manual',
@@ -105,15 +123,27 @@ export interface VisionSnapshot {
 export interface VehicleSnapshot {
   online: boolean;
   patrolStatus: PatrolStatus;
+  taskState: PatrolTaskState;
   controlMode: ControlMode;
+  requestId: string;
+  routeId: string;
   currentPoint: string;
   nextPoint: string;
+  currentIndex: number;
+  totalWaypoints: number;
   progress: number;
   route: string;
+  failureCode: string;
+  finishedAt: string;
+  manualControlLocked: boolean;
   lidarStatus: ChannelStatus;
   visionStatus: string;
   message: string;
 }
+
+/** Jetson 端预置路线 ID；App 仅引用 ID，不保存地图坐标。 */
+export const DEFAULT_PATROL_ROUTE_ID = 'pipeline_route_01';
+export const RETURN_HOME_ROUTE_ID = 'pipeline_return_01';
 
 /** 仓库环境阈值 */
 export interface EnvThreshold {
@@ -126,12 +156,11 @@ export interface EnvThreshold {
 }
 
 export const DEFAULT_PATROL_POINTS: PatrolPoint[] = [
-  { id: 'P1', name: '仓库入口', visited: false, abnormal: false },
-  { id: 'P2', name: 'A区货架左侧', visited: false, abnormal: false },
-  { id: 'P3', name: 'A区货架右侧', visited: false, abnormal: false },
-  { id: 'P4', name: 'B区货架', visited: false, abnormal: false },
-  { id: 'P5', name: '危险品区域', visited: false, abnormal: false },
-  { id: 'P6', name: '返回起点', visited: false, abnormal: false }
+  { id: 'P1', name: '管道入口后巡检点', visited: false, abnormal: false },
+  { id: 'P2', name: '管道中段巡检点', visited: false, abnormal: false },
+  { id: 'P3', name: '阀门检查点', visited: false, abnormal: false },
+  { id: 'P4', name: '管廊末端异常检查点', visited: false, abnormal: false },
+  { id: 'P0_RETURN', name: '返回入口', visited: false, abnormal: false }
 ];
 
 export const ENV_THRESHOLDS: EnvThreshold[] = [
@@ -171,15 +200,53 @@ export function createDefaultVehicle(): VehicleSnapshot {
   return {
     online: false,
     patrolStatus: PatrolStatus.Idle,
+    taskState: PatrolTaskState.Disconnected,
     controlMode: ControlMode.Manual,
+    requestId: '',
+    routeId: DEFAULT_PATROL_ROUTE_ID,
     currentPoint: 'P1',
     nextPoint: 'P2',
+    currentIndex: 0,
+    totalWaypoints: 0,
     progress: 0,
-    route: 'warehouse_A',
+    route: DEFAULT_PATROL_ROUTE_ID,
+    failureCode: '',
+    finishedAt: '',
+    manualControlLocked: false,
     lidarStatus: ChannelStatus.Clear,
     visionStatus: 'normal',
     message: '等待连接'
   };
+}
+
+export function isPatrolTaskActive(state: PatrolTaskState): boolean {
+  return state === PatrolTaskState.Starting ||
+    state === PatrolTaskState.Running ||
+    state === PatrolTaskState.Paused ||
+    state === PatrolTaskState.Stopping;
+}
+
+export function patrolTaskStateText(state: PatrolTaskState): string {
+  switch (state) {
+    case PatrolTaskState.Ready:
+      return '导航就绪';
+    case PatrolTaskState.Starting:
+      return '正在请求启动';
+    case PatrolTaskState.Running:
+      return '巡检中';
+    case PatrolTaskState.Paused:
+      return '已暂停';
+    case PatrolTaskState.Stopping:
+      return '正在停止';
+    case PatrolTaskState.Succeeded:
+      return '任务完成';
+    case PatrolTaskState.Failed:
+      return '任务失败';
+    case PatrolTaskState.Canceled:
+      return '任务已取消';
+    default:
+      return '未连接';
+  }
 }
 
 export function createDefaultLidar(): LidarSnapshot {
