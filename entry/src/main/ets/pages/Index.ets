@@ -1,21 +1,32 @@
 import router from '@ohos.router';
-import promptAction from '@ohos.promptAction';
 import { PatrolStore } from '../store/PatrolStore';
-import { AlertRecord, AlertLevel, isPatrolTaskActive } from '../model/PatrolModels';
-import { PatrolCommandUtils } from '../tcp/PatrolCommandUtils';
+import promptAction from '@ohos.promptAction';
+import { TCPClientManager } from '../tcp/TCPClientManager';
+import { TCPClientSendUtils } from '../tcp/TCPClientSendUtils';
+import { PatrolMessageHandler } from '../tcp/PatrolMessageHandler';
+import { VideoComponents } from '../components/VideoComponents';
+import { AlertRecord, AlertLevel, PatrolStatus, patrolStatusText } from '../model/PatrolModels';
 import { CardShadow, CardShadowHover, ElevatedShadow } from '../styles/styles';
 import { onlineColor } from '../utils/PatrolUiUtils';
+import { DEFAULT_CAR_IP, DEFAULT_TCP_PORT, DEFAULT_VIDEO_PORT, PreferencesUtils } from '../utils/PreferencesUtils';
+import preferences from '@ohos.data.preferences';
 
 @Entry
 @Component
 struct Index {
   @State online: boolean = false;
+  @State showConnectDialog: boolean = true;
+  @State currentPoint: string = 'P2 A区管线左侧';
+  @State nextPoint: string = 'P3 窄通道';
+  @State patrolStatus: PatrolStatus = PatrolStatus.Idle;
+  @State progress: number = 0;
+  @State alerts: AlertRecord[] = [];
   private refreshHandler: () => void = (): void => {
-    this.online = PatrolStore.getInstance().vehicle.online;
+    this.refreshData();
   };
 
   aboutToAppear(): void {
-    this.online = PatrolStore.getInstance().vehicle.online;
+    this.refreshData();
     PatrolStore.getInstance().subscribe(this.refreshHandler);
   }
 
@@ -23,70 +34,120 @@ struct Index {
     PatrolStore.getInstance().unsubscribe(this.refreshHandler);
   }
 
+  refreshData(): void {
+    const store = PatrolStore.getInstance();
+    this.online = store.vehicle.online;
+    this.currentPoint = store.getPointName(store.vehicle.currentPoint);
+    this.nextPoint = store.getPointName(store.vehicle.nextPoint);
+    this.patrolStatus = store.vehicle.patrolStatus;
+    this.progress = store.vehicle.progress;
+    const sortedAlerts = store.alerts.slice(0) as AlertRecord[];
+    sortedAlerts.sort((left: AlertRecord, right: AlertRecord): number => {
+      return this.alertRank(right.level) - this.alertRank(left.level);
+    });
+    this.alerts = sortedAlerts.slice(0, 3) as AlertRecord[];
+  }
+
+  private alertRank(level: AlertLevel): number {
+    if (level === AlertLevel.Critical) {
+      return 3;
+    }
+    if (level === AlertLevel.Warning) {
+      return 2;
+    }
+    return 1;
+  }
+
   build() {
-    Column({ space: '0vp' }) {
-      this.Header()
+    Stack() {
+      Column({ space: '0vp' }) {
+        this.Header()
 
-      Scroll() {
-        Column({ space: '12vp' }) {
-          PatrolLaunchCard()
-            .width('100%')
+        Scroll() {
+          Column({ space: '12vp' }) {
+            VehicleStatusPanel({
+              online: this.online,
+              currentPoint: this.currentPoint,
+              nextPoint: this.nextPoint,
+              statusText: patrolStatusText(this.patrolStatus),
+              progress: this.progress
+            })
+              .width('100%')
 
-          Row({ space: '10vp' }) {
+            AlertPreviewCard({ alerts: this.alerts })
+              .width('100%')
+
+            Row({ space: '10vp' }) {
+              ModuleEntry({
+                title: '环境感知',
+                desc: '环境数据',
+                metric: '异常阈值',
+                accent: $r('app.color.module1_accent'),
+                url: 'pages/Module1Environment'
+              })
+                .layoutWeight(1)
+              ModuleEntry({
+                title: 'SLAM导航',
+                desc: '路线巡检',
+                metric: '巡检路线',
+                accent: $r('app.color.module2_accent'),
+                url: 'pages/Module2Navigation'
+              })
+                .layoutWeight(1)
+            }
+
+            Row({ space: '10vp' }) {
+              ModuleEntry({
+                title: '激光雷达',
+                desc: '通道安全',
+                metric: '通道占用',
+                accent: $r('app.color.module3_accent'),
+                url: 'pages/Module3Lidar'
+              })
+                .layoutWeight(1)
+              ModuleEntry({
+                title: '视觉识别',
+                desc: '视觉告警',
+                metric: '视觉告警',
+                accent: $r('app.color.module4_accent'),
+                url: 'pages/Module4Vision'
+              })
+                .layoutWeight(1)
+            }
+
             ModuleEntry({
-              title: '环境感知',
-              desc: '温湿度 / 烟雾 / 光照',
-              metric: '异常阈值',
-              accent: $r('app.color.module1_accent'),
-              url: 'pages/Module1Environment'
+              title: '手动接管',
+              desc: '遥控小车',
+              metric: '远程控制',
+              accent: $r('app.color.module5_accent'),
+              url: 'pages/RemoteControl'
             })
-              .layoutWeight(1)
-            ModuleEntry({
-              title: 'SLAM导航',
-              desc: '建图 / 路线 / 返回',
-              metric: '巡检路线',
-              accent: $r('app.color.module2_accent'),
-              url: 'pages/Module2Navigation'
-            })
-              .layoutWeight(1)
+              .width('100%')
+
           }
-
-          Row({ space: '10vp' }) {
-            ModuleEntry({
-              title: '激光雷达',
-              desc: '避障 / 占用 / 停车',
-              metric: '通道占用',
-              accent: $r('app.color.module3_accent'),
-              url: 'pages/Module3Lidar'
-            })
-              .layoutWeight(1)
-            ModuleEntry({
-              title: '视觉识别',
-              desc: '人员 / 货物 / 截图',
-              metric: '视觉告警',
-              accent: $r('app.color.module4_accent'),
-              url: 'pages/Module4Vision'
-            })
-              .layoutWeight(1)
-          }
-
-          ControlCard()
-            .width('100%')
-
-          AlertPreviewCard()
-            .width('100%')
-
-          PatrolSummary()
-            .width('100%')
+          .padding({ left: '16vp', right: '16vp', top: '14vp', bottom: '18vp' })
         }
-        .padding({ left: '14vp', right: '14vp', top: '12vp', bottom: '16vp' })
+        .layoutWeight(1)
+        .scrollBar(BarState.Off)
       }
-      .layoutWeight(1)
-      .scrollBar(BarState.Off)
+      .width('100%')
+      .height('100%')
+      .backgroundColor($r('app.color.window_background'))
+
+      if (this.showConnectDialog) {
+        ConnectCarOverlay({
+          onClose: (): void => {
+            this.showConnectDialog = false;
+          },
+          onConnected: (): void => {
+            this.showConnectDialog = false;
+            this.refreshData();
+          }
+        })
+      }
     }
     .width('100%')
     .height('100%')
-    .backgroundColor($r('app.color.window_background'))
   }
 
   @Builder
@@ -135,11 +196,15 @@ struct Index {
       .borderRadius('14vp')
       .border({ width: '1vp', color: $r('app.color.divider') })
 
-      NetworkButton()
+      NetworkButton({
+        onOpen: (): void => {
+          this.showConnectDialog = true;
+        }
+      })
     }
     .width('100%')
-    .height('56vp')
-    .padding({ left: '14vp', right: '14vp', top: '6vp', bottom: '6vp' })
+    .height('82vp')
+    .padding({ left: '14vp', right: '14vp', top: '30vp', bottom: '8vp' })
     .alignItems(VerticalAlign.Center)
     .backgroundColor($r('app.color.header_background'))
     .shadow({
@@ -148,100 +213,6 @@ struct Index {
       offsetY: 2,
       color: '#00000030'
     })
-  }
-}
-
-@Component
-struct PatrolLaunchCard {
-  @State online: boolean = false;
-  @State taskActive: boolean = false;
-  private refreshHandler: () => void = (): void => {
-    const vehicle = PatrolStore.getInstance().vehicle;
-    this.online = vehicle.online;
-    this.taskActive = isPatrolTaskActive(vehicle.taskState);
-  };
-
-  aboutToAppear(): void {
-    this.refreshHandler();
-    PatrolStore.getInstance().subscribe(this.refreshHandler);
-  }
-
-  aboutToDisappear(): void {
-    PatrolStore.getInstance().unsubscribe(this.refreshHandler);
-  }
-
-  build() {
-    Column({ space: '12vp' }) {
-      Row({ space: '12vp' }) {
-        Stack() {
-          Column()
-            .width('46vp')
-            .height('46vp')
-            .backgroundColor($r('app.color.module2_accent') + '28')
-            .borderRadius('14vp')
-          Text('⌁')
-            .fontSize('27fp')
-            .fontColor($r('app.color.module2_accent'))
-            .fontWeight(FontWeight.Bold)
-        }
-        .alignContent(Alignment.Center)
-
-        Column({ space: '4vp' }) {
-          Text('地下管廊智能巡检')
-            .fontSize('16fp')
-            .fontColor($r('app.color.text'))
-            .fontWeight(FontWeight.Bold)
-            .maxLines(1)
-          Text('预设路线 P0 → P6 · 环境感知 · 异常避障')
-            .fontSize('11fp')
-            .fontColor($r('app.color.text_secondary'))
-            .maxLines(1)
-            .textOverflow({ overflow: TextOverflow.Ellipsis })
-        }
-        .alignItems(HorizontalAlign.Start)
-        .layoutWeight(1)
-      }
-      .width('100%')
-      .alignItems(VerticalAlign.Center)
-
-      Button(this.taskActive ? '巡检进行中' : '开始管廊巡检')
-        .width('100%')
-        .height('42vp')
-        .fontSize('15fp')
-        .fontColor(Color.White)
-        .fontWeight(FontWeight.Bold)
-        .backgroundColor($r('app.color.module2_accent'))
-        .borderRadius('21vp')
-        .shadow({ radius: 10, offsetX: 0, offsetY: 4, color: $r('app.color.module2_accent') + '55' })
-        .enabled(this.online && !this.taskActive)
-        .opacity(this.online && !this.taskActive ? 1 : 0.55)
-        .onClick((): void => {
-          this.startPatrol();
-        })
-    }
-    .width('100%')
-    .padding('14vp')
-    .backgroundColor($r('app.color.card_background'))
-    .border({ width: '1vp', color: $r('app.color.module2_accent') + '70' })
-    .borderRadius('16vp')
-    .shadow(CardShadow)
-  }
-
-  private async startPatrol(): Promise<void> {
-    if (!this.online) {
-      promptAction.showToast({ message: '请先在网络设置中连接巡检小车' });
-      return;
-    }
-    const result = await PatrolCommandUtils.startPatrol();
-    if (!result.sent) {
-      promptAction.showToast({ message: '启动指令发送失败' });
-      return;
-    }
-    PatrolStore.getInstance().updateVehicle({
-      requestId: result.requestId,
-      message: '巡检启动指令已发送，等待小车确认'
-    });
-    router.pushUrl({ url: 'pages/Module2Navigation' });
   }
 }
 
@@ -268,6 +239,7 @@ struct SectionTitle {
 @Component
 struct NetworkButton {
   @State isHover: boolean = false;
+  onOpen: () => void = (): void => {};
 
   build() {
     Button() {
@@ -300,7 +272,7 @@ struct NetworkButton {
       this.isHover = isHover;
     })
     .onClick((): void => {
-      router.pushUrl({ url: 'pages/NetworkSettings' });
+      this.onOpen();
     })
   }
 }
@@ -315,34 +287,40 @@ struct ModuleEntry {
   @State isHover: boolean = false;
 
   build() {
-    Column({ space: '8vp' }) {
-      Row({ space: '8vp' }) {
+    Column({ space: '9vp' }) {
+      Row({ space: '7vp' }) {
         Column()
           .width('4vp')
-          .height('28vp')
+          .height('30vp')
           .backgroundColor(this.accent)
           .borderRadius('2vp')
-        Column({ space: '2vp' }) {
+        Column({ space: '4vp' }) {
           Text(this.title)
-            .fontSize('15fp')
+            .fontSize('16fp')
             .fontColor($r('app.color.text'))
             .fontWeight(FontWeight.Bold)
             .maxLines(1)
+          Text(this.desc)
+            .fontSize('11fp')
+            .fontColor($r('app.color.text_secondary'))
+            .maxLines(1)
+            .textOverflow({ overflow: TextOverflow.Ellipsis })
         }
         .alignItems(HorizontalAlign.Start)
         .layoutWeight(1)
+
+        Text('›')
+          .fontSize('20fp')
+          .fontColor(this.accent)
+          .fontWeight(FontWeight.Bold)
+          .opacity(0.9)
       }
       .width('100%')
       .alignItems(VerticalAlign.Center)
 
-      Column({ space: '6vp' }) {
-        Text(this.desc)
-          .fontSize('11fp')
-          .fontColor($r('app.color.text_secondary'))
-          .textAlign(TextAlign.Center)
-          .maxLines(1)
+      Row() {
         Text(this.metric)
-          .fontSize('10fp')
+          .fontSize('11fp')
           .fontColor(this.accent)
           .fontWeight(FontWeight.Bold)
           .textAlign(TextAlign.Center)
@@ -350,14 +328,14 @@ struct ModuleEntry {
           .backgroundColor(this.accent + '18')
           .borderRadius('10vp')
           .maxLines(1)
+        Blank()
       }
       .width('100%')
-      .justifyContent(FlexAlign.Center)
-      .alignItems(HorizontalAlign.Center)
+      .alignItems(VerticalAlign.Center)
     }
     .width('100%')
-    .height('110vp')
-    .padding({ left: '12vp', right: '12vp', top: '10vp', bottom: '10vp' })
+    .height('96vp')
+    .padding({ left: '12vp', right: '12vp', top: '12vp', bottom: '12vp' })
     .backgroundColor($r('app.color.card_background'))
     .borderRadius('14vp')
     .border({ width: this.isHover ? '2vp' : '1vp', color: this.isHover ? this.accent : $r('app.color.divider') })
@@ -405,8 +383,8 @@ struct ControlCard {
             .fontSize('14fp')
             .fontColor($r('app.color.text'))
             .fontWeight(FontWeight.Bold)
-          Text('视频预览 / 轮速调节 / 实时接管')
-            .fontSize('11fp')
+          Text('遥控 / 视频 / 接管')
+            .fontSize('12fp')
             .fontColor($r('app.color.text_secondary'))
             .maxLines(1)
         }
@@ -436,42 +414,23 @@ struct ControlCard {
 
 @Component
 struct AlertPreviewCard {
-  @State isHover: boolean = false;
-  @State alerts: AlertRecord[] = [];
-  private refreshHandler: () => void = (): void => {
-    this.loadAlerts();
-  };
-
-  aboutToAppear(): void {
-    this.loadAlerts();
-    PatrolStore.getInstance().subscribe(this.refreshHandler);
-  }
-
-  aboutToDisappear(): void {
-    PatrolStore.getInstance().unsubscribe(this.refreshHandler);
-  }
-
-  loadAlerts(): void {
-    this.alerts = PatrolStore.getInstance().alerts.slice(0, 1) as AlertRecord[];
-  }
+  @Prop alerts: AlertRecord[] = [];
 
   build() {
-    Column({ space: '8vp' }) {
+    Column({ space: '10vp' }) {
       Row() {
-        SectionTitle({ title: '告警预览' })
+        SectionTitle({ title: '重点告警' })
           .layoutWeight(1)
-        Text('查看记录')
-          .fontSize('12fp')
-          .fontColor($r('app.color.button_primary'))
-          .fontWeight(FontWeight.Bold)
-          .padding({ left: '10vp', right: '10vp', top: '4vp', bottom: '4vp' })
-          .backgroundColor($r('app.color.button_primary') + '16')
-          .borderRadius('10vp')
       }
       .width('100%')
 
       if (this.alerts.length > 0) {
-        this.AlertContent(this.alerts[0])
+        Column({ space: '8vp' }) {
+          ForEach(this.alerts, (item: AlertRecord) => {
+            this.AlertContent(item)
+          }, (item: AlertRecord) => item.id)
+        }
+        .width('100%')
       } else {
         Column({ space: '8vp' }) {
           Row({ space: '8vp' }) {
@@ -487,7 +446,7 @@ struct AlertPreviewCard {
               .fontWeight(FontWeight.Bold)
               .layoutWeight(1)
           }
-          Text('小车巡检过程中检测到的异常会显示在这里')
+          Text('暂无异常，AI监测待命')
             .fontSize('12fp')
             .fontColor($r('app.color.text_secondary'))
             .maxLines(1)
@@ -496,95 +455,460 @@ struct AlertPreviewCard {
         .padding('12vp')
         .backgroundColor($r('app.color.card_background'))
         .borderRadius('12vp')
-        .border({ width: '1vp', color: $r('app.color.divider') })
-        .shadow(CardShadow)
+        .border({ width: '1vp', color: $r('app.color.status_success') + '55' })
       }
     }
     .width('100%')
     .padding('12vp')
     .backgroundColor($r('app.color.card_background'))
     .borderRadius('14vp')
-    .border({ width: '1vp', color: this.isHover ? $r('app.color.alert_warning') : $r('app.color.divider') })
-    .shadow(this.isHover ? ElevatedShadow : CardShadow)
+    .border({ width: '1vp', color: this.alerts.length > 0 ? $r('app.color.alert_warning') + '70' : $r('app.color.divider') })
+    .shadow(this.alerts.length > 0 ? ElevatedShadow : CardShadow)
+    .onClick((): void => {
+      router.pushUrl({ url: 'pages/AlertRecords' });
+    })
   }
 
   @Builder
   AlertContent(alert: AlertRecord) {
-    Column({ space: '6vp' }) {
-      Row({ space: '6vp' }) {
-        Text(alert.level === AlertLevel.Critical ? '严重' : alert.level === AlertLevel.Warning ? '预警' : '提示')
-          .fontSize('10fp')
-          .fontColor($r('app.color.text_on_accent'))
-          .backgroundColor(alert.level === AlertLevel.Critical ? $r('app.color.alert_critical') : alert.level === AlertLevel.Warning ? $r('app.color.alert_warning') : $r('app.color.status_success'))
-          .padding({ left: '6vp', right: '6vp', top: '3vp', bottom: '3vp' })
-          .borderRadius('6vp')
+    Row({ space: '10vp' }) {
+      Text(alert.level === AlertLevel.Critical ? '严重' : alert.level === AlertLevel.Warning ? '预警' : '提示')
+        .fontSize('12fp')
+        .fontColor($r('app.color.text_on_accent'))
+        .fontWeight(FontWeight.Bold)
+        .backgroundColor(alert.level === AlertLevel.Critical ? $r('app.color.alert_critical') : alert.level === AlertLevel.Warning ? $r('app.color.alert_warning') : $r('app.color.status_success'))
+        .padding({ left: '8vp', right: '8vp', top: '4vp', bottom: '4vp' })
+        .borderRadius('8vp')
+
+      Column({ space: '4vp' }) {
         Text(alert.message)
-          .fontSize('13fp')
+          .fontSize(alert.level === AlertLevel.Critical ? '15fp' : '14fp')
           .fontColor($r('app.color.text'))
           .fontWeight(FontWeight.Bold)
-          .layoutWeight(1)
           .maxLines(1)
           .textOverflow({ overflow: TextOverflow.Ellipsis })
-        if (alert.aiAnalyzing) {
-          Text('AI分析中...')
-            .fontSize('10fp')
-            .fontColor($r('app.color.button_primary'))
+        Text(`${alert.time}  ${alert.point}`)
+          .fontSize('10fp')
+          .fontColor($r('app.color.text_secondary'))
+          .maxLines(1)
+          .textOverflow({ overflow: TextOverflow.Ellipsis })
+      }
+      .layoutWeight(1)
+      .alignItems(HorizontalAlign.Start)
+
+      if (alert.aiAnalyzing || alert.aiAnalysis) {
+        Text(alert.aiAnalyzing ? 'AI' : '完成')
+          .fontSize('10fp')
+          .fontColor($r('app.color.button_primary'))
+          .fontWeight(FontWeight.Bold)
+          .maxLines(1)
+      }
+    }
+    .width('100%')
+    .alignItems(VerticalAlign.Center)
+    .padding({ left: '12vp', right: '12vp', top: '10vp', bottom: '10vp' })
+    .backgroundColor(alert.level === AlertLevel.Critical ? $r('app.color.alert_critical') + '12' : alert.level === AlertLevel.Warning ? $r('app.color.alert_warning') + '12' : $r('app.color.card_background'))
+    .borderRadius('12vp')
+    .border({ width: '1vp', color: alert.level === AlertLevel.Critical ? $r('app.color.alert_critical') + '70' : alert.level === AlertLevel.Warning ? $r('app.color.alert_warning') + '70' : $r('app.color.divider') })
+  }
+}
+
+@Component
+struct ConnectCarOverlay {
+  @State ip: string = DEFAULT_CAR_IP;
+  @State tcpPort: string = DEFAULT_TCP_PORT;
+  @State videoPort: string = DEFAULT_VIDEO_PORT;
+  @State connecting: boolean = false;
+  onClose: () => void = (): void => {};
+  onConnected: () => void = (): void => {};
+
+  aboutToAppear(): void {
+    this.readNetConfig();
+  }
+
+  build() {
+    Column() {
+      Column({ space: '16vp' }) {
+        Column({ space: '5vp' }) {
+          Text('连接小车')
+            .fontSize('22fp')
+            .fontColor($r('app.color.text'))
+            .fontWeight(FontWeight.Bold)
+            .maxLines(1)
+          Text('连接后同步小车数据，也可以跳过进入预览')
+            .fontSize('12fp')
+            .fontColor($r('app.color.text_secondary'))
             .maxLines(1)
         }
+        .alignItems(HorizontalAlign.Center)
+        .width('100%')
+
+        Column({ space: '10vp' }) {
+          this.InputField('IP地址', this.ip, (value: string): void => {
+            this.ip = value;
+          })
+          this.InputField('TCP端口', this.tcpPort, (value: string): void => {
+            this.tcpPort = value;
+          })
+          this.InputField('视频端口', this.videoPort, (value: string): void => {
+            this.videoPort = value;
+          })
+        }
+        .width('100%')
+
+        Row({ space: '10vp' }) {
+          Button(this.connecting ? '连接中...' : '连接小车')
+            .layoutWeight(1)
+            .height('42vp')
+            .fontSize('14fp')
+            .fontColor($r('app.color.text_on_accent'))
+            .fontWeight(FontWeight.Bold)
+            .backgroundColor($r('app.color.button_primary'))
+            .borderRadius('14vp')
+            .shadow({
+              radius: 12,
+              offsetX: 0,
+              offsetY: 4,
+              color: '#6366F145'
+            })
+            .enabled(!this.connecting)
+            .onClick((): void => {
+              this.connectCar();
+            })
+
+          Button('跳过')
+            .layoutWeight(1)
+            .height('42vp')
+            .fontSize('14fp')
+            .fontColor($r('app.color.text'))
+            .fontWeight(FontWeight.Bold)
+            .backgroundColor($r('app.color.card_elevated'))
+            .border({ width: '1vp', color: $r('app.color.divider') })
+            .borderRadius('14vp')
+            .onClick((): void => {
+              this.enterPreview();
+            })
+        }
+        .width('100%')
+
+        Text('离线预览可浏览全部页面，连接后可控制小车')
+          .fontSize('11fp')
+          .fontColor($r('app.color.text_secondary'))
+          .width('100%')
+          .textAlign(TextAlign.Center)
+          .maxLines(1)
+      }
+      .width('88%')
+      .padding({ left: '20vp', right: '20vp', top: '22vp', bottom: '18vp' })
+      .backgroundColor($r('app.color.header_background'))
+      .borderRadius('16vp')
+      .border({ width: '1vp', color: $r('app.color.divider') })
+      .shadow({
+        radius: 24,
+        offsetX: 0,
+        offsetY: 12,
+        color: '#00000055'
+      })
+    }
+    .width('100%')
+    .height('100%')
+    .justifyContent(FlexAlign.Center)
+    .alignItems(HorizontalAlign.Center)
+    .backgroundColor('rgba(0, 0, 0, 0.55)')
+  }
+
+  @Builder
+  InputField(label: string, value: string, onChange: (value: string) => void) {
+    Column({ space: '6vp' }) {
+      Text(label)
+        .fontSize('12fp')
+        .fontColor($r('app.color.text_secondary'))
+        .width('100%')
+      TextInput({ text: value, placeholder: `请输入${label}` })
+        .height('42vp')
+        .fontSize('15fp')
+        .fontColor($r('app.color.text'))
+        .placeholderColor($r('app.color.text_secondary'))
+        .backgroundColor($r('app.color.edit_text_background'))
+        .border({ width: '1vp', color: $r('app.color.edit_text_border') })
+        .borderRadius('12vp')
+        .padding({ left: '12vp', right: '12vp' })
+        .onChange(onChange)
+    }
+    .width('100%')
+  }
+
+  private async enterPreview(): Promise<void> {
+    await this.saveNetConfig();
+    VideoComponents.ip = this.ip.trim();
+    VideoComponents.port = Number.parseInt(this.videoPort.trim());
+    PatrolStore.getInstance().setOnline(false);
+    PatrolStore.getInstance().updateVehicle({ message: '离线预览模式，未连接小车' });
+    promptAction.showToast({ message: '已进入离线预览模式' });
+    this.onClose();
+  }
+
+  private async connectCar(): Promise<void> {
+    this.connecting = true;
+    await this.saveNetConfig();
+    VideoComponents.ip = this.ip.trim();
+    VideoComponents.port = Number.parseInt(this.videoPort.trim());
+    TCPClientManager.getInstance().initNetAddress({
+      address: this.ip.trim(),
+      port: Number.parseInt(this.tcpPort.trim())
+    });
+    const connected = await TCPClientManager.getInstance().connect();
+    this.connecting = false;
+    if (connected) {
+      PatrolMessageHandler.init();
+      TCPClientManager.receiveMessage = (message: string): void => {
+        PatrolMessageHandler.handleMessage(message);
+      };
+      PatrolStore.getInstance().setOnline(true);
+      TCPClientSendUtils.getInstance().init();
+      promptAction.showToast({ message: '连接成功' });
+      this.onConnected();
+    } else {
+      PatrolStore.getInstance().setOnline(false);
+      promptAction.showToast({ message: '连接失败，请检查信息' });
+    }
+  }
+
+  private readNetConfig(): void {
+    const netUtils = PreferencesUtils.getInstance().netUtils;
+    if (!netUtils) {
+      return;
+    }
+    netUtils.getIP().then((v: preferences.ValueType): void => {
+      this.ip = String(v);
+    })
+    netUtils.getTcpPort().then((v: preferences.ValueType): void => {
+      this.tcpPort = String(v);
+    })
+    netUtils.getVideoPort().then((v: preferences.ValueType): void => {
+      this.videoPort = String(v);
+    })
+  }
+
+  private async saveNetConfig(): Promise<void> {
+    const netUtils = PreferencesUtils.getInstance().netUtils;
+    if (!netUtils) {
+      return;
+    }
+    this.ip = this.ip.trim();
+    this.tcpPort = this.tcpPort.trim();
+    this.videoPort = this.videoPort.trim();
+    await Promise.all([
+      netUtils.setIp(this.ip),
+      netUtils.setTcpPort(this.tcpPort),
+      netUtils.setVideoPort(this.videoPort)
+    ]);
+  }
+}
+
+@Component
+struct VehicleStatusPanel {
+  @Prop online: boolean = false;
+  @Prop currentPoint: string = '';
+  @Prop nextPoint: string = '';
+  @Prop statusText: string = '';
+  @Prop progress: number = 0;
+
+  build() {
+    Column({ space: '12vp' }) {
+      Row() {
+        Column({ space: '5vp' }) {
+          Row({ space: '7vp' }) {
+            Stack() {
+              Column()
+                .width('8vp')
+                .height('8vp')
+                .backgroundColor(this.online ? $r('app.color.status_success') : $r('app.color.alert_warning'))
+                .borderRadius('4vp')
+            }
+            .shadow({
+              radius: 10,
+              offsetX: 0,
+              offsetY: 0,
+              color: (this.online ? $r('app.color.status_success') : $r('app.color.alert_warning')) + '70'
+            })
+            Text(this.online ? '在线同步' : '离线预览')
+              .fontSize('11fp')
+              .fontColor(this.online ? $r('app.color.status_success') : $r('app.color.alert_warning'))
+              .fontWeight(FontWeight.Bold)
+              .maxLines(1)
+          }
+          .alignItems(VerticalAlign.Center)
+
+          Text('巡检小车状态')
+            .fontSize('17fp')
+            .fontColor($r('app.color.text'))
+            .fontWeight(FontWeight.Bold)
+            .maxLines(1)
+        }
+        .layoutWeight(1)
+        .alignItems(HorizontalAlign.Start)
+
+        Text(this.statusText)
+          .fontSize('12fp')
+          .fontColor($r('app.color.text'))
+          .fontWeight(FontWeight.Bold)
+          .padding({ left: '12vp', right: '12vp', top: '6vp', bottom: '6vp' })
+          .backgroundColor($r('app.color.button_primary') + '20')
+          .borderRadius('14vp')
+          .maxLines(1)
       }
       .width('100%')
       .alignItems(VerticalAlign.Center)
 
-      Row({ space: '6vp' }) {
-        Text(`[${alert.time}]`)
-          .fontSize('10fp')
-          .fontColor($r('app.color.text_secondary'))
-        Text(alert.point)
-          .fontSize('10fp')
-          .fontColor($r('app.color.text_secondary'))
+      Column({ space: '7vp' }) {
+        Row({ space: '10vp' }) {
+          Column({ space: '4vp' }) {
+            Text('当前点位')
+              .fontSize('10fp')
+              .fontColor($r('app.color.text_secondary'))
+              .maxLines(1)
+            Text(this.currentPoint)
+              .fontSize('20fp')
+              .fontColor($r('app.color.text'))
+              .fontWeight(FontWeight.Bold)
+              .maxLines(1)
+              .textOverflow({ overflow: TextOverflow.Ellipsis })
+          }
           .layoutWeight(1)
-          .maxLines(1)
-          .textOverflow({ overflow: TextOverflow.Ellipsis })
-      }
-      .width('100%')
+          .alignItems(HorizontalAlign.Start)
 
-      if (alert.aiAnalysis) {
-        Row({ space: '6vp' }) {
-          Text('AI:')
-            .fontSize('10fp')
-            .fontColor($r('app.color.button_primary'))
-            .fontWeight(FontWeight.Bold)
-          Text(alert.aiAnalysis.summary)
-            .fontSize('11fp')
-            .fontColor($r('app.color.text'))
-            .layoutWeight(1)
-            .maxLines(1)
-            .textOverflow({ overflow: TextOverflow.Ellipsis })
+          Column({ space: '4vp' }) {
+            Text('下一点位')
+              .fontSize('10fp')
+              .fontColor($r('app.color.text_secondary'))
+              .maxLines(1)
+            Text(this.nextPoint)
+              .fontSize('15fp')
+              .fontColor($r('app.color.text'))
+              .fontWeight(FontWeight.Bold)
+              .maxLines(1)
+              .textOverflow({ overflow: TextOverflow.Ellipsis })
+          }
+          .width('38%')
+          .alignItems(HorizontalAlign.Start)
         }
         .width('100%')
+        .alignItems(VerticalAlign.Bottom)
+
+        Stack() {
+          Column()
+            .width('100%')
+            .height('7vp')
+            .backgroundColor($r('app.color.card_elevated'))
+            .borderRadius('4vp')
+          Row()
+            .width(`${this.progress}%`)
+            .height('7vp')
+            .backgroundColor($r('app.color.button_primary'))
+            .borderRadius('4vp')
+            .shadow({
+              radius: 8,
+              offsetX: 0,
+              offsetY: 0,
+              color: '#6366F166'
+            })
+        }
+        .alignContent(Alignment.Start)
+        .width('100%')
+        .height('7vp')
+        .animation({ duration: 260, curve: Curve.EaseOut })
       }
+      .width('100%')
+      .padding({ left: '13vp', right: '13vp', top: '12vp', bottom: '12vp' })
+      .backgroundColor($r('app.color.card_elevated') + 'BD')
+      .borderRadius('13vp')
+
+      Row({ space: '8vp' }) {
+        Row({ space: '5vp' }) {
+          Text('定位')
+            .fontSize('10fp')
+            .fontColor($r('app.color.text_secondary'))
+          Text('已锁定')
+            .fontSize('11fp')
+            .fontColor($r('app.color.text'))
+            .fontWeight(FontWeight.Bold)
+            .maxLines(1)
+        }
+        .layoutWeight(1)
+        .justifyContent(FlexAlign.Center)
+        .padding({ top: '7vp', bottom: '7vp' })
+        .backgroundColor($r('app.color.card_elevated') + '99')
+        .borderRadius('12vp')
+
+        Row({ space: '5vp' }) {
+          Text('进度')
+            .fontSize('10fp')
+            .fontColor($r('app.color.text_secondary'))
+          Text(`${this.progress}%`)
+            .fontSize('12fp')
+            .fontColor($r('app.color.text'))
+            .fontWeight(FontWeight.Bold)
+            .maxLines(1)
+        }
+        .layoutWeight(1)
+        .justifyContent(FlexAlign.Center)
+        .padding({ top: '7vp', bottom: '7vp' })
+        .backgroundColor($r('app.color.card_elevated') + '99')
+        .borderRadius('12vp')
+      }
+      .width('100%')
     }
     .width('100%')
-    .padding('12vp')
-    .backgroundColor($r('app.color.card_background'))
-    .borderRadius('12vp')
-    .border({ width: '1vp', color: this.isHover ? (alert.level === AlertLevel.Critical ? $r('app.color.alert_critical') : alert.level === AlertLevel.Warning ? $r('app.color.alert_warning') : $r('app.color.divider')) : $r('app.color.divider') })
-    .shadow(this.isHover ? ElevatedShadow : CardShadow)
-    .onClick((): void => {
-      router.pushUrl({ url: 'pages/AlertRecords' });
+    .padding({ left: '14vp', right: '14vp', top: '14vp', bottom: '14vp' })
+    .backgroundColor($r('app.color.card_background') + 'F2')
+    .borderRadius('16vp')
+    .border({ width: '1vp', color: this.online ? $r('app.color.status_success') + '45' : $r('app.color.alert_warning') + '45' })
+    .shadow({
+      radius: 14,
+      offsetX: 0,
+      offsetY: 6,
+      color: '#00000038'
     })
-    .onHover((isHover: boolean): void => {
-      this.isHover = isHover;
-    })
+    .animation({ duration: 220, curve: Curve.EaseOut })
   }
 }
 
+@Component
+struct StatusPill {
+  @Prop label: string = '';
+  @Prop value: string = '';
+
+  build() {
+    Row() {
+      Column({ space: '3vp' }) {
+        Text(this.label)
+          .fontSize('10fp')
+          .fontColor($r('app.color.text_secondary'))
+          .opacity(0.78)
+          .maxLines(1)
+        Text(this.value)
+          .fontSize('15fp')
+          .fontColor($r('app.color.text'))
+          .fontWeight(FontWeight.Bold)
+          .maxLines(1)
+          .textOverflow({ overflow: TextOverflow.Ellipsis })
+      }
+      .alignItems(HorizontalAlign.Start)
+      .layoutWeight(1)
+    }
+    .width('100%')
+    .padding({ left: '12vp', right: '12vp', top: '10vp', bottom: '10vp' })
+    .backgroundColor($r('app.color.card_elevated'))
+    .borderRadius('10vp')
+  }
+}
 @Component
 struct PatrolSummary {
   build() {
     Column({ space: '8vp' }) {
       Row({ space: '8vp' }) {
-        SummaryItem({ label: '当前点位', value: 'P2 A区货架' })
+        SummaryItem({ label: '当前点位', value: 'P2 A区管线左侧' })
           .layoutWeight(1)
         SummaryItem({ label: '下一点位', value: 'P3 窄通道' })
           .layoutWeight(1)

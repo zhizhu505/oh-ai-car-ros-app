@@ -1,12 +1,9 @@
 // 1. import 需要的 socket 模块。
 import socket from '@ohos.net.socket';
 import promptAction from '@ohos.promptAction';
+import { CAR_CONTROL_TCP_PORT } from '../utils/PreferencesUtils';
 
 const TAG = "TCPClientManager";
-
-/** Jetson patrol TCP server defaults. Network Settings can override these onsite. */
-export const PATROL_HOST: string = '192.168.43.5';
-export const PATROL_PORT: number = 5000;
 
 
 class SocketInfo {
@@ -40,9 +37,9 @@ export class TCPClientManager {
    */
   private options: socket.TCPConnectOptions = {
     address: {
-      address: PATROL_HOST,
+      address: "127.0.0.1",
       // family?: number,
-      port: PATROL_PORT
+      port: CAR_CONTROL_TCP_PORT
     },
     timeout: 3000
   }
@@ -64,20 +61,13 @@ export class TCPClientManager {
    * @returns 是否连接成功
    */
   public async connect() {
-
-    // 异步函数，用来获取当前连接状态
-    let isConnect = await this.isConnect()
-
-    // 如果当前是连接成功的，那么先断开连接
-    if (isConnect == true) {
+    const wasConnected = await this.isConnect();
+    if (wasConnected) {
       this.socket.close();
-      // this.socket = undefined;
     }
 
     this.socket = socket.constructTCPSocketInstance();
     try {
-      // 绑定本机IP地址（在3.2R）
-      await this.socket.bind({ address: '0.0.0.0', family: 1 })
       // 绑定目标服务端IP地址
       await this.socket.connect(this.options)
       this.showInfo(`连接成功`)
@@ -136,9 +126,6 @@ export class TCPClientManager {
       return false;
     }
     console.log(TAG, `isConnect`,
-      `state = ${state == undefined} `)
-
-    console.log(TAG, `isConnect`,
       `isClose = ${state.isClose} ` +
         `isConnected = ${state.isConnected}`)
     // 如果没有断开连接 && 已经成功连接上
@@ -152,22 +139,125 @@ export class TCPClientManager {
    * @returns 是否连接成功
    */
   public async sendMessage(message: string) {
-    console.log(TAG, `sendMessage`, `message=${message}`)
-    // 如果正常那么发送数据
-    if (await this.isConnect() == true) {
-      console.log(TAG, `sendMessage-------------------------`, `message=${message}`)
-      await this.socket.send({ data: message })
-      return true
+    console.log(TAG, `sendMessage called, target=${this.options.address.address}:${this.options.address.port}, message=${message}`)
+    const isConnected = await this.isConnect();
+    console.log(TAG, `sendMessage connection status: ${isConnected}`)
+    
+    if (isConnected == true) {
+      console.log(TAG, `sendMessage sending data: ${message}`)
+      try {
+        await this.socket.send({ data: message })
+        console.log(TAG, `sendMessage success: ${message}`)
+        return true
+      } catch (e) {
+        console.error(TAG, `sendMessage failed with error: ${JSON.stringify(e)}`)
+        return false
+      }
     }
 
-    // 如果断线了需要重连
-    console.log(TAG, '正在重连')
+    console.log(TAG, 'sendMessage connection lost, reconnecting...')
     if (await this.connect()) {
-      await this.socket.send({ data: message })
-      return true;
+      console.log(TAG, `sendMessage reconnected, sending data: ${message}`)
+      try {
+        await this.socket.send({ data: message })
+        console.log(TAG, `sendMessage success after reconnect: ${message}`)
+        return true;
+      } catch (e) {
+        console.error(TAG, `sendMessage failed after reconnect: ${JSON.stringify(e)}`)
+        return false
+      }
     }
+    console.error(TAG, `sendMessage failed: could not reconnect`)
     return false;
 
+  }
+
+  public async sendMessageToPort(port: number, message: string): Promise<boolean> {
+    console.log(TAG, `sendMessageToPort called, port=${port}, address=${this.options.address.address}, message=${message}`);
+    const tempSocket = socket.constructTCPSocketInstance();
+    try {
+      console.log(TAG, `sendMessageToPort binding to 0.0.0.0`);
+      await tempSocket.bind({ address: '0.0.0.0', family: 1 });
+      console.log(TAG, `sendMessageToPort connecting to ${this.options.address.address}:${port}`);
+      await tempSocket.connect({
+        address: {
+          address: this.options.address.address,
+          family: this.options.address.family,
+          port: port
+        },
+        timeout: 3000
+      });
+      console.log(TAG, `sendMessageToPort connected successfully`);
+      console.log(TAG, `sendMessageToPort sending: ${message}`);
+      await tempSocket.send({ data: message });
+      console.log(TAG, `sendMessageToPort send success`);
+      tempSocket.close();
+      return true;
+    } catch (e) {
+      console.error(TAG, `sendMessageToPort failed, port=${port}, address=${this.options.address.address}, error=${JSON.stringify(e)}, message=${message}`);
+      try {
+        tempSocket.close();
+      } catch (closeErr) {
+        console.error(TAG, `sendMessageToPort close failed: ${JSON.stringify(closeErr)}`);
+      }
+      return false;
+    }
+  }
+
+  public async requestMessageFromPort(port: number, message: string): Promise<string> {
+    const tempSocket = socket.constructTCPSocketInstance();
+    let finished: boolean = false;
+    try {
+      await tempSocket.bind({ address: '0.0.0.0', family: 1 })
+      await tempSocket.connect({
+        address: {
+          address: this.options.address.address,
+          family: this.options.address.family,
+          port: port
+        },
+        timeout: 3000
+      })
+
+      const responsePromise: Promise<string> = new Promise((resolve, reject): void => {
+        const timer: number = setTimeout((): void => {
+          if (finished) {
+            return;
+          }
+          finished = true;
+          tempSocket.close();
+          reject(new Error('request timeout'));
+        }, 3000);
+
+        tempSocket.on('message', (value: SocketInfo): void => {
+          if (finished) {
+            return;
+          }
+          finished = true;
+          clearTimeout(timer);
+          const messageView = TCPClientManager.bufferToString(value.message);
+          tempSocket.close();
+          resolve(messageView);
+        })
+
+        tempSocket.on('close', (): void => {
+          if (finished) {
+            return;
+          }
+          finished = true;
+          clearTimeout(timer);
+          reject(new Error('socket closed'));
+        })
+      });
+
+      await tempSocket.send({ data: message })
+      return await responsePromise;
+    } catch (e) {
+      console.error(TAG, 'requestMessageFromPort failed', JSON.stringify(e))
+      if (!finished) {
+        tempSocket.close();
+      }
+      return '';
+    }
   }
 
   /**关闭连接*/
@@ -187,6 +277,15 @@ export class TCPClientManager {
   /**接收数据*/
   private static _receiveMessage = (message: string) => {
   };
+
+  private static bufferToString(buffer: ArrayBuffer): string {
+    let messageView = '';
+    const uint8Array = new Uint8Array(buffer);
+    for (let i: number = 0; i < buffer.byteLength; i++) {
+      messageView += String.fromCharCode(uint8Array[i]);
+    }
+    return messageView;
+  }
 
   /** 接收数据的setder */
   public static set receiveMessage(value: (message: string) => void) {

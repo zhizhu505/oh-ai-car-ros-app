@@ -1,6 +1,6 @@
 {
   "icon": {
     "foreground": "$media:project_logo",
-    "background": "#FFFFFF"
+    "background": "#00000000"
   }
 }

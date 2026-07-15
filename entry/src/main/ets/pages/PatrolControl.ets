@@ -66,7 +66,7 @@ struct PatrolControl {
                 bgColor: $r('app.color.status_active')
               })
             }
-            Text(`当前路线：${this.route}`)
+            Text(`当前路线：${this.route === 'warehouse_B' ? '管廊支线' : '管廊主线'}`)
               .fontSize('14fp')
               .fontColor($r('app.color.text_secondary'))
               .maxLines(1)

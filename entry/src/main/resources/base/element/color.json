@@ -5,6 +5,10 @@
       "value": "#0A0F1A"
     },
     {
+      "name": "start_window_background_transparent",
+      "value": "#00000000"
+    },
+    {
       "name": "window_background",
       "value": "#0A0F1A"
     },

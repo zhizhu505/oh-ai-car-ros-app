@@ -4,7 +4,6 @@ import {
   ENV_THRESHOLDS,
   EnvSnapshot,
   EnvThreshold,
-  PRESSURE_THRESHOLD,
   alertLevelText
 } from '../model/PatrolModels';
 import { PatrolStore } from '../store/PatrolStore';
@@ -15,16 +14,13 @@ import { CardShadow } from '../styles/styles';
 @Entry
 @Component
 struct EnvironmentMonitor {
-  @State point: string = '-';
   @State updateTime: string = '-';
   @State level: AlertLevel = AlertLevel.Normal;
   @State temperature: number = 0;
   @State humidity: number = 0;
-  @State smoke: number = 0;
   @State gas: number = 0;
   @State light: number = 0;
   @State pm25: number = 0;
-  @State pressure: number = 0;
   private refreshHandler: () => void = (): void => {
     this.refreshData();
   };
@@ -40,23 +36,20 @@ struct EnvironmentMonitor {
 
   refreshData(): void {
     const env: EnvSnapshot = PatrolStore.getInstance().env;
-    this.point = env.point;
     this.updateTime = env.updateTime;
     this.level = env.level;
     this.temperature = env.temperature;
     this.humidity = env.humidity;
-    this.smoke = env.smoke;
     this.gas = env.gas;
     this.light = env.light;
     this.pm25 = env.pm25;
-    this.pressure = env.pressure;
   }
 
   build() {
     Column({ space: '10vp' }) {
       PageHeader({
         title: '环境数据监测',
-        subtitle: `当前点位：${this.point}`,
+        subtitle: '地下管廊环境总览',
         accentColor: $r('app.color.button_primary')
       })
 
@@ -89,11 +82,9 @@ struct EnvironmentMonitor {
         Column({ space: '10vp' }) {
           EnvCard({ title: '温度', value: `${this.temperature}`, unit: '℃', threshold: ENV_THRESHOLDS[0] })
           EnvCard({ title: '湿度', value: `${this.humidity}`, unit: '%', threshold: ENV_THRESHOLDS[1] })
-          EnvCard({ title: '烟雾', value: `${this.smoke}`, unit: 'ppm', threshold: ENV_THRESHOLDS[2] })
-          EnvCard({ title: '可燃气体', value: `${this.gas}`, unit: 'ppm', threshold: ENV_THRESHOLDS[3] })
+          EnvCard({ title: '可燃气体', value: `${this.gas}`, unit: 'ppm', threshold: ENV_THRESHOLDS[2] })
+          EnvCard({ title: 'PM2.5', value: `${this.pm25}`, unit: 'μg/m³', threshold: ENV_THRESHOLDS[3] })
           EnvCard({ title: '光照', value: `${this.light}`, unit: 'lux', threshold: ENV_THRESHOLDS[4] })
-          EnvCard({ title: 'PM2.5', value: `${this.pm25}`, unit: 'μg/m³', threshold: ENV_THRESHOLDS[5] })
-          EnvCard({ title: '气压', value: `${this.pressure}`, unit: 'hPa', threshold: PRESSURE_THRESHOLD })
         }
         .width('100%')
       }

@@ -6,12 +6,14 @@ import {
   ChannelStatus,
   ControlMode,
   DEFAULT_PATROL_POINTS,
+  EnvHistoryRecord,
   EnvSnapshot,
   LidarSnapshot,
   PatrolPoint,
   PatrolStatus,
   PatrolTaskState,
   VehicleSnapshot,
+  VisionLogRecord,
   VisionSnapshot,
   createDefaultEnv,
   createDefaultLidar,
@@ -23,17 +25,20 @@ import { analyzeAlarm } from '../utils/DeepSeekUtil';
 type StoreListener = () => void;
 
 /**
- * 仓储巡检全局状态
+ * 地下管廊巡检全局状态
  */
 export class PatrolStore {
   private static instance: PatrolStore;
   private listeners: StoreListener[] = [];
   private alertIdSeed: number = 1;
+  private lastLidarAlertSignature: string = '';
 
   env: EnvSnapshot = createDefaultEnv();
+  envHistory: EnvHistoryRecord[] = [];
   vehicle: VehicleSnapshot = createDefaultVehicle();
   lidar: LidarSnapshot = createDefaultLidar();
   vision: VisionSnapshot = createDefaultVision();
+  visionLogs: VisionLogRecord[] = [];
   patrolPoints: PatrolPoint[] = DEFAULT_PATROL_POINTS.map((p: PatrolPoint): PatrolPoint => {
     return { id: p.id, name: p.name, visited: p.visited, abnormal: p.abnormal };
   });
@@ -75,6 +80,38 @@ export class PatrolStore {
 
   updateEnv(data: EnvSnapshot): void {
     this.env = data;
+    const record: EnvHistoryRecord = {
+      time: data.updateTime,
+      temperature: data.temperature,
+      humidity: data.humidity,
+      gas: data.gas,
+      light: data.light,
+      pm25: data.pm25
+    };
+    this.envHistory.push(record);
+    if (this.envHistory.length > 48) {
+      this.envHistory.shift();
+    }
+    this.notify();
+  }
+
+  setEnvHistory(history: EnvHistoryRecord[]): void {
+    this.envHistory = history.slice(-48) as EnvHistoryRecord[];
+    if (this.envHistory.length > 0) {
+      const latest = this.envHistory[this.envHistory.length - 1];
+      this.env = {
+        point: '地下管廊',
+        temperature: latest.temperature,
+        humidity: latest.humidity,
+        smoke: 0,
+        gas: latest.gas,
+        light: latest.light,
+        pressure: 1012,
+        pm25: latest.pm25,
+        level: AlertLevel.Normal,
+        updateTime: latest.time
+      };
+    }
     this.notify();
   }
 
@@ -140,16 +177,95 @@ export class PatrolStore {
   updateLidar(data: LidarSnapshot): void {
     this.lidar = data;
     this.vehicle.lidarStatus = data.channelStatus;
+    this.syncLidarAlert(data);
+    this.notify();
+  }
+
+  setLidarAvoidanceEnabled(enabled: boolean): void {
+    this.lidar.avoidanceEnabled = enabled;
+    this.lidar.avoidanceStatus = enabled ? 'scanning' : 'idle';
+    this.notify();
+  }
+
+  setLidarTrackingEnabled(enabled: boolean): void {
+    this.lidar.trackingEnabled = enabled;
+    if (enabled) {
+      this.lidar.avoidanceStatus = 'tracking';
+    } else if (!this.lidar.avoidanceEnabled) {
+      this.lidar.avoidanceStatus = 'idle';
+    }
+    this.notify();
+  }
+
+  updateLidarAvoidanceStatus(status: 'idle' | 'scanning' | 'avoiding' | 'tracking'): void {
+    this.lidar.avoidanceStatus = status;
     this.notify();
   }
 
   updateVision(data: VisionSnapshot): void {
     this.vision = data;
-    this.vehicle.visionStatus = data.personDetected || data.boxInChannel ? 'alert' : 'normal';
+    this.vehicle.visionStatus = data.personDetected || data.boxInChannel ||
+      data.redBottleDetected || data.alertAreaDetected ? 'alert' : 'normal';
+    const latest = this.visionLogs.length > 0 ? this.visionLogs[0] : undefined;
+    const isDuplicate = latest !== undefined &&
+      latest.time === data.updateTime &&
+      latest.point === data.point &&
+      latest.message === data.message &&
+      latest.personDetected === data.personDetected &&
+      latest.boxInChannel === data.boxInChannel &&
+      latest.redBottleDetected === data.redBottleDetected &&
+      latest.alertAreaDetected === data.alertAreaDetected;
+    if (!isDuplicate) {
+      const record: VisionLogRecord = {
+        time: data.updateTime,
+        point: data.point,
+        message: data.message,
+        personDetected: data.personDetected,
+        boxInChannel: data.boxInChannel,
+        redBottleDetected: data.redBottleDetected,
+        alertAreaDetected: data.alertAreaDetected
+      };
+      this.visionLogs.unshift(record);
+      if (this.visionLogs.length > 80) {
+        this.visionLogs.pop();
+      }
+    }
+    this.notify();
+  }
+
+  addVisionLog(message: string, point: string = '视觉AI', isAlert: boolean = false): void {
+    const now = new Date();
+    const hour = now.getHours().toString().padStart(2, '0');
+    const minute = now.getMinutes().toString().padStart(2, '0');
+    const second = now.getSeconds().toString().padStart(2, '0');
+    this.visionLogs.unshift({
+      time: `${hour}:${minute}:${second}`,
+      point: point,
+      message: message,
+      personDetected: false,
+      boxInChannel: isAlert,
+      redBottleDetected: false,
+      alertAreaDetected: isAlert
+    });
+    if (this.visionLogs.length > 80) {
+      this.visionLogs.pop();
+    }
+    this.vision = {
+      point: point,
+      personDetected: false,
+      boxInChannel: isAlert,
+      redBottleDetected: false,
+      alertAreaDetected: isAlert,
+      recommendedAction: isAlert ? 'avoid_left' : 'forward',
+      message: message,
+      imageUrl: this.vision.imageUrl,
+      updateTime: `${hour}:${minute}:${second}`
+    };
     this.notify();
   }
 
   addAlert(record: AlertRecord): void {
+    record.aiAnalyzing = false;
     this.alerts.unshift(record);
     if (this.alerts.length > 100) {
       this.alerts.pop();
@@ -157,6 +273,24 @@ export class PatrolStore {
     this.markPointAbnormal(record.point);
     this.notify();
     this.triggerAiAnalysis(record);
+  }
+
+  private createLocalAiAnalysis(record: AlertRecord): AiAnalysisResult {
+    let risk = '需现场复核异常来源，确认是否影响巡检安全。';
+    if (record.level === AlertLevel.Critical) {
+      risk = '严重告警可能影响通道通行、人员安全或设备运行，需要优先处理。';
+    } else if (record.level === AlertLevel.Warning) {
+      risk = '预警告警可能代表现场状态开始偏离正常范围，需要及时复核。';
+    }
+    return {
+      summary: `${record.point}出现${record.message}`,
+      risk: risk,
+      solve: [
+        '到告警点位进行现场复核，确认异常是否真实存在。',
+        '根据告警类型处理障碍物、人员闯入、环境异常或设备检测异常。',
+        '处置后复测并记录结果，确认告警状态恢复。'
+      ]
+    };
   }
 
   private async triggerAiAnalysis(record: AlertRecord): Promise<void> {
@@ -238,7 +372,31 @@ export class PatrolStore {
   }
 
   getAlertsByCategory(category: string): AlertRecord[] {
-    return this.alerts.filter((item: AlertRecord): boolean => item.category === category);
+    return this.alerts.filter((item: AlertRecord): boolean => {
+      return item.category === category || item.category.startsWith(`${category}_`);
+    });
+  }
+
+  private syncLidarAlert(data: LidarSnapshot): void {
+    if (data.channelStatus === ChannelStatus.Clear) {
+      this.lastLidarAlertSignature = '';
+      return;
+    }
+    let category: string = 'lidar_dynamic';
+    let level: AlertLevel = AlertLevel.Warning;
+    if (data.channelStatus === ChannelStatus.Blocked) {
+      category = 'lidar_block';
+      level = AlertLevel.Critical;
+    } else if (data.channelStatus === ChannelStatus.Occupied) {
+      category = 'lidar_occupied';
+      level = AlertLevel.Critical;
+    }
+    const signature = `${data.point}|${data.channelStatus}|${data.message}`;
+    if (signature === this.lastLidarAlertSignature) {
+      return;
+    }
+    this.lastLidarAlertSignature = signature;
+    this.createAlert(data.updateTime, data.point, category, data.message, level);
   }
 
   private syncPatrolPoints(): void {

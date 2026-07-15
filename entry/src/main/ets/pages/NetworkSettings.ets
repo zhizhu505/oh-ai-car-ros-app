@@ -1,11 +1,10 @@
-import { PATROL_HOST, PATROL_PORT, TCPClientManager } from '../tcp/TCPClientManager';
+import { TCPClientManager } from '../tcp/TCPClientManager';
 import { TCPClientSendUtils } from '../tcp/TCPClientSendUtils';
 import { PatrolMessageHandler } from '../tcp/PatrolMessageHandler';
-import { PatrolCommandUtils } from '../tcp/PatrolCommandUtils';
 import { PatrolStore } from '../store/PatrolStore';
 import promptAction from '@ohos.promptAction';
 import router from '@ohos.router';
-import { PreferencesUtils } from '../utils/PreferencesUtils';
+import { DEFAULT_CAR_IP, DEFAULT_TCP_PORT, DEFAULT_VIDEO_PORT, PreferencesUtils } from '../utils/PreferencesUtils';
 import { VideoComponents } from '../components/VideoComponents';
 import { ButtonShadow, CardShadow, ElevatedShadow, CardPadding, ButtonRadius } from '../styles/styles';
 import { MyUtils } from '../utils/MyUtils';
@@ -40,10 +39,10 @@ struct NetworkSettings {
         Scroll() {
           Column({ space: '16vp' }) {
             Column({ space: '12vp' }) {
-              FlowStep({ step: '01', text: '环境感知 · 温湿度/烟雾监测', icon: '🌡️' })
+              FlowStep({ step: '01', text: '环境感知 · 温湿度/气体/颗粒物', icon: '🌡️' })
               FlowStep({ step: '02', text: 'SLAM导航 · 多点自动巡检', icon: '🗺️' })
               FlowStep({ step: '03', text: '激光雷达 · 通道占用检测', icon: '📡' })
-              FlowStep({ step: '04', text: '视觉识别 · 人员/货物异常', icon: '👁️' })
+              FlowStep({ step: '04', text: '视觉识别 · 人员/杂物异常', icon: '👁️' })
               FlowStep({ step: '05', text: 'APP监控 · 告警与远程控制', icon: '🎮' })
             }
             .width('100%')
@@ -121,7 +120,7 @@ struct NetworkSettings {
     .width('100%')
     .height('100%')
     .justifyContent(FlexAlign.Center)
-    .backgroundColor('rgba(0, 0, 0, 0.6)')
+    .backgroundColor('rgba(0, 0, 0, 0.52)')
   }
 }
 
@@ -195,9 +194,9 @@ struct LoginComponent {
   TextWidth: Length = '72vp';
   FontSize: Length = '15fp';
   BlankWidth: Length = '10vp';
-  @State ip: string = PATROL_HOST;
-  @State tcpPort: string = `${PATROL_PORT}`;
-  @State videoPort: string = '6500';
+  @State ip: string = DEFAULT_CAR_IP;
+  @State tcpPort: string = DEFAULT_TCP_PORT;
+  @State videoPort: string = DEFAULT_VIDEO_PORT;
   @State connecting: boolean = false;
   connectSuccessRun: () => void = (): void => {
   };
@@ -209,10 +208,10 @@ struct LoginComponent {
   }
 
   build(): void {
-    Column({ space: '12vp' }) {
+    Column({ space: '14vp' }) {
       Column({ space: '6vp' }) {
         Text('连接小车')
-          .fontSize('20fp')
+          .fontSize('22fp')
           .fontColor($r('app.color.text'))
           .fontWeight(FontWeight.Bold)
           .maxLines(1)
@@ -231,12 +230,18 @@ struct LoginComponent {
       Row({ space: '10vp' }) {
         Button(this.connecting ? '连接中...' : '连接小车')
           .layoutWeight(1)
-          .height('40vp')
+          .height('42vp')
           .fontSize('14fp')
           .fontColor($r('app.color.text_on_accent'))
+          .fontWeight(FontWeight.Bold)
           .backgroundColor($r('app.color.button_primary'))
-          .borderRadius(ButtonRadius)
-          .shadow(ButtonShadow)
+          .borderRadius('14vp')
+          .shadow({
+            radius: 12,
+            offsetX: 0,
+            offsetY: 4,
+            color: '#6366F145'
+          })
           .enabled(!this.connecting)
           .onClick((): void => {
             this.connectCar();
@@ -244,12 +249,13 @@ struct LoginComponent {
 
         Button('跳过')
           .layoutWeight(1)
-          .height('40vp')
+          .height('42vp')
           .fontSize('14fp')
           .fontColor($r('app.color.text'))
+          .fontWeight(FontWeight.Bold)
           .backgroundColor($r('app.color.card_elevated'))
           .border({ width: '1vp', color: $r('app.color.divider') })
-          .borderRadius(ButtonRadius)
+          .borderRadius('14vp')
           .onClick((): void => {
             this.enterWithoutConnect();
           })
@@ -262,11 +268,17 @@ struct LoginComponent {
         .textAlign(TextAlign.Center)
         .maxLines(1)
     }
-    .width('min(88%, 340vp)')
-    .padding('18vp')
-    .backgroundColor($r('app.color.card_background'))
-    .borderRadius('18vp')
-    .shadow(ElevatedShadow)
+    .width('88%')
+    .padding({ left: '20vp', right: '20vp', top: '22vp', bottom: '18vp' })
+    .backgroundColor($r('app.color.header_background'))
+    .borderRadius('16vp')
+    .border({ width: '1vp', color: $r('app.color.divider') })
+    .shadow({
+      radius: 24,
+      offsetX: 0,
+      offsetY: 12,
+      color: '#00000055'
+    })
   }
 
   @Builder
@@ -290,8 +302,8 @@ struct LoginComponent {
     .width('100%')
   }
 
-  private enterWithoutConnect(): void {
-    this.saveNetConfig();
+  private async enterWithoutConnect(): Promise<void> {
+    await this.saveNetConfig();
     VideoComponents.ip = this.ip;
     VideoComponents.port = Number.parseInt(this.videoPort);
     PatrolStore.getInstance().setOnline(false);
@@ -302,7 +314,7 @@ struct LoginComponent {
 
   private async connectCar(): Promise<void> {
     this.connecting = true;
-    this.saveNetConfig();
+    await this.saveNetConfig();
     VideoComponents.ip = this.ip;
     VideoComponents.port = Number.parseInt(this.videoPort);
     await this.initTcpConfig();
@@ -323,9 +335,8 @@ struct LoginComponent {
         PatrolMessageHandler.handleMessage(message);
       };
       PatrolStore.getInstance().setOnline(true);
-      await PatrolCommandUtils.queryPatrol();
       TCPClientSendUtils.getInstance().init();
-      router.replaceUrl({ url: 'pages/Index' });
+      this.connectSuccessRun();
     } else {
       PatrolStore.getInstance().setOnline(false);
       promptAction.showToast({ message: '连接失败，请检查信息' });
@@ -338,18 +349,30 @@ struct LoginComponent {
     if (!netUtils) {
       return;
     }
-    netUtils.getIP().then((v: preferences.ValueType): string => this.ip = String(v));
-    netUtils.getTcpPort().then((v: preferences.ValueType): string => this.tcpPort = String(v));
-    netUtils.getVideoPort().then((v: preferences.ValueType): string => this.videoPort = String(v));
+    netUtils.getIP().then((v: preferences.ValueType): void => {
+      this.ip = String(v);
+    })
+    netUtils.getTcpPort().then((v: preferences.ValueType): void => {
+      this.tcpPort = String(v);
+    })
+    netUtils.getVideoPort().then((v: preferences.ValueType): void => {
+      this.videoPort = String(v);
+    })
   }
 
-  private saveNetConfig(): void {
+  private async saveNetConfig(): Promise<void> {
     const netUtils = PreferencesUtils.getInstance().netUtils;
     if (!netUtils) {
       return;
     }
-    netUtils.setIp(this.ip);
-    netUtils.setTcpPort(this.tcpPort);
-    netUtils.setVideoPort(this.videoPort);
+    this.ip = this.ip.trim();
+    this.tcpPort = this.tcpPort.trim();
+    this.videoPort = this.videoPort.trim();
+    await Promise.all([
+      netUtils.setIp(this.ip),
+      netUtils.setTcpPort(this.tcpPort),
+      netUtils.setVideoPort(this.videoPort)
+    ]);
   }
+
 }

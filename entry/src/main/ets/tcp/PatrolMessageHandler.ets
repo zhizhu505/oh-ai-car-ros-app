@@ -277,7 +277,11 @@ export class PatrolMessageHandler {
       rightDistance: PatrolMessageHandler.readNumber(payload, 'rightDistance', store.lidar.rightDistance),
       channelStatus: PatrolMessageHandler.readChannelStatus(payload, 'channelStatus'),
       message: PatrolMessageHandler.readString(payload, 'message', '雷达状态更新'),
-      updateTime: PatrolMessageHandler.readString(payload, 'time', PatrolMessageHandler.nowTime())
+      updateTime: PatrolMessageHandler.readString(payload, 'time', PatrolMessageHandler.nowTime()),
+      avoidanceEnabled: store.lidar.avoidanceEnabled,
+      trackingEnabled: store.lidar.trackingEnabled,
+      avoidanceStatus: store.lidar.avoidanceStatus,
+      targetDistance: store.lidar.targetDistance
     };
     store.updateLidar(lidar);
   }
@@ -289,11 +293,20 @@ export class PatrolMessageHandler {
         PatrolMessageHandler.readString(payload, 'point', store.vision.point)),
       personDetected: PatrolMessageHandler.readBoolean(payload, 'personDetected'),
       boxInChannel: PatrolMessageHandler.readBoolean(payload, 'boxInChannel'),
+      redBottleDetected: PatrolMessageHandler.readBoolean(payload, 'redBottleDetected'),
+      alertAreaDetected: PatrolMessageHandler.readBoolean(payload, 'alertAreaDetected'),
+      recommendedAction: PatrolMessageHandler.readString(payload, 'recommendedAction', 'forward'),
       message: PatrolMessageHandler.readString(payload, 'message', '视觉检测更新'),
       imageUrl: PatrolMessageHandler.readString(payload, 'imageUrl', ''),
       updateTime: PatrolMessageHandler.readString(payload, 'time', PatrolMessageHandler.nowTime())
     };
     store.updateVision(vision);
+    if (vision.redBottleDetected || vision.alertAreaDetected) {
+      store.updateVehicle({
+        patrolStatus: vision.redBottleDetected ? PatrolStatus.Alerting : PatrolStatus.Avoiding,
+        message: vision.message
+      });
+    }
   }
 
   private static handleStatus(payload: Record<string, Object>): void {

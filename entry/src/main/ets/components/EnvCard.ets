@@ -82,7 +82,7 @@ export struct EnvCard {
 export struct ThresholdTable {
   build() {
     Column({ space: '12vp' }) {
-      Text('仓库环境阈值表')
+      Text('管廊环境阈值表')
         .fontSize('17fp')
         .fontColor($r('app.color.text'))
         .fontWeight(FontWeight.Bold)

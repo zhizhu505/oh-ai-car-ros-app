@@ -335,7 +335,7 @@ struct Module2Navigation {
     }
     if (action === 'stop') {
       const result = await PatrolCommandUtils.stopPatrol();
-      if (result.sent) {
+      if (result) {
         PatrolStore.getInstance().updateVehicle({ message: '停止指令已发送，等待小车状态确认' });
       } else {
         promptAction.showToast({ message: '停止指令发送失败' });

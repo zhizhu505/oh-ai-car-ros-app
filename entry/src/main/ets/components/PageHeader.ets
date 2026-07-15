@@ -1,5 +1,5 @@
 import router from '@ohos.router';
-import { ButtonShadow, CardShadow, GlowShadow } from '../styles/styles';
+import { CardShadow } from '../styles/styles';
 
 @Component
 export struct PageHeader {
@@ -83,91 +83,93 @@ export struct ModuleTabBar {
   @Prop subtitle: string = '';
 
   build() {
-    Column({ space: '10vp' }) {
+    Row({ space: '6vp' }) {
       if (this.title.length > 0) {
-        Row({ space: '12vp' }) {
-          Stack() {
-            Column()
-              .width('5vp')
-              .height('36vp')
-              .backgroundColor(this.accentColor)
-              .borderRadius('3vp')
-          }
+        Button('返回')
+          .width('62vp')
+          .height('32vp')
+          .fontSize('12fp')
+          .fontColor($r('app.color.text'))
+          .backgroundColor($r('app.color.button_secondary'))
+          .borderRadius('17vp')
+          .border({ width: '1vp', color: $r('app.color.divider') })
           .shadow({
             radius: 8,
             offsetX: 0,
-            offsetY: 0,
-            color: this.accentColor + '40'
+            offsetY: 2,
+            color: '#00000035'
+          })
+          .onClick((): void => {
+            router.back();
           })
 
-          Column({ space: '4vp' }) {
+        Row({ space: '6vp' }) {
+          Column({ space: '2vp' }) {
             Text(this.title)
-              .fontSize('22fp')
+              .fontSize('17fp')
               .fontColor($r('app.color.text'))
               .fontWeight(FontWeight.Bold)
               .maxLines(1)
               .textOverflow({ overflow: TextOverflow.Ellipsis })
             Text(this.subtitle.length > 0 ? this.subtitle : '实时数据、规则与异常记录')
-              .fontSize('12fp')
+              .fontSize('9fp')
               .fontColor($r('app.color.text_secondary'))
               .maxLines(1)
               .textOverflow({ overflow: TextOverflow.Ellipsis })
-              .opacity(0.85)
+              .opacity(0.78)
           }
           .alignItems(HorizontalAlign.Start)
           .layoutWeight(1)
+        }
+        .width('92vp')
+        .alignItems(VerticalAlign.Center)
+      }
 
-          Button('返回')
-            .width('68vp')
-            .height('36vp')
-            .fontSize('13fp')
-            .fontColor($r('app.color.text'))
-            .backgroundColor($r('app.color.button_secondary'))
-            .borderRadius('18vp')
-            .border({ width: '1vp', color: $r('app.color.divider') })
-            .shadow(ButtonShadow)
-            .onClick((): void => {
-              router.back();
+      Row({ space: '6vp' }) {
+        ForEach(this.tabs, (tab: string, index: number) => {
+          Text(tab)
+            .fontSize('12fp')
+            .fontColor(this.currentIndex === index ?
+              $r('app.color.text_on_accent') : $r('app.color.text'))
+            .fontWeight(this.currentIndex === index ? FontWeight.Bold : FontWeight.Medium)
+            .textAlign(TextAlign.Center)
+            .height('32vp')
+            .layoutWeight(1)
+            .padding({ left: '4vp', right: '4vp' })
+            .maxLines(1)
+            .backgroundColor(this.currentIndex === index ? this.accentColor : $r('app.color.card_elevated') + 'CC')
+            .borderRadius('16vp')
+            .border({ width: '1vp', color: this.currentIndex === index ? this.accentColor : $r('app.color.divider') })
+            .shadow(this.currentIndex === index ? {
+              radius: 12,
+              offsetX: 0,
+              offsetY: 4,
+              color: this.accentColor + '45'
+            } : {
+              radius: 6,
+              offsetX: 0,
+              offsetY: 2,
+              color: '#00000025'
             })
-        }
-        .width('100%')
+            .scale({ x: this.currentIndex === index ? 1.03 : 1, y: this.currentIndex === index ? 1.03 : 1 })
+            .animation({ duration: 180, curve: Curve.EaseOut })
+            .onClick((): void => {
+              this.currentIndex = index;
+            })
+        }, (tab: string, index: number) => `${tab}_${index}`)
       }
-
-      Row() {
-        Scroll() {
-          Row({ space: '8vp' }) {
-            ForEach(this.tabs, (tab: string, index: number) => {
-              Text(tab)
-                .fontSize('13fp')
-                .fontColor(this.currentIndex === index ?
-                  $r('app.color.text_on_accent') : $r('app.color.text'))
-                .fontWeight(this.currentIndex === index ? FontWeight.Bold : FontWeight.Medium)
-                .padding({ left: '16vp', right: '16vp', top: '8vp', bottom: '8vp' })
-                .backgroundColor(this.currentIndex === index ? this.accentColor : $r('app.color.card_elevated'))
-                .borderRadius('16vp')
-                .border({ width: '1vp', color: this.currentIndex === index ? this.accentColor : $r('app.color.divider') })
-                .shadow(this.currentIndex === index ? {
-                  radius: 10,
-                  offsetX: 0,
-                  offsetY: 3,
-                  color: this.accentColor + '40'
-                } : CardShadow)
-                .onClick((): void => {
-                  this.currentIndex = index;
-                })
-            }, (tab: string, index: number) => `${tab}_${index}`)
-          }
-        }
-        .scrollable(ScrollDirection.Horizontal)
-        .scrollBar(BarState.Off)
-        .layoutWeight(1)
-      }
-      .width('100%')
+      .layoutWeight(1)
     }
     .width('100%')
-    .padding({ left: '16vp', right: '16vp', top: '14vp', bottom: '10vp' })
+    .padding({ left: '12vp', right: '12vp', top: '34vp', bottom: '12vp' })
+    .alignItems(VerticalAlign.Center)
     .backgroundColor($r('app.color.header_background'))
-    .shadow(CardShadow)
+    .shadow({
+      radius: 18,
+      offsetX: 0,
+      offsetY: 8,
+      color: '#00000042'
+    })
   }
 }
 
