@@ -3,7 +3,6 @@ import promptAction from '@ohos.promptAction';
 import {
   ControlMode,
   PatrolPoint,
-  PatrolStatus,
   patrolStatusText
 } from '../model/PatrolModels';
 import { PatrolStore } from '../store/PatrolStore';
@@ -295,29 +294,29 @@ struct Module5AppMonitor {
   }
 
   private async switchMode(mode: ControlMode): Promise<void> {
-    const cmdMode = mode === ControlMode.Auto ? 'auto' : 'manual';
-    const ok = await PatrolCommandUtils.setControlMode(cmdMode);
-    PatrolStore.getInstance().updateVehicle({ controlMode: mode });
-    promptAction.showToast({
-      message: ok ? (mode === ControlMode.Auto ? '已切换自动巡检' : '已切换手动遥控') : '模式已切换（请检查网络）'
-    });
+    const store = PatrolStore.getInstance();
+    if (mode === ControlMode.Auto) {
+      promptAction.showToast({ message: '请通过“开始巡检”启动自动任务' });
+      return;
+    }
+    if (store.vehicle.manualControlLocked) {
+      promptAction.showToast({ message: '巡检任务未结束，暂不能切换手动遥控' });
+      return;
+    }
+    store.updateVehicle({ controlMode: ControlMode.Manual });
+    promptAction.showToast({ message: '已切换手动遥控' });
   }
 
   private async sendCommand(action: string): Promise<void> {
-    const store = PatrolStore.getInstance();
     let ok = false;
     if (action === 'start') {
-      ok = await PatrolCommandUtils.startPatrol('warehouse_A');
-      store.updateVehicle({ controlMode: ControlMode.Auto, patrolStatus: PatrolStatus.Patrolling, message: '巡检已启动' });
-      store.resetPatrolPoints();
+      ok = (await PatrolCommandUtils.startPatrol('pipeline_route_01')).sent;
     } else if (action === 'pause') {
-      ok = await PatrolCommandUtils.pausePatrol();
-      store.updateVehicle({ patrolStatus: PatrolStatus.Paused, message: '巡检已暂停' });
+      ok = (await PatrolCommandUtils.pausePatrol()).sent;
     } else if (action === 'return') {
-      ok = await PatrolCommandUtils.returnHome();
-      store.updateVehicle({ patrolStatus: PatrolStatus.Returning, message: '正在返回起点' });
+      ok = (await PatrolCommandUtils.returnHome()).sent;
     }
-    promptAction.showToast({ message: ok ? '命令发送成功' : '命令已记录，请检查网络' });
+    promptAction.showToast({ message: ok ? '请求已发送，等待 Jetson 确认' : '请求发送失败，请检查网络' });
   }
 }
 

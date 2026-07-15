@@ -11,6 +11,7 @@ import {
   LidarSnapshot,
   PatrolPoint,
   PatrolStatus,
+  PatrolTaskState,
   VehicleSnapshot,
   VisionLogRecord,
   VisionSnapshot,
@@ -68,6 +69,12 @@ export class PatrolStore {
   setOnline(online: boolean): void {
     this.vehicle.online = online;
     this.vehicle.message = online ? '已连接' : '离线';
+    if (!online) {
+      this.vehicle.taskState = PatrolTaskState.Disconnected;
+      this.vehicle.manualControlLocked = false;
+    } else if (this.vehicle.taskState === PatrolTaskState.Disconnected) {
+      this.vehicle.taskState = PatrolTaskState.Ready;
+    }
     this.notify();
   }
 
@@ -115,8 +122,17 @@ export class PatrolStore {
     if (data.patrolStatus !== undefined) {
       this.vehicle.patrolStatus = data.patrolStatus;
     }
+    if (data.taskState !== undefined) {
+      this.vehicle.taskState = data.taskState;
+    }
     if (data.controlMode !== undefined) {
       this.vehicle.controlMode = data.controlMode;
+    }
+    if (data.requestId !== undefined) {
+      this.vehicle.requestId = data.requestId;
+    }
+    if (data.routeId !== undefined) {
+      this.vehicle.routeId = data.routeId;
     }
     if (data.currentPoint !== undefined) {
       this.vehicle.currentPoint = data.currentPoint;
@@ -124,11 +140,26 @@ export class PatrolStore {
     if (data.nextPoint !== undefined) {
       this.vehicle.nextPoint = data.nextPoint;
     }
+    if (data.currentIndex !== undefined) {
+      this.vehicle.currentIndex = data.currentIndex;
+    }
+    if (data.totalWaypoints !== undefined) {
+      this.vehicle.totalWaypoints = data.totalWaypoints;
+    }
     if (data.progress !== undefined) {
       this.vehicle.progress = data.progress;
     }
     if (data.route !== undefined) {
       this.vehicle.route = data.route;
+    }
+    if (data.failureCode !== undefined) {
+      this.vehicle.failureCode = data.failureCode;
+    }
+    if (data.finishedAt !== undefined) {
+      this.vehicle.finishedAt = data.finishedAt;
+    }
+    if (data.manualControlLocked !== undefined) {
+      this.vehicle.manualControlLocked = data.manualControlLocked;
     }
     if (data.lidarStatus !== undefined) {
       this.vehicle.lidarStatus = data.lidarStatus;

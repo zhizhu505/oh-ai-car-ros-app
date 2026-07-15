@@ -16,6 +16,24 @@ export enum PatrolStatus {
   Returning = 'returning'
 }
 
+/**
+ * Jetson 巡检任务的生命周期状态。
+ *
+ * PatrolStatus 为旧页面保留的展示状态；任务是否真正已被 Jetson 接受、完成或失败，
+ * 必须以 taskState 为准。
+ */
+export enum PatrolTaskState {
+  Disconnected = 'DISCONNECTED',
+  Ready = 'READY',
+  Starting = 'STARTING',
+  Running = 'RUNNING',
+  Paused = 'PAUSED',
+  Stopping = 'STOPPING',
+  Succeeded = 'SUCCEEDED',
+  Failed = 'FAILED',
+  Canceled = 'CANCELED'
+}
+
 /** 控制模式 */
 export enum ControlMode {
   Manual = 'manual',
@@ -50,21 +68,6 @@ export interface EnvSnapshot {
   pm25: number;
   level: AlertLevel;
   updateTime: string;
-}
-
-export interface EnvHistoryRecord {
-  time: string;
-  temperature: number;
-  humidity: number;
-  gas: number;
-  light: number;
-  pm25: number;
-}
-
-export interface EnvMetricMeta {
-  key: string;
-  name: string;
-  unit: string;
 }
 
 export interface AiAnalysisResult {
@@ -104,10 +107,6 @@ export interface LidarSnapshot {
   channelStatus: ChannelStatus;
   message: string;
   updateTime: string;
-  avoidanceEnabled: boolean;
-  trackingEnabled: boolean;
-  avoidanceStatus: 'idle' | 'scanning' | 'avoiding' | 'tracking';
-  targetDistance: number;
 }
 
 /** 视觉检测状态 */
@@ -115,40 +114,38 @@ export interface VisionSnapshot {
   point: string;
   personDetected: boolean;
   boxInChannel: boolean;
-  redBottleDetected: boolean;
-  alertAreaDetected: boolean;
-  recommendedAction: string;
   message: string;
   imageUrl: string;
   updateTime: string;
-}
-
-/** 视觉模块运行日志 */
-export interface VisionLogRecord {
-  time: string;
-  point: string;
-  message: string;
-  personDetected: boolean;
-  boxInChannel: boolean;
-  redBottleDetected: boolean;
-  alertAreaDetected: boolean;
 }
 
 /** 小车整体状态 */
 export interface VehicleSnapshot {
   online: boolean;
   patrolStatus: PatrolStatus;
+  taskState: PatrolTaskState;
   controlMode: ControlMode;
+  requestId: string;
+  routeId: string;
   currentPoint: string;
   nextPoint: string;
+  currentIndex: number;
+  totalWaypoints: number;
   progress: number;
   route: string;
+  failureCode: string;
+  finishedAt: string;
+  manualControlLocked: boolean;
   lidarStatus: ChannelStatus;
   visionStatus: string;
   message: string;
 }
 
-/** 地下管廊环境阈值 */
+/** Jetson 端预置路线 ID；App 仅引用 ID，不保存地图坐标。 */
+export const DEFAULT_PATROL_ROUTE_ID = 'pipeline_route_01';
+export const RETURN_HOME_ROUTE_ID = 'pipeline_return_01';
+
+/** 仓库环境阈值 */
 export interface EnvThreshold {
   name: string;
   unit: string;
@@ -159,40 +156,43 @@ export interface EnvThreshold {
 }
 
 export const DEFAULT_PATROL_POINTS: PatrolPoint[] = [
-  { id: 'P1', name: '管廊入口', visited: false, abnormal: false },
-  { id: 'P2', name: 'A区管线左侧', visited: false, abnormal: false },
-  { id: 'P3', name: 'A区管线右侧', visited: false, abnormal: false },
-  { id: 'P4', name: 'B区设备段', visited: false, abnormal: false },
-  { id: 'P5', name: '高风险设备区', visited: false, abnormal: false },
-  { id: 'P6', name: '返回起点', visited: false, abnormal: false }
+  { id: 'P0', name: '管廊入口', visited: false, abnormal: false },
+  { id: 'P1', name: '入廊检测点', visited: false, abnormal: false },
+  { id: 'P2', name: '管线中段检测点', visited: false, abnormal: false },
+  { id: 'P3', name: '阀门巡检点', visited: false, abnormal: false },
+  { id: 'P4', name: '异常物体监测点', visited: false, abnormal: false },
+  { id: 'P5', name: '障碍复核点', visited: false, abnormal: false },
+  { id: 'P6', name: '管廊终点', visited: false, abnormal: false }
 ];
 
 export const ENV_THRESHOLDS: EnvThreshold[] = [
-  { name: '温度', unit: '℃', min: 16, max: 32, warningMax: 32, criticalMax: 38 },
-  { name: '湿度', unit: '%', min: 35, max: 75, warningMax: 75, criticalMax: 85 },
-  { name: '可燃气体', unit: 'ppm', min: 0, max: 25, warningMax: 25, criticalMax: 50 },
-  { name: 'PM2.5', unit: 'μg/m³', min: 0, max: 75, warningMax: 75, criticalMax: 115 },
-  { name: '光照', unit: 'lux', min: 100, max: 500, warningMax: 100, criticalMax: 50 }
+  { name: '温度', unit: '℃', min: 10, max: 35, warningMax: 30, criticalMax: 35 },
+  { name: '湿度', unit: '%', min: 30, max: 80, warningMax: 70, criticalMax: 80 },
+  { name: '烟雾', unit: 'ppm', min: 0, max: 100, warningMax: 50, criticalMax: 100 },
+  { name: '可燃气体', unit: 'ppm', min: 0, max: 100, warningMax: 40, criticalMax: 80 },
+  { name: '光照', unit: 'lux', min: 50, max: 500, warningMax: 80, criticalMax: 50 },
+  { name: 'PM2.5', unit: 'μg/m³', min: 0, max: 150, warningMax: 75, criticalMax: 150 }
 ];
 
-export const ENV_METRICS: EnvMetricMeta[] = [
-  { key: 'temperature', name: '温度', unit: '℃' },
-  { key: 'humidity', name: '湿度', unit: '%' },
-  { key: 'gas', name: '可燃气体', unit: 'ppm' },
-  { key: 'pm25', name: 'PM2.5', unit: 'μg/m³' },
-  { key: 'light', name: '光照', unit: 'lux' }
-];
+export const PRESSURE_THRESHOLD: EnvThreshold = {
+  name: '气压',
+  unit: 'hPa',
+  min: 900,
+  max: 1100,
+  warningMax: 1080,
+  criticalMax: 1100
+};
 
 export function createDefaultEnv(): EnvSnapshot {
   return {
-    point: '地下管廊',
-    temperature: 26.0,
-    humidity: 58,
+    point: '-',
+    temperature: 0,
+    humidity: 0,
     smoke: 0,
-    gas: 14,
-    light: 220,
-    pressure: 1012,
-    pm25: 36,
+    gas: 0,
+    light: 0,
+    pressure: 0,
+    pm25: 0,
     level: AlertLevel.Normal,
     updateTime: '-'
   };
@@ -202,15 +202,53 @@ export function createDefaultVehicle(): VehicleSnapshot {
   return {
     online: false,
     patrolStatus: PatrolStatus.Idle,
+    taskState: PatrolTaskState.Disconnected,
     controlMode: ControlMode.Manual,
-    currentPoint: 'P1',
-    nextPoint: 'P2',
+    requestId: '',
+    routeId: DEFAULT_PATROL_ROUTE_ID,
+    currentPoint: 'P0',
+    nextPoint: 'P1',
+    currentIndex: 0,
+    totalWaypoints: 0,
     progress: 0,
-    route: 'warehouse_A',
+    route: DEFAULT_PATROL_ROUTE_ID,
+    failureCode: '',
+    finishedAt: '',
+    manualControlLocked: false,
     lidarStatus: ChannelStatus.Clear,
     visionStatus: 'normal',
     message: '等待连接'
   };
+}
+
+export function isPatrolTaskActive(state: PatrolTaskState): boolean {
+  return state === PatrolTaskState.Starting ||
+    state === PatrolTaskState.Running ||
+    state === PatrolTaskState.Paused ||
+    state === PatrolTaskState.Stopping;
+}
+
+export function patrolTaskStateText(state: PatrolTaskState): string {
+  switch (state) {
+    case PatrolTaskState.Ready:
+      return '导航就绪';
+    case PatrolTaskState.Starting:
+      return '正在请求启动';
+    case PatrolTaskState.Running:
+      return '巡检中';
+    case PatrolTaskState.Paused:
+      return '已暂停';
+    case PatrolTaskState.Stopping:
+      return '正在停止';
+    case PatrolTaskState.Succeeded:
+      return '任务完成';
+    case PatrolTaskState.Failed:
+      return '任务失败';
+    case PatrolTaskState.Canceled:
+      return '任务已取消';
+    default:
+      return '未连接';
+  }
 }
 
 export function createDefaultLidar(): LidarSnapshot {
@@ -221,11 +259,7 @@ export function createDefaultLidar(): LidarSnapshot {
     rightDistance: 0,
     channelStatus: ChannelStatus.Clear,
     message: '等待数据',
-    updateTime: '-',
-    avoidanceEnabled: false,
-    trackingEnabled: false,
-    avoidanceStatus: 'idle',
-    targetDistance: 0
+    updateTime: '-'
   };
 }
 
@@ -234,9 +268,6 @@ export function createDefaultVision(): VisionSnapshot {
     point: '-',
     personDetected: false,
     boxInChannel: false,
-    redBottleDetected: false,
-    alertAreaDetected: false,
-    recommendedAction: 'forward',
     message: '等待数据',
     imageUrl: '',
     updateTime: '-'
