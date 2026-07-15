@@ -9,7 +9,7 @@ export interface PatrolCommandResult {
 }
 
 interface PatrolCommandPayload {
-  type: string;
+  cmd: string;
   requestId: string;
   routeId?: string;
   reason?: string;
@@ -21,9 +21,9 @@ class PatrolCommandExtras {
 }
 
 /**
- * Jetson 巡检桥接节点协议。
- * TCP 发送成功仅代表数据已写入 socket；任务是否生效必须以 patrol.accepted /
- * patrol.result 回包为准。
+ * Jetson patrol_tcp_server protocol.
+ * Each JSON command is newline-delimited. Socket send success does not mean that
+ * the vehicle accepted the task; the reply/status message is authoritative.
  */
 export class PatrolCommandUtils {
   private static requestSequence: number = 0;
@@ -54,14 +54,14 @@ export class PatrolCommandUtils {
   }
 
   static async queryPatrol(): Promise<PatrolCommandResult> {
-    return PatrolCommandUtils.send('patrol.query', new PatrolCommandExtras());
+    return PatrolCommandUtils.send('patrol.status', new PatrolCommandExtras());
   }
 
-  private static async send(type: string, extra: PatrolCommandExtras):
+  private static async send(cmd: string, extra: PatrolCommandExtras):
     Promise<PatrolCommandResult> {
     const requestId = PatrolCommandUtils.createRequestId();
     const payload: PatrolCommandPayload = {
-      type: type,
+      cmd: cmd,
       requestId: requestId
     };
     if (extra.routeId !== undefined) {

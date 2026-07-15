@@ -1,6 +1,8 @@
 import router from '@ohos.router';
+import promptAction from '@ohos.promptAction';
 import { PatrolStore } from '../store/PatrolStore';
-import { AlertRecord, AlertLevel } from '../model/PatrolModels';
+import { AlertRecord, AlertLevel, isPatrolTaskActive } from '../model/PatrolModels';
+import { PatrolCommandUtils } from '../tcp/PatrolCommandUtils';
 import { CardShadow, CardShadowHover, ElevatedShadow } from '../styles/styles';
 import { onlineColor } from '../utils/PatrolUiUtils';
 
@@ -151,6 +153,23 @@ struct Index {
 
 @Component
 struct PatrolLaunchCard {
+  @State online: boolean = false;
+  @State taskActive: boolean = false;
+  private refreshHandler: () => void = (): void => {
+    const vehicle = PatrolStore.getInstance().vehicle;
+    this.online = vehicle.online;
+    this.taskActive = isPatrolTaskActive(vehicle.taskState);
+  };
+
+  aboutToAppear(): void {
+    this.refreshHandler();
+    PatrolStore.getInstance().subscribe(this.refreshHandler);
+  }
+
+  aboutToDisappear(): void {
+    PatrolStore.getInstance().unsubscribe(this.refreshHandler);
+  }
+
   build() {
     Column({ space: '12vp' }) {
       Row({ space: '12vp' }) {
@@ -185,7 +204,7 @@ struct PatrolLaunchCard {
       .width('100%')
       .alignItems(VerticalAlign.Center)
 
-      Button('开始管廊巡检')
+      Button(this.taskActive ? '巡检进行中' : '开始管廊巡检')
         .width('100%')
         .height('42vp')
         .fontSize('15fp')
@@ -194,8 +213,10 @@ struct PatrolLaunchCard {
         .backgroundColor($r('app.color.module2_accent'))
         .borderRadius('21vp')
         .shadow({ radius: 10, offsetX: 0, offsetY: 4, color: $r('app.color.module2_accent') + '55' })
+        .enabled(this.online && !this.taskActive)
+        .opacity(this.online && !this.taskActive ? 1 : 0.55)
         .onClick((): void => {
-          router.pushUrl({ url: 'pages/Module2Navigation' });
+          this.startPatrol();
         })
     }
     .width('100%')
@@ -204,6 +225,23 @@ struct PatrolLaunchCard {
     .border({ width: '1vp', color: $r('app.color.module2_accent') + '70' })
     .borderRadius('16vp')
     .shadow(CardShadow)
+  }
+
+  private async startPatrol(): Promise<void> {
+    if (!this.online) {
+      promptAction.showToast({ message: '请先在网络设置中连接巡检小车' });
+      return;
+    }
+    const result = await PatrolCommandUtils.startPatrol();
+    if (!result.sent) {
+      promptAction.showToast({ message: '启动指令发送失败' });
+      return;
+    }
+    PatrolStore.getInstance().updateVehicle({
+      requestId: result.requestId,
+      message: '巡检启动指令已发送，等待小车确认'
+    });
+    router.pushUrl({ url: 'pages/Module2Navigation' });
   }
 }
 

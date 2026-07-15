@@ -156,11 +156,13 @@ export interface EnvThreshold {
 }
 
 export const DEFAULT_PATROL_POINTS: PatrolPoint[] = [
-  { id: 'P1', name: '管道入口后巡检点', visited: false, abnormal: false },
-  { id: 'P2', name: '管道中段巡检点', visited: false, abnormal: false },
-  { id: 'P3', name: '阀门检查点', visited: false, abnormal: false },
-  { id: 'P4', name: '管廊末端异常检查点', visited: false, abnormal: false },
-  { id: 'P0_RETURN', name: '返回入口', visited: false, abnormal: false }
+  { id: 'P0', name: '管廊入口', visited: false, abnormal: false },
+  { id: 'P1', name: '入廊检测点', visited: false, abnormal: false },
+  { id: 'P2', name: '管线中段检测点', visited: false, abnormal: false },
+  { id: 'P3', name: '阀门巡检点', visited: false, abnormal: false },
+  { id: 'P4', name: '异常物体监测点', visited: false, abnormal: false },
+  { id: 'P5', name: '障碍复核点', visited: false, abnormal: false },
+  { id: 'P6', name: '管廊终点', visited: false, abnormal: false }
 ];
 
 export const ENV_THRESHOLDS: EnvThreshold[] = [
@@ -204,8 +206,8 @@ export function createDefaultVehicle(): VehicleSnapshot {
     controlMode: ControlMode.Manual,
     requestId: '',
     routeId: DEFAULT_PATROL_ROUTE_ID,
-    currentPoint: 'P1',
-    nextPoint: 'P2',
+    currentPoint: 'P0',
+    nextPoint: 'P1',
     currentIndex: 0,
     totalWaypoints: 0,
     progress: 0,

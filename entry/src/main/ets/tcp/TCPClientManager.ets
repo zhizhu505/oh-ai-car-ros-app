@@ -4,6 +4,10 @@ import promptAction from '@ohos.promptAction';
 
 const TAG = "TCPClientManager";
 
+/** Jetson patrol TCP server defaults. Network Settings can override these onsite. */
+export const PATROL_HOST: string = '192.168.43.5';
+export const PATROL_PORT: number = 5000;
+
 
 class SocketInfo {
   message: ArrayBuffer = new ArrayBuffer(1);
@@ -36,9 +40,9 @@ export class TCPClientManager {
    */
   private options: socket.TCPConnectOptions = {
     address: {
-      address: "127.0.0.1",
+      address: PATROL_HOST,
       // family?: number,
-      port: 12345
+      port: PATROL_PORT
     },
     timeout: 3000
   }

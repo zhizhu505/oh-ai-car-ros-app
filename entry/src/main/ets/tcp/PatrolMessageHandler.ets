@@ -47,6 +47,10 @@ export class PatrolMessageHandler {
 
   private static dispatch(payload: Record<string, Object>): void {
     const type = PatrolMessageHandler.readString(payload, 'type');
+    if (type === 'reply') {
+      PatrolMessageHandler.handleReply(payload);
+      return;
+    }
     if (type === 'patrol.accepted') {
       PatrolMessageHandler.handlePatrolAccepted(payload);
       return;
@@ -90,6 +94,56 @@ export class PatrolMessageHandler {
     console.info(TAG, 'unknown message', JSON.stringify(payload));
   }
 
+  /** Handles patrol_tcp_server command replies, notably patrol.start. */
+  private static handleReply(payload: Record<string, Object>): void {
+    const cmd = PatrolMessageHandler.readString(payload, 'cmd');
+    const success = PatrolMessageHandler.readBoolean(payload, 'success');
+    const message = PatrolMessageHandler.readString(payload, 'message');
+    const store = PatrolStore.getInstance();
+
+    // patrol.status replies wrap the actual state payload in the "status" field.
+    // Unwrap it before applying the regular real-time status mapping.
+    if (cmd === 'patrol.status' && success) {
+      const statusPayload = PatrolMessageHandler.readObject(payload, 'status');
+      if (statusPayload !== undefined) {
+        PatrolMessageHandler.handleStatus(statusPayload);
+      }
+      return;
+    }
+
+    if (cmd === 'patrol.start') {
+      if (success) {
+        store.resetPatrolPoints();
+        store.updateVehicle({
+          taskState: PatrolTaskState.Running,
+          patrolStatus: PatrolStatus.Patrolling,
+          controlMode: ControlMode.Auto,
+          manualControlLocked: true,
+          progress: 0,
+          failureCode: '',
+          message: message || '巡检中'
+        });
+      } else {
+        store.updateVehicle({
+          taskState: PatrolTaskState.Ready,
+          patrolStatus: PatrolStatus.Idle,
+          controlMode: ControlMode.Manual,
+          manualControlLocked: false,
+          message: message || '启动失败'
+        });
+      }
+      return;
+    }
+
+    if (cmd === 'patrol.stop' && success) {
+      store.updateVehicle({
+        taskState: PatrolTaskState.Stopping,
+        patrolStatus: PatrolStatus.Returning,
+        message: message || '正在停止巡检任务'
+      });
+    }
+  }
+
   private static handlePatrolAccepted(payload: Record<string, Object>): void {
     const store = PatrolStore.getInstance();
     const routeId = PatrolMessageHandler.readString(payload, 'routeId', store.vehicle.routeId);
@@ -116,7 +170,8 @@ export class PatrolMessageHandler {
     const store = PatrolStore.getInstance();
     const taskState = PatrolMessageHandler.readTaskState(payload, 'state', PatrolTaskState.Running);
     const currentIndex = PatrolMessageHandler.readNumber(payload, 'currentIndex', store.vehicle.currentIndex);
-    const totalWaypoints = PatrolMessageHandler.readNumber(payload, 'total', store.vehicle.totalWaypoints);
+    const totalWaypoints = PatrolMessageHandler.readNumber(payload, 'totalWaypoints',
+      PatrolMessageHandler.readNumber(payload, 'total', store.vehicle.totalWaypoints));
     const progress = totalWaypoints > 0 ? Math.min(100, Math.max(0,
       Math.round(currentIndex * 100 / totalWaypoints))) : store.vehicle.progress;
     const currentWaypoint = PatrolMessageHandler.readString(payload, 'currentWaypoint', store.vehicle.currentPoint);
@@ -246,12 +301,29 @@ export class PatrolMessageHandler {
     store.setOnline(PatrolMessageHandler.readBoolean(payload, 'online', true));
     const taskState = PatrolMessageHandler.readTaskState(payload, 'taskState',
       PatrolMessageHandler.readTaskState(payload, 'state', store.vehicle.taskState));
+    const currentIndex = PatrolMessageHandler.readNumber(payload, 'currentIndex', store.vehicle.currentIndex);
+    const totalWaypoints = PatrolMessageHandler.readNumber(payload, 'totalWaypoints',
+      store.vehicle.totalWaypoints);
+    const currentWaypoint = PatrolMessageHandler.readString(payload, 'currentWaypoint', store.vehicle.currentPoint);
+    const nextWaypoint = PatrolMessageHandler.readString(payload, 'nextWaypoint',
+      PatrolMessageHandler.nextWaypoint(currentWaypoint, currentIndex, totalWaypoints, store.vehicle.nextPoint));
+    const progress = totalWaypoints > 0 ? Math.min(100, Math.max(0,
+      Math.round(currentIndex * 100 / totalWaypoints))) : store.vehicle.progress;
+    const active = taskState === PatrolTaskState.Running || taskState === PatrolTaskState.Starting ||
+      taskState === PatrolTaskState.Paused || taskState === PatrolTaskState.Stopping;
     store.updateVehicle({
       taskState: taskState,
       patrolStatus: PatrolMessageHandler.toPatrolStatus(taskState),
-      controlMode: PatrolMessageHandler.readControlMode(payload, 'controlMode', store.vehicle.controlMode),
+      controlMode: PatrolMessageHandler.readControlMode(payload, 'controlMode',
+        active ? ControlMode.Auto : ControlMode.Manual),
       manualControlLocked: PatrolMessageHandler.readBoolean(payload, 'manualControlLocked',
-        store.vehicle.manualControlLocked),
+        active),
+      currentPoint: currentWaypoint,
+      nextPoint: nextWaypoint,
+      currentIndex: currentIndex,
+      totalWaypoints: totalWaypoints,
+      progress: taskState === PatrolTaskState.Succeeded ? 100 : progress,
+      failureCode: taskState === PatrolTaskState.Failed ? 'PATROL_FAILED' : store.vehicle.failureCode,
       message: PatrolMessageHandler.readString(payload, 'message', store.vehicle.message)
     });
   }
@@ -327,6 +399,15 @@ export class PatrolMessageHandler {
   private static readTaskState(payload: Record<string, Object>, key: string,
     fallback: PatrolTaskState): PatrolTaskState {
     const value = PatrolMessageHandler.readString(payload, key);
+    if (value === 'IDLE') {
+      return PatrolTaskState.Ready;
+    }
+    if (value === 'REACHED') {
+      return PatrolTaskState.Running;
+    }
+    if (value === 'COMPLETED') {
+      return PatrolTaskState.Succeeded;
+    }
     if (value === PatrolTaskState.Ready) {
       return PatrolTaskState.Ready;
     }
@@ -381,6 +462,26 @@ export class PatrolMessageHandler {
       return '巡检任务已停止';
     }
     return '巡检任务失败';
+  }
+
+  private static nextWaypoint(currentWaypoint: string, currentIndex: number, totalWaypoints: number,
+    fallback: string): string {
+    if (totalWaypoints > 0 && currentIndex >= totalWaypoints) {
+      return '-';
+    }
+    const matched = /^P(\\d+)$/.exec(currentWaypoint);
+    if (matched !== null) {
+      return `P${Number.parseInt(matched[1]) + 1}`;
+    }
+    return fallback;
+  }
+
+  private static readObject(payload: Record<string, Object>, key: string): Record<string, Object> | undefined {
+    const value = payload[key];
+    if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
+      return value as Record<string, Object>;
+    }
+    return undefined;
   }
 
   private static readControlMode(payload: Record<string, Object>, key: string,

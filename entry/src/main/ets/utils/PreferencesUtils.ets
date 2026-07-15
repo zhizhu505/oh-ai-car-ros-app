@@ -1,4 +1,5 @@
 import preferences from '@ohos.data.preferences';
+import { PATROL_HOST, PATROL_PORT } from '../tcp/TCPClientManager';
 
 /**首选项对象*/
 export class PreferencesUtils {
@@ -65,9 +66,9 @@ export class NetInfoPreferencesUtils {
 
   getIP(): Promise<preferences.ValueType> {
     if (!this.pref) {
-      return Promise.resolve('172.20.10.2')
+      return Promise.resolve(PATROL_HOST)
     }
-    return this.pref.get(NetInfoPreferencesUtils.KEY_IP, '172.20.10.2')
+    return this.pref.get(NetInfoPreferencesUtils.KEY_IP, PATROL_HOST)
   }
 
   setIp(v: string): void {
@@ -81,9 +82,9 @@ export class NetInfoPreferencesUtils {
 
   getTcpPort(): Promise<preferences.ValueType> {
     if (!this.pref) {
-      return Promise.resolve('6000')
+      return Promise.resolve(`${PATROL_PORT}`)
     }
-    return this.pref.get(NetInfoPreferencesUtils.KEY_TCP_PORT, '6000')
+    return this.pref.get(NetInfoPreferencesUtils.KEY_TCP_PORT, `${PATROL_PORT}`)
   }
 
   setTcpPort(v: string): void {

@@ -1,4 +1,4 @@
-import { TCPClientManager } from '../tcp/TCPClientManager';
+import { PATROL_HOST, PATROL_PORT, TCPClientManager } from '../tcp/TCPClientManager';
 import { TCPClientSendUtils } from '../tcp/TCPClientSendUtils';
 import { PatrolMessageHandler } from '../tcp/PatrolMessageHandler';
 import { PatrolCommandUtils } from '../tcp/PatrolCommandUtils';
@@ -195,8 +195,8 @@ struct LoginComponent {
   TextWidth: Length = '72vp';
   FontSize: Length = '15fp';
   BlankWidth: Length = '10vp';
-  @State ip: string = '172.20.10.2';
-  @State tcpPort: string = '6000';
+  @State ip: string = PATROL_HOST;
+  @State tcpPort: string = `${PATROL_PORT}`;
   @State videoPort: string = '6500';
   @State connecting: boolean = false;
   connectSuccessRun: () => void = (): void => {
@@ -325,7 +325,7 @@ struct LoginComponent {
       PatrolStore.getInstance().setOnline(true);
       await PatrolCommandUtils.queryPatrol();
       TCPClientSendUtils.getInstance().init();
-      this.connectSuccessRun();
+      router.replaceUrl({ url: 'pages/Index' });
     } else {
       PatrolStore.getInstance().setOnline(false);
       promptAction.showToast({ message: '连接失败，请检查信息' });
