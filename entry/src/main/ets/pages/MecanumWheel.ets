@@ -1,5 +1,4 @@
 import { carApi } from '../CarUtill/CarApi';
-import { CarEncode } from '../CarUtill/CarEncode';
 import { CarRockerComponents } from '../components/CarRockerComponents';
 import { PageHeader, InfoCard } from '../components/PageHeader';
 import { CardShadow, ButtonShadow } from '../styles/styles';
@@ -94,7 +93,7 @@ struct MecanumWheel {
 
   sendSpeed() {
     console.log(TAG, 'speed', `l1`, this.L1Value, 'l2', this.L2Value)
-    carApi.send(CarEncode.UpSpeedCarEncode(this.L1Value, this.L2Value, this.R1Value, this.R2Value));
+    carApi.sendWheelSpeeds(this.L1Value, this.L2Value, this.R1Value, this.R2Value);
     promptAction.showToast({ message: '速度已更新' });
   }
 

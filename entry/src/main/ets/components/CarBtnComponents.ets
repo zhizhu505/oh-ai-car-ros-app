@@ -1,5 +1,4 @@
 import { carApi } from '../CarUtill/CarApi'
-import { CarEncode } from '../CarUtill/CarEncode'
 import { CarDirection } from '../CarUtill/CarEnum'
 import { ButtonShadow } from '../styles/styles'
 import { PatrolCommandUtils } from '../tcp/PatrolCommandUtils'
@@ -158,22 +157,22 @@ struct CarBtnComponents {
 
     switch (direction) {
       case CarDirection.Front:
-        carApi.send(CarEncode.UpSpeedCarEncode(speed, speed, speed, speed));
+        carApi.sendWheelSpeeds(speed, speed, speed, speed);
         break;
       case CarDirection.After:
-        carApi.send(CarEncode.UpSpeedCarEncode(-speed, -speed, -speed, -speed));
+        carApi.sendWheelSpeeds(-speed, -speed, -speed, -speed);
         break;
       case CarDirection.Left:
-        carApi.send(CarEncode.UpSpeedCarEncode(-speed, speed, speed, -speed));
+        carApi.sendWheelSpeeds(-speed, speed, speed, -speed);
         break;
       case CarDirection.Right:
-        carApi.send(CarEncode.UpSpeedCarEncode(speed, -speed, -speed, speed));
+        carApi.sendWheelSpeeds(speed, -speed, -speed, speed);
         break;
       case CarDirection.LeftRotate:
-        carApi.send(CarEncode.UpSpeedCarEncode(-speed, -speed, speed, speed));
+        carApi.sendWheelSpeeds(-speed, -speed, speed, speed);
         break;
       case CarDirection.RightRotate:
-        carApi.send(CarEncode.UpSpeedCarEncode(speed, speed, -speed, -speed));
+        carApi.sendWheelSpeeds(speed, speed, -speed, -speed);
         break;
       default:
         this.sendStop();
@@ -182,7 +181,7 @@ struct CarBtnComponents {
   }
 
   private sendStop(): void {
-    carApi.send(CarEncode.UpSpeedCarEncode(0, 0, 0, 0));
+    carApi.stopManualControl();
   }
 
   private announceDirection(direction: CarDirection): void {

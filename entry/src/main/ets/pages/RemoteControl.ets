@@ -1,7 +1,6 @@
 import router from '@ohos.router';
 import { carApi } from '../CarUtill/CarApi';
 import { CarEncode } from '../CarUtill/CarEncode';
-import { CarDirection } from '../CarUtill/CarEnum';
 import { CarRockerComponents } from '../components/CarRockerComponents';
 import { CarBtnComponents } from '../components/CarBtnComponents';
 import { VideoComponents } from '../components/VideoComponents';
@@ -26,9 +25,11 @@ struct RemoteControl {
 
   aboutToAppear(): void {
     ScreenUtils.setLandscape(getContext());
+    carApi.enterManualMode();
   }
 
   aboutToDisappear(): void {
+    carApi.stopManualControl();
     ScreenUtils.setPortrait(getContext());
   }
 
@@ -65,7 +66,7 @@ struct RemoteControl {
                     .backgroundColor($r('app.color.alert_critical'))
                     .borderRadius('16vp')
                     .onClick((): void => {
-                      carApi.send(CarEncode.ButtonCarEncode(CarDirection.Stop));
+                      carApi.stopManualControl();
                       this.resetAll();
                     })
 
@@ -285,7 +286,7 @@ struct RemoteControl {
 
   sendSpeed(): void {
     console.log(TAG, 'speed', `l1`, this.L1Value, 'l2', this.L2Value)
-    carApi.send(CarEncode.UpSpeedCarEncode(this.L1Value, this.L2Value, this.R1Value, this.R2Value));
+    carApi.sendWheelSpeeds(this.L1Value, this.L2Value, this.R1Value, this.R2Value);
     promptAction.showToast({ message: '轮速已更新' });
   }
 
@@ -294,7 +295,7 @@ struct RemoteControl {
     this.L2Value = 0
     this.R1Value = 0
     this.R2Value = 0
-    carApi.send(CarEncode.UpSpeedCarEncode(0, 0, 0, 0));
+    carApi.stopManualControl();
   }
 
   setSpeed(l1: number, l2: number, r1: number, r2: number): void {

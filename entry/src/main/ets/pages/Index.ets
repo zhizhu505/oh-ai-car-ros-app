@@ -4,11 +4,12 @@ import promptAction from '@ohos.promptAction';
 import { TCPClientManager } from '../tcp/TCPClientManager';
 import { TCPClientSendUtils } from '../tcp/TCPClientSendUtils';
 import { PatrolMessageHandler } from '../tcp/PatrolMessageHandler';
+import { RosbridgeWebSocket } from '../tcp/RosbridgeWebSocket';
 import { VideoComponents } from '../components/VideoComponents';
 import { AlertRecord, AlertLevel, PatrolStatus, patrolStatusText } from '../model/PatrolModels';
 import { CardShadow, CardShadowHover, ElevatedShadow } from '../styles/styles';
 import { onlineColor } from '../utils/PatrolUiUtils';
-import { DEFAULT_CAR_IP, DEFAULT_TCP_PORT, DEFAULT_VIDEO_PORT, PreferencesUtils } from '../utils/PreferencesUtils';
+import { DEFAULT_CAR_IP, DEFAULT_TCP_PORT, DEFAULT_VIDEO_PORT, CAR_CONTROL_TCP_PORT, PreferencesUtils } from '../utils/PreferencesUtils';
 import preferences from '@ohos.data.preferences';
 
 @Entry
@@ -655,23 +656,29 @@ struct ConnectCarOverlay {
     VideoComponents.port = Number.parseInt(this.videoPort.trim());
     TCPClientManager.getInstance().initNetAddress({
       address: this.ip.trim(),
-      port: Number.parseInt(this.tcpPort.trim())
+      port: CAR_CONTROL_TCP_PORT
     });
-    const connected = await TCPClientManager.getInstance().connect();
-    this.connecting = false;
-    if (connected) {
-      PatrolMessageHandler.init();
-      TCPClientManager.receiveMessage = (message: string): void => {
+
+    const wsConnected = await RosbridgeWebSocket.getInstance().connect(this.ip.trim());
+
+    if (wsConnected) {
+      await RosbridgeWebSocket.getInstance().subscribeTopic('/car_real_status');
+      await RosbridgeWebSocket.getInstance().subscribeTopic('/channel_alarm');
+
+      RosbridgeWebSocket.getInstance().setMessageHandler((message: string): void => {
+        console.info('Rosbridge message:', message);
         PatrolMessageHandler.handleMessage(message);
-      };
+      });
+
       PatrolStore.getInstance().setOnline(true);
-      TCPClientSendUtils.getInstance().init();
       promptAction.showToast({ message: '连接成功' });
       this.onConnected();
     } else {
       PatrolStore.getInstance().setOnline(false);
       promptAction.showToast({ message: '连接失败，请检查信息' });
     }
+
+    this.connecting = false;
   }
 
   private readNetConfig(): void {

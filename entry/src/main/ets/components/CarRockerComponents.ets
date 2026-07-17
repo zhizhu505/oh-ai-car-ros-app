@@ -1,5 +1,4 @@
 import { carApi } from '../CarUtill/CarApi'
-import { CarEncode } from '../CarUtill/CarEncode';
 import { RockerComponent, RockerOptions } from "rocker"
 
 @Component
@@ -52,14 +51,14 @@ struct CarRockerComponents {
     if (!isStop && now - this.lastSendTime < 70) {
       return;
     }
-    if (left === this.lastL && right === this.lastR) {
+    if (left === this.lastL && right === this.lastR && now - this.lastSendTime < 180) {
       return;
     }
 
     this.lastSendTime = now;
     this.lastL = left;
     this.lastR = right;
-    carApi.send(CarEncode.UpSpeedCarEncode(left, left, right, right));
+    carApi.sendWheelSpeeds(left, left, right, right);
   }
 
   private clamp(value: number, min: number, max: number): number {

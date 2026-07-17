@@ -8,6 +8,7 @@ import {
   VisionSnapshot
 } from '../model/PatrolModels';
 import { PatrolStore } from '../store/PatrolStore';
+import { PatrolCommandUtils } from './PatrolCommandUtils';
 
 const TAG = 'PatrolMessageHandler';
 
@@ -16,9 +17,11 @@ const TAG = 'PatrolMessageHandler';
  */
 export class PatrolMessageHandler {
   private static buffer: string = '';
+  private static lastLidarVoiceKey: string = '';
 
   static init(): void {
     PatrolMessageHandler.buffer = '';
+    PatrolMessageHandler.lastLidarVoiceKey = '';
   }
 
   static handleMessage(raw: string): void {
@@ -43,10 +46,179 @@ export class PatrolMessageHandler {
     }
     try {
       const payload = JSON.parse(line) as Record<string, Object>;
+      if (PatrolMessageHandler.handleRosbridgeMessage(payload)) {
+        return;
+      }
       PatrolMessageHandler.dispatch(payload);
     } catch (e) {
       console.error(TAG, 'JSON parse error', JSON.stringify(e));
     }
+  }
+
+  private static handleRosbridgeMessage(payload: Record<string, Object>): boolean {
+    if (payload['op'] !== 'publish' || typeof payload['topic'] !== 'string' ||
+      typeof payload['msg'] !== 'object' || payload['msg'] === null) {
+      return false;
+    }
+    const topic = payload['topic'] as string;
+    const message = payload['msg'] as Record<string, Object>;
+    const data = message['data'];
+    if (typeof data !== 'string') {
+      return false;
+    }
+    if (topic === '/car_real_status') {
+      PatrolMessageHandler.handleRosLidarStatus(data);
+      return true;
+    }
+    if (topic === '/channel_alarm') {
+      PatrolMessageHandler.handleRosChannelAlarm(data);
+      return true;
+    }
+    return false;
+  }
+
+  private static handleRosLidarStatus(data: string): void {
+    const fields: Record<string, string> = {};
+    data.split(',').forEach((item: string): void => {
+      const separator = item.indexOf(':');
+      if (separator > 0) {
+        fields[item.substring(0, separator).trim()] = item.substring(separator + 1).trim();
+      }
+    });
+    const store = PatrolStore.getInstance();
+    const front = PatrolMessageHandler.parseNumber(fields['front'], store.lidar.frontDistance);
+    const left = PatrolMessageHandler.parseNumber(fields['left'], store.lidar.leftDistance);
+    const right = PatrolMessageHandler.parseNumber(fields['right'], store.lidar.rightDistance);
+    const speed = PatrolMessageHandler.parseNumber(fields['speed'], 0);
+    const occupied = fields['obstacle'] === 'true' || fields['obstacle'] === '1';
+    const phase = fields['phase'] ?? 'cruise';
+    const trackingEnabled = fields['tracking'] === 'true' || fields['mode'] === 'tracking';
+    const autoEnabled = fields['mode'] === 'auto' || trackingEnabled;
+    let channelStatus = ChannelStatus.Clear;
+    if (front <= 0.4) {
+      channelStatus = ChannelStatus.Blocked;
+    } else if (occupied) {
+      channelStatus = ChannelStatus.SlowDown;
+    }
+    let avoidanceStatus: 'idle' | 'scanning' | 'avoiding' | 'tracking' = store.lidar.avoidanceStatus;
+    if (trackingEnabled) {
+      avoidanceStatus = 'tracking';
+    } else if (phase !== 'cruise' && phase !== 'idle') {
+      avoidanceStatus = 'avoiding';
+    } else if (autoEnabled) {
+      avoidanceStatus = 'scanning';
+    } else {
+      avoidanceStatus = 'idle';
+    }
+    const snapshot: LidarSnapshot = {
+      point: store.vehicle.currentPoint,
+      frontDistance: front,
+      leftDistance: left,
+      rightDistance: right,
+      channelStatus: channelStatus,
+      message: PatrolMessageHandler.getLidarStatusMessage(channelStatus, phase),
+      updateTime: PatrolMessageHandler.nowTime(),
+      avoidanceEnabled: fields['mode'] === undefined ? store.lidar.avoidanceEnabled : autoEnabled,
+      trackingEnabled: trackingEnabled,
+      avoidanceStatus: avoidanceStatus,
+      targetDistance: trackingEnabled ? front : store.lidar.targetDistance
+    };
+    store.updateLidar(snapshot);
+    PatrolMessageHandler.announceLidarState(channelStatus, phase);
+  }
+
+  private static getLidarStatusMessage(channelStatus: ChannelStatus, phase: string): string {
+    if (phase === 'tracking_back') {
+      return '目标距离过近，小车自动后退保持安全距离';
+    }
+    if (phase === 'tracking_forward') {
+      return '目标距离较远，小车正在向前跟随';
+    }
+    if (phase === 'tracking_hold') {
+      return '目标距离合适，小车保持安全跟随距离';
+    }
+    if (phase === 'tracking_rear_blocked') {
+      return '后方空间不足，小车已停止后退';
+    }
+    if (phase === 'target_lost') {
+      return '跟随目标丢失，小车已停止';
+    }
+    if (phase === 'turn_out' || phase === 'pass_obstacle') {
+      return '前方检测到障碍，小车正在绕行';
+    }
+    if (phase === 'turn_back') {
+      return '障碍物已绕过，小车正在恢复巡检路线';
+    }
+    if (phase === 'blocked' || channelStatus === ChannelStatus.Blocked) {
+      return '通道空间不足，小车已停车';
+    }
+    if (channelStatus === ChannelStatus.SlowDown) {
+      return '前方检测到障碍，小车减速通行';
+    }
+    return '通道畅通';
+  }
+
+  private static announceLidarState(channelStatus: ChannelStatus, phase: string): void {
+    let key = '';
+    let message = '';
+    if (phase === 'tracking_back') {
+      key = phase;
+      message = '目标距离过近，小车自动后退保持安全距离';
+    } else if (phase === 'tracking_forward') {
+      key = phase;
+      message = '目标距离较远，小车正在向前跟随';
+    } else if (phase === 'tracking_hold') {
+      key = phase;
+      message = '已保持安全跟随距离';
+    } else if (phase === 'tracking_rear_blocked') {
+      key = phase;
+      message = '后方空间不足，已停止后退';
+    } else if (phase === 'target_lost') {
+      key = phase;
+      message = '跟随目标丢失，小车已停止';
+    } else if (phase === 'turn_out') {
+      key = phase;
+      message = '前方距离过近，正在选择安全方向绕行';
+    } else if (phase === 'pass_obstacle') {
+      key = phase;
+      message = '小车正在绕过前方障碍物';
+    } else if (phase === 'turn_back') {
+      key = phase;
+      message = '障碍物已绕过，正在恢复巡检路线';
+    } else if (phase === 'blocked' || channelStatus === ChannelStatus.Blocked) {
+      key = 'blocked';
+      message = '通道空间不足，小车已停车';
+    } else if (channelStatus === ChannelStatus.SlowDown) {
+      key = 'slow_down';
+      message = '前方检测到障碍物，小车减速通行';
+    }
+    if (key.length === 0) {
+      PatrolMessageHandler.lastLidarVoiceKey = '';
+      return;
+    }
+    if (key === PatrolMessageHandler.lastLidarVoiceKey) {
+      return;
+    }
+    PatrolMessageHandler.lastLidarVoiceKey = key;
+    PatrolCommandUtils.speakVoice(message);
+  }
+
+  private static handleRosChannelAlarm(message: string): void {
+    if (message.trim().length === 0) {
+      return;
+    }
+    const store = PatrolStore.getInstance();
+    store.createAlert(PatrolMessageHandler.nowTime(), store.vehicle.currentPoint,
+      'lidar', message, AlertLevel.Critical, '');
+    store.updateVehicle({ patrolStatus: PatrolStatus.Alerting, message: message });
+  }
+
+  private static parseNumber(value: string | undefined, fallback: number): number {
+    if (value === undefined) {
+      return fallback;
+    }
+    const parsed = Number.parseFloat(value);
+    return Number.isNaN(parsed) ? fallback : parsed;
   }
 
   private static dispatch(payload: Record<string, Object>): void {

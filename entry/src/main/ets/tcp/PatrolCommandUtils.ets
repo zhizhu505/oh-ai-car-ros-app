@@ -1,5 +1,6 @@
 import { TCPClientManager } from './TCPClientManager';
 import { CAR_CONTROL_TCP_PORT } from '../utils/PreferencesUtils';
+import { RosbridgeWebSocket } from './RosbridgeWebSocket';
 
 const TAG = 'PatrolCommandUtils';
 
@@ -309,59 +310,37 @@ export class PatrolCommandUtils {
   }
 
   static async enableLidarAvoidance(enabled: boolean): Promise<boolean> {
-    const payload: LidarAvoidPayload = {
-      cmd: 'lidar_avoid',
-      enabled: enabled
-    };
-    console.info(TAG, `enableLidarAvoidance called, enabled=${enabled}, payload=${JSON.stringify(payload)}`);
-    const result = await PatrolCommandUtils.sendAvoid(payload);
+    console.info(TAG, `enableLidarAvoidance called, enabled=${enabled}`);
+    const cmd = enabled ? 'start_auto' : 'stop_auto';
+    const result = await RosbridgeWebSocket.getInstance().sendTopicMessage('/app_cmd_receive', cmd);
     console.info(TAG, `enableLidarAvoidance result: ${result}`);
     return result;
   }
 
   static async enableLidarTracking(enabled: boolean): Promise<boolean> {
-    const payload: LidarTrackPayload = {
-      cmd: 'lidar_track',
-      enabled: enabled
-    };
-    console.info(TAG, `enableLidarTracking called, enabled=${enabled}, payload=${JSON.stringify(payload)}`);
-    const result = await PatrolCommandUtils.sendTrack(payload);
+    console.info(TAG, `enableLidarTracking called, enabled=${enabled}`);
+    const cmd = enabled ? 'start_tracking' : 'stop_tracking';
+    const result = await RosbridgeWebSocket.getInstance().sendTopicMessage('/app_cmd_receive', cmd);
     console.info(TAG, `enableLidarTracking result: ${result}`);
     return result;
   }
 
   static async startAutoAvoidance(): Promise<boolean> {
-    const payload: LidarScenePayload = {
-      cmd: 'lidar_scene',
-      scene: 'start_auto'
-    };
-    return PatrolCommandUtils.sendScene(payload);
+    return RosbridgeWebSocket.getInstance().sendTopicMessage('/app_cmd_receive', 'start_auto');
   }
 
   static async stopAutoAvoidance(): Promise<boolean> {
-    const payload: LidarScenePayload = {
-      cmd: 'lidar_scene',
-      scene: 'stop_auto'
-    };
-    return PatrolCommandUtils.sendScene(payload);
+    return RosbridgeWebSocket.getInstance().sendTopicMessage('/app_cmd_receive', 'stop_auto');
   }
 
   static async setNarrowMode(enabled: boolean): Promise<boolean> {
-    const payload: LidarScenePayload = {
-      cmd: 'lidar_scene',
-      scene: enabled ? 'narrow_mode' : 'normal_mode',
-      narrow_mode: enabled
-    };
-    return PatrolCommandUtils.sendScene(payload);
+    const cmd = enabled ? 'slow' : 'fast';
+    return RosbridgeWebSocket.getInstance().sendTopicMessage('/app_cmd_receive', cmd);
   }
 
   static async setFrontWarnThreshold(frontWarnM: number): Promise<boolean> {
-    const payload: LidarScenePayload = {
-      cmd: 'lidar_scene',
-      scene: 'set_front_warn',
-      front_warn_m: frontWarnM
-    };
-    return PatrolCommandUtils.sendScene(payload);
+    return RosbridgeWebSocket.getInstance().sendTopicMessage('/app_cmd_receive',
+      `set_front:${frontWarnM.toFixed(2)}`);
   }
 
   static async requestLidarSnapshot(): Promise<string> {
@@ -447,22 +426,13 @@ export class PatrolCommandUtils {
   private static async sendDemo(payload: PatrolCmdPayload): Promise<boolean> {
     const message = `${JSON.stringify(payload)}\n`;
     console.info(TAG, 'sendDemo', message);
-    const response = await TCPClientManager.getInstance().requestMessageFromPort(6600, message);
-    if (response.length === 0) {
-      console.error(TAG, 'sendDemo empty response');
+    const ok = await TCPClientManager.getInstance().sendMessageToPort(6600, message);
+    if (!ok) {
+      console.error(TAG, 'sendDemo send failed');
       return false;
     }
-    try {
-      const line = response.split('\n')[0];
-      const reply = JSON.parse(line) as DemoCommandReply;
-      if (!reply.ok) {
-        console.error(TAG, `sendDemo rejected: ${reply.message}`);
-      }
-      return reply.ok === true;
-    } catch (e) {
-      console.error(TAG, 'sendDemo parse failed', JSON.stringify(e));
-      return false;
-    }
+    console.info(TAG, 'sendDemo success');
+    return true;
   }
 
   private static async sendStrategy(payload: LidarStrategyPayload): Promise<boolean> {

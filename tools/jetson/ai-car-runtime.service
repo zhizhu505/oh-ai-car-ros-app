@@ -1,0 +1,16 @@
+[Unit]
+Description=AI car lidar, avoidance, tracking and rosbridge runtime
+After=docker.service network-online.target red-bottle-demo.service
+Wants=docker.service network-online.target
+Conflicts=rosmaster-app.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/home/jetson/ai-car-runtime/start.sh
+ExecStop=/home/jetson/ai-car-runtime/stop.sh
+TimeoutStartSec=60
+TimeoutStopSec=20
+
+[Install]
+WantedBy=multi-user.target

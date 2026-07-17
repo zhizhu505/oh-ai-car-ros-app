@@ -600,226 +600,435 @@
       font-weight: 800;
     }
 
-    .app-proof {
+    .radar-video-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.48fr) minmax(300px, .52fr);
+      gap: 16px;
       flex: 1;
       min-height: 0;
-      display: grid;
-      grid-template-rows: auto 1fr;
-      gap: 14px;
-      margin-top: 14px;
     }
 
-    .compact-steps {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 10px;
-    }
-
-    .compact-steps .logic-step {
-      padding: 10px 12px;
-    }
-
-    .compact-steps .logic-step strong {
-      font-size: 14px;
-    }
-
-    .compact-steps .logic-step span {
-      font-size: 12px;
-      line-height: 1.42;
-    }
-
-    .app-media-grid {
-      min-height: 0;
-      display: grid;
-      grid-template-columns: 1.05fr 1.25fr;
-      grid-template-rows: repeat(2, minmax(0, 1fr));
-      gap: 12px;
-    }
-
-    .app-media-grid .media-tile img,
-    .app-media-grid .media-tile video {
-      min-height: 0;
-      object-fit: cover;
-    }
-
-    .app-media-grid .media-tile.portrait img,
-    .app-media-grid .media-tile.portrait video {
-      object-fit: contain;
-      background: linear-gradient(135deg, #eef7fb, #fff);
-    }
-
-    .scene-showcase {
-      display: grid;
-      grid-template-columns: 1.08fr .92fr;
-      gap: 14px;
-      flex: 1;
-      min-height: 0;
-      margin-top: 16px;
-    }
-
-    .scene-main,
-    .scene-side {
-      min-height: 0;
-      display: grid;
-      gap: 12px;
-    }
-
-    .scene-main {
-      grid-template-rows: repeat(2, minmax(0, 1fr));
-    }
-
-    .scene-side {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      grid-template-rows: 1fr 1fr;
-    }
-
-    .scene-tile {
+    .radar-video {
       position: relative;
       min-height: 0;
       overflow: hidden;
       border: 1px solid var(--line);
-      border-radius: var(--radius);
-      background: #f8fbfd;
-      box-shadow: 0 10px 26px rgba(15, 23, 42, .045);
+      border-radius: 8px;
+      background: #101927;
+      box-shadow: 0 16px 34px rgba(54, 82, 116, .14);
     }
 
-    .scene-tile img,
-    .scene-tile video {
+    .radar-video video {
       width: 100%;
       height: 100%;
-      min-height: 0;
       display: block;
-      object-fit: cover;
-      background: #fff;
-    }
-
-    .scene-tile.contain img,
-    .scene-tile.contain video {
       object-fit: contain;
-      padding: 6px;
-      background: linear-gradient(135deg, #eef7fb, #fff);
+      background: #101927;
     }
 
-    .scene-tile.wide {
-      grid-column: 1 / -1;
-    }
-
-    .scene-tile.tall {
-      grid-row: span 2;
-    }
-
-    .scene-tile span {
-      position: absolute;
-      left: 10px;
-      top: 10px;
-      padding: 5px 10px;
-      border-radius: 999px;
-      background: rgba(255,255,255,.92);
-      border: 1px solid rgba(219,232,239,.9);
-      color: #0f3554;
-      font-size: 12px;
-      font-weight: 900;
-    }
-
-    .proof-board {
-      flex: 1;
-      min-height: 0;
+    .module-overview-body {
       display: grid;
-      gap: 14px;
-      margin-top: 16px;
-    }
-
-    .proof-board.two {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
-    .proof-board.hero-side {
-      grid-template-columns: 1.18fr .82fr;
-    }
-
-    .proof-board.tall-stack {
-      grid-template-columns: 1fr;
-      grid-template-rows: 1.15fr 1fr 1fr;
-    }
-
-    .alert-combined {
-      flex: 1;
-      min-height: 0;
-      display: grid;
-      grid-template-columns: 1fr .72fr;
-      gap: 14px;
-      margin-top: 16px;
-    }
-
-    .alert-left {
-      min-height: 0;
-      display: grid;
-      grid-template-rows: 1fr auto;
-      gap: 12px;
-    }
-
-    .alert-stacked {
-      min-height: 0;
-      display: grid;
-      grid-template-rows: repeat(3, minmax(0, 1fr));
+      grid-template-rows: auto minmax(0, 1fr);
       gap: 10px;
+      flex: 1;
+      min-height: 0;
     }
 
-    .alert-video {
-      min-height: 0;
-      display: flex;
+    .overview-track {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
     }
 
-    .proof-board .proof-card {
-      position: relative;
-      min-height: 0;
-      overflow: hidden;
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      background: linear-gradient(135deg, #f7fbff, #ffffff);
-      box-shadow: 0 10px 26px rgba(15, 23, 42, .045);
+    .overview-track span {
+      min-height: 38px;
       display: flex;
       align-items: center;
       justify-content: center;
-    }
-
-    .proof-card img,
-    .proof-card video {
-      width: 100%;
-      height: 100%;
-      min-height: 0;
-      display: block;
-      object-fit: contain;
-      background: transparent;
-    }
-
-    .proof-card.video video {
-      object-fit: cover;
-      background: #000;
-    }
-
-    .proof-card .caption {
-      position: absolute;
-      left: 12px;
-      top: 12px;
-      padding: 6px 12px;
-      border-radius: 999px;
-      background: rgba(255,255,255,.94);
-      border: 1px solid rgba(219,232,239,.95);
-      color: #0f3554;
+      padding: 7px 10px;
+      border-top: 3px solid var(--cyan);
+      border-radius: 6px;
+      color: var(--text);
+      background: rgba(10,167,189,.07);
       font-size: 12px;
       font-weight: 900;
-      z-index: 2;
+      text-align: center;
     }
 
-    .proof-notes {
-      min-height: 0;
+    .overview-video-layout {
       display: grid;
+      grid-template-columns: minmax(0, 1.55fr) minmax(300px, .45fr);
       gap: 12px;
+      min-height: 0;
     }
 
-    .proof-notes .logic-step {
-      padding: 14px 16px;
+    .overview-video {
+      position: relative;
+      min-height: 0;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #101927;
+      box-shadow: 0 16px 34px rgba(54, 82, 116, .14);
+    }
+
+    .overview-video video {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: contain;
+      background: #101927;
+    }
+
+    .radar-side {
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: 10px;
+      min-height: 0;
+    }
+
+    .radar-flow {
+      display: grid;
+      gap: 7px;
+    }
+
+    .radar-flow-step {
+      display: grid;
+      grid-template-columns: 34px 1fr;
+      gap: 9px;
+      align-items: center;
+      padding: 9px 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255,255,255,.9);
+    }
+
+    .radar-flow-step b {
+      display: grid;
+      place-items: center;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      color: #ffffff;
+      background: var(--blue);
+      font-size: 12px;
+    }
+
+    .radar-flow-step strong {
+      display: block;
+      color: var(--ink);
+      font-size: 13px;
+      margin-bottom: 2px;
+    }
+
+    .radar-flow-step span {
+      display: block;
+      color: var(--muted);
+      font-size: 11.5px;
+      line-height: 1.38;
+    }
+
+    .topic-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .topic-list code {
+      padding: 5px 8px;
+      border: 1px solid rgba(47,99,214,.18);
+      border-radius: 6px;
+      color: #224d9f;
+      background: rgba(47,99,214,.08);
+      font-size: 10.5px;
+      font-weight: 800;
+    }
+
+    .radar-case-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.12fr) minmax(500px, .88fr);
+      gap: 16px;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .radar-case-copy {
+      display: grid;
+      grid-template-rows: minmax(0, 1fr) auto;
+      gap: 10px;
+      min-height: 0;
+    }
+
+    .radar-mode-columns {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      min-height: 0;
+    }
+
+    .radar-mode-columns .state-panel {
+      justify-content: flex-start;
+      min-height: 0;
+    }
+
+    .radar-mode-columns .state-chain {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr;
+      grid-template-rows: repeat(4, minmax(38px, 1fr) 14px) minmax(38px, 1fr);
+      gap: 3px;
+    }
+
+    .radar-mode-columns .state-chain span {
+      min-height: 38px;
+      font-size: 13px;
+    }
+
+    .radar-mode-columns .state-chain i {
+      line-height: 12px;
+      text-align: center;
+      font-size: 17px;
+    }
+
+    .radar-mode-columns .state-notes {
+      grid-template-columns: 1fr;
+    }
+
+    .state-panel {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 13px 15px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: linear-gradient(180deg, #ffffff, #f7fbff);
+    }
+
+    .state-panel h3 {
+      margin-bottom: 10px;
+      color: var(--ink);
+      font-size: 18px;
+    }
+
+    .state-chain {
+      display: flex;
+      align-items: stretch;
+      gap: 5px;
+      margin-bottom: 9px;
+    }
+
+    .state-chain span {
+      flex: 1;
+      display: grid;
+      place-items: center;
+      min-height: 48px;
+      padding: 6px;
+      border-radius: 6px;
+      color: #224d9f;
+      background: rgba(47,99,214,.09);
+      font-size: 11px;
+      font-weight: 900;
+      text-align: center;
+      line-height: 1.25;
+    }
+
+    .state-chain i {
+      align-self: center;
+      color: var(--cyan);
+      font-size: 15px;
+      font-style: normal;
+      font-weight: 900;
+    }
+
+    .state-panel p {
+      color: var(--muted);
+      font-size: 12.5px;
+      line-height: 1.5;
+    }
+
+    .state-notes {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 11px;
+      padding-top: 10px;
+      border-top: 1px solid var(--line);
+    }
+
+    .state-note strong {
+      display: block;
+      margin-bottom: 3px;
+      color: var(--ink);
+      font-size: 12.5px;
+    }
+
+    .state-note span {
+      display: block;
+      color: var(--muted);
+      font-size: 11.5px;
+      line-height: 1.35;
+    }
+
+    .radar-metrics {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .radar-metric {
+      padding: 9px 10px;
+      border-left: 4px solid var(--cyan);
+      border-radius: 6px;
+      background: rgba(10,167,189,.08);
+    }
+
+    .radar-metric b {
+      display: block;
+      color: var(--ink);
+      font-size: 16px;
+      margin-bottom: 3px;
+    }
+
+    .radar-metric span {
+      color: var(--muted);
+      font-size: 10.5px;
+      line-height: 1.3;
+    }
+
+    .radar-record {
+      position: relative;
+      min-height: 0;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #eaf0f8;
+      box-shadow: 0 16px 34px rgba(54, 82, 116, .12);
+    }
+
+    .radar-record-pair {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      min-height: 0;
+    }
+
+    .radar-record img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: contain;
+      object-position: center top;
+    }
+
+    .alert-center-layout {
+      display: grid;
+      grid-template-columns: minmax(300px, .42fr) minmax(0, 1.58fr);
+      gap: 14px;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .alert-summary {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      min-height: 0;
+    }
+
+    .alert-counts {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .alert-count {
+      padding: 11px 12px;
+      border-left: 4px solid var(--cyan);
+      border-radius: 6px;
+      background: rgba(10,167,189,.08);
+    }
+
+    .alert-count b {
+      display: block;
+      color: var(--ink);
+      font-size: 21px;
+      line-height: 1;
+      margin-bottom: 5px;
+    }
+
+    .alert-count span {
+      color: var(--muted);
+      font-size: 11.5px;
+      font-weight: 700;
+    }
+
+    .alert-flow {
+      display: grid;
+      gap: 7px;
+      align-content: start;
+    }
+
+    .alert-summary .quote { margin-top: auto; }
+
+    .alert-flow-step {
+      display: grid;
+      grid-template-columns: 34px 1fr;
+      gap: 9px;
+      align-items: center;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: linear-gradient(180deg, #ffffff, #f7fbff);
+    }
+
+    .alert-flow-step b {
+      display: grid;
+      place-items: center;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      color: #ffffff;
+      background: var(--pink);
+      font-size: 11px;
+    }
+
+    .alert-flow-step strong {
+      display: block;
+      margin-bottom: 3px;
+      color: var(--ink);
+      font-size: 13px;
+    }
+
+    .alert-flow-step span {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.38;
+    }
+
+    .alert-gallery {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      min-height: 0;
+    }
+
+    .alert-shot {
+      position: relative;
+      min-height: 0;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #eaf0f8;
+      box-shadow: 0 14px 28px rgba(54, 82, 116, .1);
+    }
+
+    .alert-shot img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: contain;
+      object-position: center top;
     }
 
     .module-grid {
@@ -929,9 +1138,17 @@
       h1 { font-size: 36px; }
       .subtitle { font-size: 16px; }
       .nav { display: none; }
-      .cover-points, .cols-2, .cols-3, .cols-4, .split, .timeline, .day-grid, .issue-grid, .people, .app-layout, .phone-stack, .module-grid, .shots, .feature-split, .media-grid {
+      .cover-points, .cols-2, .cols-3, .cols-4, .split, .timeline, .day-grid, .issue-grid, .people, .app-layout, .phone-stack, .module-grid, .shots, .feature-split, .media-grid, .radar-video-layout, .radar-case-layout, .alert-center-layout, .overview-video-layout {
         grid-template-columns: 1fr;
       }
+      .overview-track { grid-template-columns: 1fr; }
+      .radar-case-copy { grid-template-rows: none; }
+      .radar-mode-columns { grid-template-columns: 1fr; }
+      .radar-record-pair, .alert-gallery { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .radar-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .state-notes { grid-template-columns: 1fr; }
+      .state-chain { flex-wrap: wrap; }
+      .state-chain i { display: none; }
       .shots { grid-template-rows: none; }
     }
   </style>
@@ -1090,24 +1307,26 @@
     <section class="slide" data-section="impl" data-order="10">
       <div class="topbar"></div>
       <div>
-        <div class="kicker">03 · 周诗晴模块：小车端</div>
-        <h2>激光雷达避障与跟踪：把小车从“能移动”提升为“能判断通道安全”</h2>
-        <p class="lead">小车端围绕仓储狭窄通道设计雷达检测逻辑，重点处理前方通道、左右货架距离、动态障碍和警戒区域四类问题。</p>
+        <div class="kicker">03 · 周诗晴模块总述</div>
+        <h2>模块总述：雷达感知、避障跟踪与 AI 告警闭环</h2>
+        <p class="lead">第 11 页总览实车与 APP 联调过程，第 12 页展开自动避障和目标距离跟踪，第 13 页展示多源告警归档、AI 风险分析与处置排序。</p>
       </div>
       <div class="body">
-        <div class="feature-split">
-          <div class="logic-stack">
-            <div class="logic-step"><strong>三扇区测距</strong><span>将雷达数据划分为前方通道、左侧货架、右侧货架，分别计算最小距离或平均距离，为通道安全判断提供输入。</span></div>
-            <div class="logic-step"><strong>通道占用分类</strong><span>前方 0.8m 内进入减速，0.4m 内进入停车；障碍持续超过 5 秒时判定为通道占用或货物堆放异常。</span></div>
-            <div class="logic-step"><strong>货架居中保持</strong><span>对比左右两侧货架距离，判断小车是否偏左或偏右，支持在狭窄货架通道中保持稳定巡检姿态。</span></div>
-            <div class="logic-step"><strong>动态避障与跟踪</strong><span>短时障碍按人员经过处理，长时障碍按占用处理；跟踪模式用于持续观察移动目标并保持安全距离。</span></div>
-            <div class="logic-step"><strong>警戒区域检测</strong><span>危险品区或禁入区附近检测到移动目标时，直接触发雷达安全告警，提示人工确认和接管。</span></div>
+        <div class="module-overview-body">
+          <div class="overview-track">
+            <span>11 · 实时检测与双向控制</span>
+            <span>12 · 自动避障与目标跟踪</span>
+            <span>13 · 告警中心与 AI 处置</span>
           </div>
-          <div class="grid cols-2">
-            <div class="metric"><b>0.8m</b><span>前方减速阈值，通道出现障碍时降低速度</span></div>
-            <div class="metric"><b>0.4m</b><span>前方停车阈值，距离过近时强制停车</span></div>
-            <div class="metric"><b>5s</b><span>占用持续阈值，区分人员经过和货物堆放</span></div>
-            <div class="metric"><b>3区</b><span>前方扇区、左侧货架、右侧货架独立判断</span></div>
+          <div class="overview-video-layout">
+            <div class="overview-video">
+              <span class="caption">实车联调：雷达检测、避障与目标跟踪</span>
+              <video src="assets/zsq/雷达/redpandacompress_雷达模块最终视频.mp4" controls autoplay muted loop playsinline preload="auto"></video>
+            </div>
+            <div class="overview-video">
+              <span class="caption">告警处置：记录、AI 分析与咨询</span>
+              <video src="assets/zsq/告警中心/告警+ai.mp4" controls autoplay muted loop playsinline preload="auto"></video>
+            </div>
           </div>
         </div>
       </div>
@@ -1116,46 +1335,88 @@
     <section class="slide" data-section="impl" data-order="11">
       <div class="topbar"></div>
       <div>
-        <div class="kicker">03 · 周诗晴模块：APP 与告警 AI</div>
-        <h2>APP 场景应用与告警闭环：雷达事件进入告警中心，再由 AI 给出处置建议</h2>
-        <p class="lead">APP 端把雷达场景预设、通道安全阈值、告警记录和 AI 分析放到同一条演示链路中，形成可展示、可追溯、可解释的异常处理流程。</p>
+        <div class="kicker">03 · 周诗晴模块：避障与目标跟踪</div>
+        <h2>雷达避障与目标跟踪：保持通道安全，也保持目标距离</h2>
+        <p class="lead">避障模式根据通道距离完成减速、停车、绕行和回正；跟踪模式以约 0.9m 为目标距离，过远前进、合适保持、过近后退。</p>
       </div>
       <div class="body">
-        <div class="proof-board two">
-          <div class="proof-card video"><span class="caption">避障演示视频</span><video src="assets/zsq/雷达/避障.mp4" controls muted></video></div>
-          <div class="proof-card video"><span class="caption">可疑人员跟踪视频</span><video src="assets/zsq/雷达/跟踪.mp4" controls muted></video></div>
+        <div class="radar-case-layout">
+          <div class="radar-case-copy">
+            <div class="radar-mode-columns">
+              <article class="state-panel">
+                <h3>动态避障状态机</h3>
+                <div class="state-chain">
+                  <span>正常巡航</span><i>↓</i><span>检测障碍</span><i>↓</i><span>减速 / 停车</span><i>↓</i><span>选择空旷侧</span><i>↓</i><span>绕行并回正</span>
+                </div>
+                <p>比较左右空间后选择安全方向绕出，通过障碍后修正车身并继续巡检。</p>
+                <div class="state-notes">
+                  <div class="state-note"><strong>分区感知</strong><span>前、后、左、右距离独立计算</span></div>
+                  <div class="state-note"><strong>分阶段执行</strong><span>转向绕出、通过障碍、回正巡航</span></div>
+                  <div class="state-note"><strong>告警联动</strong><span>持续占用触发记录与语音提醒</span></div>
+                </div>
+              </article>
+              <article class="state-panel">
+                <h3>目标距离跟踪</h3>
+                <div class="state-chain">
+                  <span>目标较远：低速前进</span><i>↓</i><span>约 0.9m：保持停止</span><i>↓</i><span>目标靠近：自动后退</span><i>↓</i><span>后方受阻：安全停车</span><i>↓</i><span>目标丢失：停止运动</span>
+                </div>
+                <p>距离死区避免车身频繁抖动；人员身份可由视觉确认后再启动跟踪。</p>
+                <div class="state-notes">
+                  <div class="state-note"><strong>距离死区</strong><span>0.9m 附近保持，减少频繁启停</span></div>
+                  <div class="state-note"><strong>后方保护</strong><span>后方小于 0.35m 时禁止倒车</span></div>
+                  <div class="state-note"><strong>目标丢失</strong><span>距离超出范围后自动安全停车</span></div>
+                </div>
+              </article>
+            </div>
+            <div class="radar-metrics">
+              <div class="radar-metric"><b>0.8m</b><span>前方减速阈值</span></div>
+              <div class="radar-metric"><b>0.4m</b><span>近距离停车阈值</span></div>
+              <div class="radar-metric"><b>0.9m</b><span>目标跟踪距离</span></div>
+              <div class="radar-metric"><b>5s</b><span>持续占用告警</span></div>
+            </div>
+          </div>
+          <div class="radar-record-pair">
+            <div class="radar-record">
+              <span class="caption">实时检测：距离、占用分类与阈值策略</span>
+              <img src="assets/zsq/雷达/实时检验.jpg" alt="雷达实时检测页面">
+            </div>
+            <div class="radar-record">
+              <span class="caption">异常记录：雷达事件同步进入告警中心</span>
+              <img src="assets/zsq/雷达/异常记录.jpg" alt="雷达异常记录页面">
+            </div>
+          </div>
         </div>
       </div>
     </section>
 
-    <section class="slide" data-section="zsq-radar-ui">
+    <section class="slide" data-section="impl" data-order="12">
       <div class="topbar"></div>
       <div>
-        <div class="kicker">10 · 周诗晴模块：雷达 APP 页面</div>
-        <h2>雷达实时检测与控制闭环：实时距离、避障开关和异常记录三页合一展示</h2>
-        <p class="lead">三张竖屏截图并列展示，标题置于图片上方，下方补充关键操作说明。</p>
+        <div class="kicker">03 · 周诗晴模块：告警中心与 AI</div>
+        <h2>多源异常统一归档，AI 辅助完成风险分析与处置排序</h2>
+        <p class="lead">雷达、环境和视觉异常进入同一告警中心，保留时间、点位、类型和等级；支持单条分析、多选咨询与汇总报告，形成可追溯的处理闭环。</p>
       </div>
       <div class="body">
-        <div style="display: grid; grid-template-columns: 1.5fr .5fr; gap: 14px; flex: 1; min-height: 0; margin-top: 16px;">
-          <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; min-height: 0;">
-            <div style="display: flex; flex-direction: column; min-height: 0;">
-              <span style="padding: 6px 0 4px; color: #0f3554; font-size: 12px; font-weight: 900; text-align: center;">实时检测页面</span>
-              <div class="proof-card" style="flex: 1; min-height: 0; padding: 3px;"><img src="assets/zsq/雷达/实时检验.jpg" alt="雷达实时检测"></div>
+        <div class="alert-center-layout">
+          <div class="alert-summary">
+            <div class="alert-counts">
+              <div class="alert-count"><b>7</b><span>告警记录</span></div>
+              <div class="alert-count"><b>3</b><span>严重异常</span></div>
+              <div class="alert-count"><b>4</b><span>预警事件</span></div>
+              <div class="alert-count"><b>3 类</b><span>雷达 / 环境 / 视觉</span></div>
             </div>
-            <div style="display: flex; flex-direction: column; min-height: 0;">
-              <span style="padding: 6px 0 4px; color: #0f3554; font-size: 12px; font-weight: 900; text-align: center;">避障控制页面</span>
-              <div class="proof-card" style="flex: 1; min-height: 0; padding: 3px;"><img src="assets/zsq/雷达/避障控制.jpg" alt="雷达避障控制"></div>
+            <div class="alert-flow">
+              <div class="alert-flow-step"><b>01</b><div><strong>多源告警汇聚</strong><span>不同巡检模块统一写入 PatrolStore，避免异常信息分散。</span></div></div>
+              <div class="alert-flow-step"><b>02</b><div><strong>分级记录与复核</strong><span>记录点位、时间、类型、严重等级和现场读数，支持按优先级处理。</span></div></div>
+              <div class="alert-flow-step"><b>03</b><div><strong>单条 AI 分析</strong><span>针对具体告警生成摘要、风险判断和现场处置步骤。</span></div></div>
+              <div class="alert-flow-step"><b>04</b><div><strong>多选咨询与汇总</strong><span>分析多条告警的共同风险，给出处理顺序和管理汇报内容。</span></div></div>
             </div>
-            <div style="display: flex; flex-direction: column; min-height: 0;">
-              <span style="padding: 6px 0 4px; color: #0f3554; font-size: 12px; font-weight: 900; text-align: center;">异常记录页面</span>
-              <div class="proof-card" style="flex: 1; min-height: 0; padding: 3px;"><img src="assets/zsq/雷达/异常记录.jpg" alt="雷达异常记录"></div>
-            </div>
+            <div class="quote">告警展示不依赖 AI；大模型不可用时，基础记录、等级判断和人工复核流程仍可继续运行。</div>
           </div>
-          <div class="proof-notes">
-            <div class="logic-step"><strong>实时变化</strong><span>点击启动避障后，每 2 秒推进一次 P0-P6 巡检点位数据。</span></div>
-            <div class="logic-step"><strong>三区检测</strong><span>前方通道、左侧货架、右侧货架分别展示距离和阈值。</span></div>
-            <div class="logic-step"><strong>状态解释</strong><span>将雷达距离转成通道畅通、减速、停车、占用和跟踪状态。</span></div>
-            <div class="logic-step"><strong>控制闭环</strong><span>启动避障后触发数据流，异常状态自动进入告警记录。</span></div>
+          <div class="alert-gallery">
+            <div class="alert-shot"><span class="caption">告警中心：统一记录与分级</span><img src="assets/zsq/告警中心/告警中心一览.jpg" alt="告警中心一览"></div>
+            <div class="alert-shot"><span class="caption">单条分析：摘要、风险与建议</span><img src="assets/zsq/告警中心/ai分析.jpg" alt="单条 AI 告警分析"></div>
+            <div class="alert-shot"><span class="caption">多选咨询：共同风险与优先级</span><img src="assets/zsq/告警中心/ai咨询.jpg" alt="AI 多告警咨询"></div>
           </div>
         </div>
       </div>
@@ -1318,7 +1579,6 @@
       { label: "立项", sections: ["project"] },
       { label: "管理", sections: ["manage", "team"] },
       { label: "实现", sections: ["impl"] },
-      { label: "周诗晴", sections: ["zsq-car", "zsq-radar-video", "zsq-radar-ui"] },
       { label: "成果", sections: ["result"] },
       { label: "总结", sections: ["summary"] }
     ];
@@ -1327,7 +1587,8 @@
       .sort((a, b) => Number(a.dataset.order) - Number(b.dataset.order));
     const pager = document.querySelector("#pager");
     const progress = document.querySelector("#progress");
-    let current = 0;
+    const requestedSlide = Number(new URLSearchParams(window.location.search).get("slide"));
+    let current = Number.isInteger(requestedSlide) && requestedSlide > 0 ? requestedSlide - 1 : 0;
 
     document.querySelectorAll(".topbar").forEach((bar) => {
       bar.innerHTML = `
@@ -1339,7 +1600,19 @@
 
     function show(index) {
       current = Math.max(0, Math.min(slides.length - 1, index));
-      slides.forEach((slide, i) => slide.classList.toggle("active", i === current));
+      slides.forEach((slide, i) => {
+        const isActive = i === current;
+        slide.classList.toggle("active", isActive);
+        slide.querySelectorAll("video").forEach((video) => {
+          if (isActive && video.autoplay) {
+            video.currentTime = 0;
+            const playback = video.play();
+            if (playback) playback.catch(() => {});
+          } else {
+            video.pause();
+          }
+        });
+      });
       pager.textContent = `${current + 1} / ${slides.length}`;
       progress.style.width = `${((current + 1) / slides.length) * 100}%`;
 
@@ -1371,7 +1644,7 @@
       if (event.key === "End") show(slides.length - 1);
     });
 
-    show(0);
+    show(current);
   </script>
 </body>
 </html>
